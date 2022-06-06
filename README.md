@@ -1,19 +1,15 @@
-# <h1 align="center"> Forge Template </h1>
+# <h1 align="center"> CFMM Contracts </h1>
 
-**Template repository for getting started quickly with Foundry projects**
 
 ![Github Actions](https://github.com/foundry-rs/forge-template/workflows/CI/badge.svg)
 
+
 ## Getting Started
 
-Click "Use this template" on [GitHub](https://github.com/foundry-rs/forge-template) to create a new repository with this repo as the initial state.
+This project uses [Foundry](https://getfoundry.sh). See the [book](https://book.getfoundry.sh/getting-started/installation.html) for instructions on how to install and use Foundry. 
+We follow [Nascent development process](https://github.com/nascentxyz/simple-security-toolkit/blob/main/development-process.md) and security guidelines **strictly**. 
 
-Or, if your repo already exists, run:
-```sh
-forge init
-forge build
-forge test
-```
+
 
 ## Writing your first test
 
@@ -34,6 +30,3 @@ contract ContractTest is Test {
 }
 ```
 
-## Development
-
-This project uses [Foundry](https://getfoundry.sh). See the [book](https://book.getfoundry.sh/getting-started/installation.html) for instructions on how to install and use Foundry.
