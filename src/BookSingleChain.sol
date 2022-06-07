@@ -7,8 +7,8 @@ import "solmate/utils/SafeTransferLib.sol";
 import "./interfaces/WETH9.sol";
 
 error BookSingleChain__InvalidToken(address token);
-error BookSingleChain__SameToken(address token);
 error BookSingleChain__FeePctTooHigh(uint256 fee);
+error BookSingleChain__SameToken();
 error BookSingleChain__NewFeePctTooHigh();
 error BookSingleChain__ZeroAmount();
 // the recipient of a transfer was the 0 address
@@ -130,7 +130,7 @@ contract BookSingleChain is Owned {
             revert BookSingleChain__InvalidToken(tokenOut);
         }
         if (tokenIn == tokenOut) {
-            revert BookSingleChain__SameToken(tokenIn);
+            revert BookSingleChain__SameToken();
         }
         if (feePct > maxFeePct) {
             revert BookSingleChain__FeePctTooHigh(feePct);

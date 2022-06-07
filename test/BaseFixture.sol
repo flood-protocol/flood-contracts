@@ -3,6 +3,9 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 
+/**
+ * @notice Generic base fixture for testing
+ */
 contract BaseFixture is Test {
     address payable internal alice;
     address payable internal bob;

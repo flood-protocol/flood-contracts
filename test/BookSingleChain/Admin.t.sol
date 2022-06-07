@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import "src/BookSingleChain.sol";
 import "forge-std/Test.sol";
-import "./BaseFixture.sol";
+import "../BaseFixture.sol";
 
 interface IEvents {
     event SafeBlockThresholdChanged(uint256 newSafeBlockThreshold);
@@ -19,19 +19,21 @@ interface IEvents {
     );
 }
 
-contract BookSingleChainAdminTest is BaseFixture, IEvents {
-    using stdStorage for StdStorage;
-
+contract AdminFixture is BaseFixture, IEvents {
     BookSingleChain internal book;
     uint256 internal testSafeBlockThreashold = 100;
 
-    function setUp() public override {
+    function setUp() public virtual override {
         super.setUp();
         book = new BookSingleChain(testSafeBlockThreashold);
         vm.label(address(book), "Book");
     }
+}
 
-    function testTokenWhitelist(address token) public {
+contract AdminTest is AdminFixture {
+    using stdStorage for StdStorage;
+
+    function testTokenWhitelist(address token, bool enabled) public {
         // check that the whitelisted mapping starts as false
         bool whitelistedBefore = stdstore
             .target(address(book))
@@ -43,18 +45,18 @@ contract BookSingleChainAdminTest is BaseFixture, IEvents {
         // should fail if not called by the owner
         vm.expectRevert(bytes("UNAUTHORIZED"));
         vm.prank(alice);
-        book.whitelistToken(token, true);
+        book.whitelistToken(token, enabled);
 
         vm.expectEmit(true, false, false, true, address(book));
-        emit TokenWhitelisted(token, true);
-        book.whitelistToken(token, true);
+        emit TokenWhitelisted(token, enabled);
+        book.whitelistToken(token, enabled);
         // check that the whitelisted mapping has correctly been updated
         bool realWhitelisted = stdstore
             .target(address(book))
             .sig(book.whitelistedTokens.selector)
             .with_key(token)
             .read_bool();
-        assertTrue(realWhitelisted, "Token should be whitelisted");
+        assertEq(realWhitelisted, enabled, "Token should be whitelisted");
     }
 
     function testThresholdChange(uint256 newThreshold) public {
@@ -82,6 +84,7 @@ contract BookSingleChainAdminTest is BaseFixture, IEvents {
         vm.expectRevert(bytes("UNAUTHORIZED"));
         vm.prank(alice);
         book.setMaxFeePct(newFee);
+
         if (newFee >= 1e18) {
             vm.expectRevert(BookSingleChain__NewFeePctTooHigh.selector);
             book.setMaxFeePct(newFee);
