@@ -4,6 +4,15 @@ pragma solidity ^0.8.13;
 import "solmate/tokens/ERC20.sol";
 import "solmate/auth/Owned.sol";
 import "solmate/utils/SafeTransferLib.sol";
+import "./interfaces/WETH9.sol";
+
+error BookSingleChain__InvalidToken(address token);
+error BookSingleChain__SameToken(address token);
+error BookSingleChain__FeePctTooHigh(uint256 fee);
+error BookSingleChain__NewFeePctTooHigh();
+error BookSingleChain__ZeroAmount();
+// the recipient of a transfer was the 0 address
+error BookSingleChain__SentToBlackHole();
 
 /**
  * @title BookSingleChain
@@ -19,6 +28,8 @@ contract BookSingleChain is Owned {
     uint128 public numberOfTrades = 0;
     // The amount of blocks in which a trade can be disputed.
     uint256 public safeBlockThreshold;
+    // The maximum % off the optimal quote allowed. 1e18 is 100%.
+    uint128 public maxFeePct;
     // A mapping with the tokens that are supported by this contract.
     mapping(address => bool) public whitelistedTokens;
     // A mapping from a trade id to a boolean indicating wether the trade has been filled.
@@ -28,6 +39,13 @@ contract BookSingleChain is Owned {
     // A mapping from a trade id to the relayer filling it.
     mapping(bytes32 => address) public filledBy;
 
+    /****************************************
+     *                EVENTS                *
+     ****************************************/
+
+    event SafeBlockThresholdChanged(uint256 newSafeBlockThreshold);
+    event MaxFeePctChanged(uint128 newMaxFeePct);
+    event TokenWhitelisted(address indexed token, bool whitelisted);
     event TradeRequested(
         address indexed tokenIn,
         address indexed tokenOut,
@@ -36,8 +54,6 @@ contract BookSingleChain is Owned {
         address to,
         uint256 indexed tradeIndex
     );
-    event SafeBlockThresholdChanged(uint256 newSafeBlockThreshold);
-    event TokenWhitelisted(address indexed token, bool whitelisted);
 
     /**
      * @notice Constructs the order book.
@@ -46,6 +62,8 @@ contract BookSingleChain is Owned {
     constructor(uint256 _safeBlockThreshold) Owned(msg.sender) {
         safeBlockThreshold = _safeBlockThreshold;
         emit SafeBlockThresholdChanged(safeBlockThreshold);
+        maxFeePct = 0.25 * 1e18;
+        emit MaxFeePctChanged(maxFeePct);
     }
 
     /**************************************
@@ -72,5 +90,69 @@ contract BookSingleChain is Owned {
     function whitelistToken(address token, bool whitelisted) public onlyOwner {
         whitelistedTokens[token] = whitelisted;
         emit TokenWhitelisted(token, whitelisted);
+    }
+
+    /**
+     * @notice Changes the maximum fee percentage.
+     * @param newMaxFeePct The new maximum fee percentage.
+     */
+    function setMaxFeePct(uint128 newMaxFeePct) public onlyOwner {
+        if (newMaxFeePct >= 1e18) {
+            revert BookSingleChain__NewFeePctTooHigh();
+        }
+        maxFeePct = newMaxFeePct;
+        emit MaxFeePctChanged(maxFeePct);
+    }
+
+    /**************************************
+     *         TRADING FUNCTIONS        *
+     **************************************/
+
+    /**
+     * @notice Requests to trade `amount` of `tokenIn` for `tokenOut` with `feePct` fee off the optimal quote at execution time. Users deposit `tokenIn` to the contract.
+     * @param tokenIn The token to be sold.
+     * @param tokenOut The token to be bought.
+     * @param amount The amount of `tokenIn` to be sold.
+     * @param feePct The fee percentage. This is to be interpreted as a "distance" from the optimal execution price.
+     * @param to The address to receive the tokens bought.
+     */
+    function requestTrade(
+        address tokenIn,
+        address tokenOut,
+        uint256 amount,
+        uint256 feePct,
+        address to
+    ) external {
+        if (!whitelistedTokens[tokenIn]) {
+            revert BookSingleChain__InvalidToken(tokenIn);
+        }
+        if (!whitelistedTokens[tokenOut]) {
+            revert BookSingleChain__InvalidToken(tokenOut);
+        }
+        if (tokenIn == tokenOut) {
+            revert BookSingleChain__SameToken(tokenIn);
+        }
+        if (feePct > maxFeePct) {
+            revert BookSingleChain__FeePctTooHigh(feePct);
+        }
+        if (amount == 0) {
+            revert BookSingleChain__ZeroAmount();
+        }
+        if (to == address(0)) {
+            revert BookSingleChain__SentToBlackHole();
+        }
+
+        ERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amount);
+
+        emit TradeRequested(
+            tokenIn,
+            tokenOut,
+            feePct,
+            amount,
+            to,
+            numberOfTrades
+        );
+
+        numberOfTrades++;
     }
 }
