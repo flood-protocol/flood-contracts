@@ -7,14 +7,14 @@ import "forge-std/Test.sol";
  * @notice Generic base fixture for testing
  */
 contract BaseFixture is Test {
-    address payable internal alice;
-    address payable internal bob;
-    address payable internal charlie;
+    address payable constant alice =
+        payable(address(uint160(uint256(keccak256("Alice")))));
+    address payable constant bob =
+        payable(address(uint160(uint256(keccak256("Bob")))));
+    address payable constant charlie =
+        payable(address(uint160(uint256(keccak256("Charlie")))));
 
     function setUp() public virtual {
-        alice = generateUser("Alice");
-        bob = generateUser("Bob");
-        charlie = generateUser("Charlie");
         vm.label(alice, "Alice");
         vm.label(bob, "Bob");
         vm.label(charlie, "Charlie");

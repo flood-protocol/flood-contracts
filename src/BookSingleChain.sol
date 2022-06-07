@@ -4,7 +4,6 @@ pragma solidity ^0.8.13;
 import "solmate/tokens/ERC20.sol";
 import "solmate/auth/Owned.sol";
 import "solmate/utils/SafeTransferLib.sol";
-import "./interfaces/WETH9.sol";
 
 error BookSingleChain__InvalidToken(address token);
 error BookSingleChain__FeePctTooHigh(uint256 fee);
@@ -49,8 +48,8 @@ contract BookSingleChain is Owned {
     event TradeRequested(
         address indexed tokenIn,
         address indexed tokenOut,
-        uint256 feePct,
         uint256 amount,
+        uint256 feePct,
         address to,
         uint256 indexed tradeIndex
     );
@@ -147,8 +146,8 @@ contract BookSingleChain is Owned {
         emit TradeRequested(
             tokenIn,
             tokenOut,
-            feePct,
             amount,
+            feePct,
             to,
             numberOfTrades
         );

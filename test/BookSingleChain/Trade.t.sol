@@ -2,11 +2,9 @@
 pragma solidity ^0.8.13;
 
 import "./Admin.t.sol";
+import "../TokenFixture.sol";
 
-address constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
-address constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
-
-contract TradeTest is AdminFixture {
+contract TradeTest is AdminFixture, TokenFixture {
     address internal testTokenIn = WETH;
     address internal testTokenOut = USDC;
     uint256 internal testFeePct = 0.01e18;
@@ -23,8 +21,45 @@ contract TradeTest is AdminFixture {
         vm.startPrank(alice);
     }
 
+    function testRequestTrade(uint256 amount, uint256 feePct) public {
+        // We assume amount > 0 and feePct < maxFeePct, since we have separate tests for those.
+        vm.assume(amount > 0);
+        vm.assume(feePct <= book.maxFeePct());
+
+        uint256 tradeIndex = book.numberOfTrades();
+        // Request a trade from Alice.
+        uint256 balanceBefore = ERC20(testTokenIn).balanceOf(alice);
+        if (balanceBefore < amount) {
+            vm.expectRevert(bytes("TRANSFER_FROM_FAILED"));
+            book.requestTrade(
+                testTokenIn,
+                testTokenOut,
+                amount,
+                feePct,
+                testTo
+            );
+            return;
+        }
+        // Give Alice some tokens to trade.
+        deal(testTokenIn, alice, amount, true);
+        vm.expectEmit(true, true, true, true, address(book));
+        emit TradeRequested(
+            testTokenIn,
+            testTokenOut,
+            amount,
+            feePct,
+            testTo,
+            tradeIndex
+        );
+        book.requestTrade(testTokenIn, testTokenOut, amount, feePct, testTo);
+
+        // Check that the balance of Alice of `tokenIn` is reduced by `amount`.
+        assertEq(ERC20(testTokenIn).balanceOf(alice), balanceBefore - amount);
+    }
+
     function testCannotTradeNonWhitelistedToken(address token) public {
-        vm.assume(token != USDC && token != WETH);
+        // check that the random token is not whitelisted
+        vm.assume(!book.whitelistedTokens(token));
         vm.expectRevert(
             abi.encodeWithSelector(
                 BookSingleChain__InvalidToken.selector,
