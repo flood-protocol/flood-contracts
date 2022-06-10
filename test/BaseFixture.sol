@@ -7,12 +7,12 @@ import "forge-std/Test.sol";
  * @notice Generic base fixture for testing
  */
 contract BaseFixture is Test {
-    address payable constant alice =
-        payable(address(uint160(uint256(keccak256("Alice")))));
-    address payable constant bob =
-        payable(address(uint160(uint256(keccak256("Bob")))));
-    address payable constant charlie =
-        payable(address(uint160(uint256(keccak256("Charlie")))));
+    uint256 internal constant ALICE_PK = uint256(keccak256("Alice"));
+    uint256 internal constant BOB_PK = uint256(keccak256("Bob"));
+    uint256 internal constant CHARLIE_PK = uint256(keccak256("Charlie"));
+    address payable internal alice = payable(vm.addr(ALICE_PK));
+    address payable internal bob = payable(vm.addr(BOB_PK));
+    address payable internal charlie = payable(vm.addr(CHARLIE_PK));
 
     function setUp() public virtual {
         vm.label(alice, "Alice");
@@ -23,10 +23,9 @@ contract BaseFixture is Test {
 
     function generateUser(bytes memory _name)
         internal
-        pure
         returns (address payable)
     {
-        return payable(address(uint160(uint256(keccak256(_name)))));
+        return payable(vm.addr(uint256(keccak256(_name))));
     }
 
     //move block.number forward by a given number of blocks

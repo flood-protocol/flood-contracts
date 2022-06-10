@@ -17,6 +17,11 @@ interface IEvents {
         address to,
         uint256 indexed tradeIndex
     );
+    event UpdatedFeeForTrade(
+        address indexed trader,
+        bytes32 indexed tradeId,
+        uint256 newFeePct
+    );
 }
 
 contract AdminFixture is BaseFixture, IEvents {

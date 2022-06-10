@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import "solmate/tokens/ERC20.sol";
 import "solmate/auth/Owned.sol";
 import "solmate/utils/SafeTransferLib.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 error BookSingleChain__InvalidToken(address token);
 error BookSingleChain__FeePctTooHigh(uint256 fee);
@@ -12,6 +13,10 @@ error BookSingleChain__NewFeePctTooHigh();
 error BookSingleChain__ZeroAmount();
 // the recipient of a transfer was the 0 address
 error BookSingleChain__SentToBlackHole();
+error BookSingleChain__TradeAlreadyFilled(bytes32 tradeId);
+error BookSingleChain__InvalidSignature();
+
+bytes32 constant SIGNATURE_DELIMITER = keccak256("LAGUNA-V1");
 
 /**
  * @title BookSingleChain
@@ -31,9 +36,8 @@ contract BookSingleChain is Owned {
     uint128 public maxFeePct;
     // A mapping with the tokens that are supported by this contract.
     mapping(address => bool) public whitelistedTokens;
-    // A mapping from a trade id to a boolean indicating wether the trade has been filled.
-    mapping(bytes32 => bool) public isFilled;
-    // A mapping from a trade id to a boolean indicating who filled the trade.
+
+    // Maps each trade id to the block it was filled at.
     mapping(bytes32 => uint256) public filledAtBlock;
     // A mapping from a trade id to the relayer filling it.
     mapping(bytes32 => address) public filledBy;
@@ -52,6 +56,11 @@ contract BookSingleChain is Owned {
         uint256 feePct,
         address to,
         uint256 indexed tradeIndex
+    );
+    event UpdatedFeeForTrade(
+        address indexed trader,
+        bytes32 indexed tradeId,
+        uint256 newFeePct
     );
 
     /**
@@ -153,5 +162,58 @@ contract BookSingleChain is Owned {
         );
 
         numberOfTrades++;
+    }
+
+    /**
+     * @notice Updates the `feePct` for the trade with the `tradeId` ID. 
+        It's possible to update the fee for a trade that does not exist, but it is safe to do so, as relayers trying to fill would get disputed as if they submitted an incorrect trade.
+        However, it is never possible to update the fee for a trade on behalf of another trader without their signature.
+     * @param trader The address of the trader who initially requested the trade.
+     * @param newFeePct The updated fee percentage.
+     * @param tradeId The ID of the trade to update.
+     * @param traderSignature A signed message by the trader that first requested the trade.
+     */
+    function updateFeeForTrade(
+        address trader,
+        bytes32 tradeId,
+        uint256 newFeePct,
+        bytes calldata traderSignature
+    ) external {
+        if (newFeePct > maxFeePct) {
+            revert BookSingleChain__FeePctTooHigh(newFeePct);
+        }
+        if (filledAtBlock[tradeId] > 0) {
+            revert BookSingleChain__TradeAlreadyFilled(tradeId);
+        }
+
+        _verifyFeeUpdateSignature(trader, tradeId, newFeePct, traderSignature);
+
+        emit UpdatedFeeForTrade(trader, tradeId, newFeePct);
+    }
+
+    /**************************************
+     *         INTERNAL FUNCTIONS         *
+     **************************************/
+
+    function _verifyFeeUpdateSignature(
+        address trader,
+        bytes32 tradeId,
+        uint256 newFeePct,
+        bytes calldata traderSignature
+    ) internal pure {
+        bytes32 expectedMessageHash = keccak256(
+            abi.encode(SIGNATURE_DELIMITER, tradeId, newFeePct)
+        );
+
+        bytes32 ethSignedMessageHash = ECDSA.toEthSignedMessageHash(
+            expectedMessageHash
+        );
+        address maybeTrader = ECDSA.recover(
+            ethSignedMessageHash,
+            traderSignature
+        );
+        if (maybeTrader != trader) {
+            revert BookSingleChain__InvalidSignature();
+        }
     }
 }
