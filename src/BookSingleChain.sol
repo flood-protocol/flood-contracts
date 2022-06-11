@@ -30,7 +30,7 @@ contract BookSingleChain is Owned {
 
     // Number of trades done so far. Used to generate trade ids.
     uint128 public numberOfTrades = 0;
-    // The amount of blocks in which a trade can be disputed.
+    // The amountIn of blocks in which a trade can be disputed.
     uint256 public safeBlockThreshold;
     // The maximum % off the optimal quote allowed. 1e18 is 100%.
     uint128 public maxFeePct;
@@ -52,7 +52,7 @@ contract BookSingleChain is Owned {
     event TradeRequested(
         address indexed tokenIn,
         address indexed tokenOut,
-        uint256 amount,
+        uint256 amountIn,
         uint256 feePct,
         address to,
         uint256 indexed tradeIndex
@@ -61,6 +61,13 @@ contract BookSingleChain is Owned {
         address indexed trader,
         bytes32 indexed tradeId,
         uint256 newFeePct
+    );
+    event TradeFilled(
+        address indexed relayer,
+        bytes32 indexed tradeId,
+        uint256 indexed filledAtBlock,
+        uint256 feePct,
+        uint256 amountOut
     );
 
     /**
@@ -117,17 +124,17 @@ contract BookSingleChain is Owned {
      **************************************/
 
     /**
-     * @notice Requests to trade `amount` of `tokenIn` for `tokenOut` with `feePct` fee off the optimal quote at execution time. Users deposit `tokenIn` to the contract.
+     * @notice Requests to trade `amountIn` of `tokenIn` for `tokenOut` with `feePct` fee off the optimal quote at execution time. Users deposit `tokenIn` to the contract.
      * @param tokenIn The token to be sold.
      * @param tokenOut The token to be bought.
-     * @param amount The amount of `tokenIn` to be sold.
+     * @param amountIn The amount of `tokenIn` to be sold.
      * @param feePct The fee percentage. This is to be interpreted as a "distance" from the optimal execution price.
      * @param to The address to receive the tokens bought.
      */
     function requestTrade(
         address tokenIn,
         address tokenOut,
-        uint256 amount,
+        uint256 amountIn,
         uint256 feePct,
         address to
     ) external {
@@ -143,19 +150,19 @@ contract BookSingleChain is Owned {
         if (feePct > maxFeePct) {
             revert BookSingleChain__FeePctTooHigh(feePct);
         }
-        if (amount == 0) {
+        if (amountIn == 0) {
             revert BookSingleChain__ZeroAmount();
         }
         if (to == address(0)) {
             revert BookSingleChain__SentToBlackHole();
         }
 
-        ERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amount);
+        ERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
 
         emit TradeRequested(
             tokenIn,
             tokenOut,
-            amount,
+            amountIn,
             feePct,
             to,
             numberOfTrades
@@ -191,6 +198,58 @@ contract BookSingleChain is Owned {
         emit UpdatedFeeForTrade(trader, tradeId, newFeePct);
     }
 
+    /**
+     * @notice Called by relayers to fill a trade posted by users. A relayer takes on the other side of the trade by giving tokenOut to the requestor of the trade.
+     * A relayer is expect to uniquely identify the trade by sending the contract unique information about it.
+     * Each trade submission is validate off-chain and can be disputed up to `safeBlockThreshold` blocks after it was submitted.
+     * If the trade is found to be invalid, the relayer loses its tokens and won't get the other side of the trade.
+     * After `safeBlockThreshold` blocks, the trade is considered valid and the relayer can request the other side of the trade by calling `settleTrade`.
+     * @param tokenIn The token to be sold.
+     * @param tokenOut The token to be bought.
+     * @param amountIn The amount of `tokenIn` to be sold.
+     * @param feePct The fee percentage. This is to be interpreted as a "distance" from the optimal execution price.
+     * @param to The address to receive the tokens bought.
+     * @param tradeIndex The index of the trade to fill.
+     */
+    function fillTrade(
+        address tokenIn,
+        address tokenOut,
+        uint256 amountIn,
+        uint256 feePct,
+        address to,
+        uint128 tradeIndex,
+        uint256 amountToSend
+    ) external {
+        // We don't need to check if the trade is valid, as the relayer is expected to do that off-chain.
+        bytes32 tradeId = _getTradeId(
+            tokenIn,
+            tokenOut,
+            amountIn,
+            feePct,
+            to,
+            tradeIndex
+        );
+        // Check if the trade has already been filled, to prevent relayers losing tokens if two or more of them try to fill the same trade.
+        if (filledAtBlock[tradeId] > 0) {
+            revert BookSingleChain__TradeAlreadyFilled(tradeId);
+        }
+        filledAtBlock[tradeId] = block.number;
+        filledBy[tradeId] = msg.sender;
+
+        ERC20(tokenOut).safeTransferFrom(
+            msg.sender,
+            address(this),
+            amountToSend
+        );
+        emit TradeFilled(
+            msg.sender,
+            tradeId,
+            block.number,
+            feePct,
+            amountToSend
+        );
+    }
+
     /**************************************
      *         INTERNAL FUNCTIONS         *
      **************************************/
@@ -215,5 +274,29 @@ contract BookSingleChain is Owned {
         if (maybeTrader != trader) {
             revert BookSingleChain__InvalidSignature();
         }
+    }
+
+    /**
+     * @notice Computes the trade ID for the given trade by hashing the trade parameters.
+     * @param tokenIn The token to be sold.
+     * @param tokenOut The token to be bought.
+     * @param amountIn The amount of `tokenIn` to be sold.
+     * @param feePct The fee percentage. This is to be interpreted as a "distance" from the optimal execution price.
+     * @param to The address to receive the tokens bought.
+     * @param tradeIndex The number of trades preceding this one.
+     * @return The trade ID.
+     */
+    function _getTradeId(
+        address tokenIn,
+        address tokenOut,
+        uint256 amountIn,
+        uint256 feePct,
+        address to,
+        uint128 tradeIndex
+    ) internal pure returns (bytes32) {
+        return
+            keccak256(
+                abi.encode(tokenIn, tokenOut, amountIn, feePct, to, tradeIndex)
+            );
     }
 }

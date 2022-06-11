@@ -12,7 +12,7 @@ contract TradeTest is AdminFixture, TokenFixture {
     address internal testTokenOut = USDC;
     uint256 internal testFeePct = 0.01e18;
     uint256 internal testAmount = 1 ether;
-    address internal testTo = bob;
+    address internal testTo = charlie;
 
     function setUp() public override {
         super.setUp();
@@ -32,8 +32,6 @@ contract TradeTest is AdminFixture, TokenFixture {
         ERC20(USDC).approve(address(book), type(uint256).max);
         ERC20(WETH).approve(address(book), type(uint256).max);
         vm.stopPrank();
-        // We want to test the trade request with someone that is not the owner of the contract.
-        vm.startPrank(alice);
     }
 
     function testRequestTrade(uint256 amount, uint256 feePct) public {
@@ -42,21 +40,11 @@ contract TradeTest is AdminFixture, TokenFixture {
         vm.assume(feePct <= book.maxFeePct());
 
         uint256 tradeIndex = book.numberOfTrades();
+        // Give alice some tokens to trade.
+        deal(testTokenIn, alice, amount);
         // Request a trade from Alice.
         uint256 balanceBefore = ERC20(testTokenIn).balanceOf(alice);
-        if (balanceBefore < amount) {
-            vm.expectRevert(bytes("TRANSFER_FROM_FAILED"));
-            book.requestTrade(
-                testTokenIn,
-                testTokenOut,
-                amount,
-                feePct,
-                testTo
-            );
-            return;
-        }
-        // Give Alice some tokens to trade.
-        deal(testTokenIn, alice, amount, true);
+
         vm.expectEmit(true, true, true, true, address(book));
         emit TradeRequested(
             testTokenIn,
@@ -66,10 +54,22 @@ contract TradeTest is AdminFixture, TokenFixture {
             testTo,
             tradeIndex
         );
-        book.requestTrade(testTokenIn, testTokenOut, amount, feePct, testTo);
+        _requestTrade(testTokenIn, testTokenOut, amount, feePct, testTo, alice);
 
         // Check that the balance of Alice of `tokenIn` is reduced by `amount`.
         assertEq(ERC20(testTokenIn).balanceOf(alice), balanceBefore - amount);
+    }
+
+    function testCannotTradeIfNoBalance() public {
+        vm.expectRevert(bytes("TRANSFER_FROM_FAILED"));
+        vm.prank(alice);
+        book.requestTrade(
+            testTokenIn,
+            testTokenOut,
+            testAmount,
+            testFeePct,
+            testTo
+        );
     }
 
     function testCannotTradeNonWhitelistedToken(address token) public {
@@ -86,12 +86,12 @@ contract TradeTest is AdminFixture, TokenFixture {
 
     function testCannotTradeSameToken() public {
         vm.expectRevert(BookSingleChain__SameToken.selector);
-        book.requestTrade(USDC, USDC, testAmount, testFeePct, bob);
+        book.requestTrade(USDC, USDC, testAmount, testFeePct, testTo);
     }
 
     function testCannotTradeZeroAmount() public {
         vm.expectRevert(BookSingleChain__ZeroAmount.selector);
-        book.requestTrade(testTokenIn, testTokenOut, 0, testFeePct, bob);
+        book.requestTrade(testTokenIn, testTokenOut, 0, testFeePct, testTo);
     }
 
     function testCannotTradeAboveMaxFee() public {
@@ -107,12 +107,13 @@ contract TradeTest is AdminFixture, TokenFixture {
             testTokenOut,
             testAmount,
             maxFeePct,
-            bob
+            testTo
         );
     }
 
     function testCannotTradeToBlackHole() public {
         address blackHole = address(0);
+
         vm.expectRevert(BookSingleChain__SentToBlackHole.selector);
         book.requestTrade(
             testTokenIn,
@@ -267,5 +268,126 @@ contract TradeTest is AdminFixture, TokenFixture {
             )
         );
         book.updateFeeForTrade(alice, tradeId, newFeePct, aliceSignature);
+    }
+
+    function testFillTrade(uint256 amountIn, uint256 amountOut) public {
+        vm.assume(amountIn > 0);
+
+        vm.prank(alice);
+        deal(testTokenIn, alice, amountIn);
+        (uint128 tradeIndex, bytes32 tradeId) = _requestTrade(
+            testTokenIn,
+            testTokenOut,
+            amountIn,
+            testFeePct,
+            testTo,
+            alice
+        );
+
+        deal(testTokenOut, bob, amountOut);
+        uint256 bobBalanceBefore = ERC20(testTokenOut).balanceOf(bob);
+        vm.prank(bob);
+        book.fillTrade(
+            testTokenIn,
+            testTokenOut,
+            amountIn,
+            testFeePct,
+            testTo,
+            tradeIndex,
+            amountOut
+        );
+        // Check bob submitted amountOut tokens
+        assertEq(
+            ERC20(testTokenOut).balanceOf(bob) + amountOut,
+            bobBalanceBefore
+        );
+
+        uint256 filledAtInStorage = stdstore
+            .target(address(book))
+            .sig(book.filledAtBlock.selector)
+            .with_key(tradeId)
+            .read_uint();
+        assertEq(filledAtInStorage, block.number);
+
+        address filledByInStorage = stdstore
+            .target(address(book))
+            .sig(book.filledBy.selector)
+            .with_key(tradeId)
+            .read_address();
+
+        assertEq(filledByInStorage, bob);
+    }
+
+    function testCannotFillIfAlreadyFilled(uint256 amountIn, uint256 amountOut)
+        public
+    {
+        vm.assume(amountIn > 0);
+        deal(testTokenIn, alice, amountIn);
+        (uint128 tradeIndex, bytes32 tradeId) = _requestTrade(
+            testTokenIn,
+            testTokenOut,
+            amountIn,
+            testFeePct,
+            testTo,
+            alice
+        );
+        deal(testTokenOut, bob, amountOut);
+        vm.prank(bob);
+        book.fillTrade(
+            testTokenIn,
+            testTokenOut,
+            amountIn,
+            testFeePct,
+            testTo,
+            tradeIndex,
+            amountOut
+        );
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                BookSingleChain__TradeAlreadyFilled.selector,
+                tradeId
+            )
+        );
+        book.fillTrade(
+            testTokenIn,
+            testTokenOut,
+            amountIn,
+            testFeePct,
+            testTo,
+            tradeIndex,
+            amountOut
+        );
+    }
+
+    function testCannotTradeIfNoTokens(uint256 amountOut) public {
+        vm.assume(amountOut > 0);
+        vm.prank(bob);
+        vm.expectRevert(bytes("TRANSFER_FROM_FAILED"));
+        book.fillTrade(
+            testTokenIn,
+            testTokenOut,
+            testAmount,
+            testFeePct,
+            testTo,
+            1,
+            amountOut
+        );
+    }
+
+    function _requestTrade(
+        address tokenIn,
+        address tokenOut,
+        uint256 amount,
+        uint256 feePct,
+        address to,
+        address who
+    ) internal returns (uint128, bytes32) {
+        uint128 tradeIndex = book.numberOfTrades();
+        bytes32 tradeId = keccak256(
+            abi.encode(tokenIn, tokenOut, amount, feePct, to, tradeIndex)
+        );
+        vm.prank(who);
+        book.requestTrade(tokenIn, tokenOut, amount, feePct, to);
+        return (tradeIndex, tradeId);
     }
 }
