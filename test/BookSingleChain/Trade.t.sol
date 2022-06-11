@@ -2,36 +2,13 @@
 pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-import "./Admin.t.sol";
-import "../TokenFixture.sol";
+import "./Fixtures.sol";
 
-contract TradeTest is AdminFixture, TokenFixture {
+contract TradeTest is TradeFixture {
     using stdStorage for StdStorage;
-
-    address internal testTokenIn = WETH;
-    address internal testTokenOut = USDC;
-    uint256 internal testFeePct = 0.01e18;
-    uint256 internal testAmount = 1 ether;
-    address internal testTo = charlie;
 
     function setUp() public override {
         super.setUp();
-        book.whitelistToken(USDC, true);
-        book.whitelistToken(WETH, true);
-        vm.label(USDC, "USDC");
-        vm.label(WETH, "WETH");
-        vm.startPrank(alice);
-        ERC20(USDC).approve(address(book), type(uint256).max);
-        ERC20(WETH).approve(address(book), type(uint256).max);
-        vm.stopPrank();
-        vm.startPrank(bob);
-        ERC20(USDC).approve(address(book), type(uint256).max);
-        ERC20(WETH).approve(address(book), type(uint256).max);
-        vm.stopPrank();
-        vm.startPrank(charlie);
-        ERC20(USDC).approve(address(book), type(uint256).max);
-        ERC20(WETH).approve(address(book), type(uint256).max);
-        vm.stopPrank();
     }
 
     function testRequestTrade(uint256 amount, uint256 feePct) public {
@@ -314,8 +291,13 @@ contract TradeTest is AdminFixture, TokenFixture {
             .sig(book.filledBy.selector)
             .with_key(tradeId)
             .read_address();
-
         assertEq(filledByInStorage, bob);
+        uint256 filledAmountInStorage = stdstore
+            .target(address(book))
+            .sig(book.filledAmount.selector)
+            .with_key(tradeId)
+            .read_uint();
+        assertEq(filledAmountInStorage, amountOut);
     }
 
     function testCannotFillIfAlreadyFilled(uint256 amountIn, uint256 amountOut)
@@ -372,22 +354,5 @@ contract TradeTest is AdminFixture, TokenFixture {
             1,
             amountOut
         );
-    }
-
-    function _requestTrade(
-        address tokenIn,
-        address tokenOut,
-        uint256 amount,
-        uint256 feePct,
-        address to,
-        address who
-    ) internal returns (uint128, bytes32) {
-        uint128 tradeIndex = book.numberOfTrades();
-        bytes32 tradeId = keccak256(
-            abi.encode(tokenIn, tokenOut, amount, feePct, to, tradeIndex)
-        );
-        vm.prank(who);
-        book.requestTrade(tokenIn, tokenOut, amount, feePct, to);
-        return (tradeIndex, tradeId);
     }
 }

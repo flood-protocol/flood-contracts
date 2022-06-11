@@ -14,9 +14,19 @@ error BookSingleChain__ZeroAmount();
 // the recipient of a transfer was the 0 address
 error BookSingleChain__SentToBlackHole();
 error BookSingleChain__TradeAlreadyFilled(bytes32 tradeId);
+
+// The trade was not filled or doesn't exist
+error BookSingleChain__TradeNotFilled(bytes32 tradeId);
 error BookSingleChain__InvalidSignature();
+error BookSingleChain__DisputePeriodNotOver(uint256 blocksLeft);
 
 bytes32 constant SIGNATURE_DELIMITER = keccak256("LAGUNA-V1");
+
+struct FilledTrade {
+    address trader;
+    uint256 amountOut;
+    uint256 filledAtBlock;
+}
 
 /**
  * @title BookSingleChain
@@ -41,6 +51,8 @@ contract BookSingleChain is Owned {
     mapping(bytes32 => uint256) public filledAtBlock;
     // A mapping from a trade id to the relayer filling it.
     mapping(bytes32 => address) public filledBy;
+    // A mapping from a trade id to the amount of tokens received by the trader that requested the trade.
+    mapping(bytes32 => uint256) public filledAmount;
 
     /****************************************
      *                EVENTS                *
@@ -68,6 +80,12 @@ contract BookSingleChain is Owned {
         uint256 indexed filledAtBlock,
         uint256 feePct,
         uint256 amountOut
+    );
+    event TradeSettled(
+        address indexed relayer,
+        bytes32 indexed tradeId,
+        uint256 indexed filledAmount,
+        uint256 feePct
     );
 
     /**
@@ -235,6 +253,7 @@ contract BookSingleChain is Owned {
         }
         filledAtBlock[tradeId] = block.number;
         filledBy[tradeId] = msg.sender;
+        filledAmount[tradeId] = amountToSend;
 
         ERC20(tokenOut).safeTransferFrom(
             msg.sender,
@@ -249,6 +268,60 @@ contract BookSingleChain is Owned {
             amountToSend
         );
     }
+
+    // TODO: Implement
+    function fillTradeWithUpdatedFee() external {}
+
+    /**
+    @notice It settles a trade by delivering tokens to both the relayer and the trader. Can only be called after `safeBlockThreshold` blocks have passed since the trade was submitted.
+    @param tokenIn The token that was sold.
+    @param tokenOut The token that was bought.
+    @param amountIn The amount of `tokenIn` that was sold.
+    @param feePct The fee percentage. This is to be interpreted as a "distance" from the optimal execution price.
+    @param to The address to receive the tokens bought.
+    @param tradeIndex The index of the trade to settle.
+     */
+    function settleTrade(
+        address tokenIn,
+        address tokenOut,
+        uint256 amountIn,
+        uint256 feePct,
+        address to,
+        uint128 tradeIndex
+    ) external {
+        bytes32 tradeId = _getTradeId(
+            tokenIn,
+            tokenOut,
+            amountIn,
+            feePct,
+            to,
+            tradeIndex
+        );
+        // Check if the trade has already been settled, is not filled or does not exist.
+        if (filledAtBlock[tradeId] == 0) {
+            revert BookSingleChain__TradeNotFilled(tradeId);
+        }
+        if (block.number - filledAtBlock[tradeId] < safeBlockThreshold) {
+            // Always > 0 for the check above
+            uint256 blocksLeft = safeBlockThreshold -
+                (block.number - filledAtBlock[tradeId]);
+            revert BookSingleChain__DisputePeriodNotOver(blocksLeft);
+        }
+        uint256 amountToTrader = filledAmount[tradeId];
+        address relayer = filledBy[tradeId];
+
+        delete filledAtBlock[tradeId];
+        delete filledBy[tradeId];
+        delete filledAmount[tradeId];
+
+        ERC20(tokenOut).safeTransfer(to, amountToTrader);
+        ERC20(tokenIn).safeTransfer(relayer, amountIn);
+
+        emit TradeSettled(relayer, tradeId, amountToTrader, feePct);
+    }
+
+    //TODO: Implement
+    function disputeTrade() external {}
 
     /**************************************
      *         INTERNAL FUNCTIONS         *

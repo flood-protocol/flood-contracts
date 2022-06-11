@@ -3,39 +3,9 @@ pragma solidity ^0.8.13;
 
 import "src/BookSingleChain.sol";
 import "forge-std/Test.sol";
-import "../BaseFixture.sol";
+import "./Fixtures.sol";
 
-interface IEvents {
-    event SafeBlockThresholdChanged(uint256 newSafeBlockThreshold);
-    event MaxFeePctChanged(uint128 newMaxFeePct);
-    event TokenWhitelisted(address indexed token, bool whitelisted);
-    event TradeRequested(
-        address indexed tokenIn,
-        address indexed tokenOut,
-        uint256 feePct,
-        uint256 amount,
-        address to,
-        uint256 indexed tradeIndex
-    );
-    event UpdatedFeeForTrade(
-        address indexed trader,
-        bytes32 indexed tradeId,
-        uint256 newFeePct
-    );
-}
-
-contract AdminFixture is BaseFixture, IEvents {
-    BookSingleChain internal book;
-    uint256 internal testSafeBlockThreashold = 100;
-
-    function setUp() public virtual override {
-        super.setUp();
-        book = new BookSingleChain(testSafeBlockThreashold);
-        vm.label(address(book), "Book");
-    }
-}
-
-contract AdminTest is AdminFixture {
+contract AdminTest is BaseBookFixture {
     using stdStorage for StdStorage;
 
     function testTokenWhitelist(address token, bool enabled) public {
