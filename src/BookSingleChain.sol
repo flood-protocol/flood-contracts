@@ -108,7 +108,7 @@ contract BookSingleChain is Owned {
      * @param newSafeBlockThreshold The new safe block threshold.
      */
     function setSafeBlockThreshold(uint256 newSafeBlockThreshold)
-        public
+        external
         onlyOwner
     {
         safeBlockThreshold = newSafeBlockThreshold;
@@ -120,7 +120,10 @@ contract BookSingleChain is Owned {
      * @param token The token to add to the whitelist.
      * @param whitelisted If `true` whitelists the token, if `false` it removes it.
      */
-    function whitelistToken(address token, bool whitelisted) public onlyOwner {
+    function whitelistToken(address token, bool whitelisted)
+        external
+        onlyOwner
+    {
         whitelistedTokens[token] = whitelisted;
         emit TokenWhitelisted(token, whitelisted);
     }
@@ -129,7 +132,7 @@ contract BookSingleChain is Owned {
      * @notice Changes the maximum fee percentage.
      * @param newMaxFeePct The new maximum fee percentage.
      */
-    function setMaxFeePct(uint128 newMaxFeePct) public onlyOwner {
+    function setMaxFeePct(uint128 newMaxFeePct) external onlyOwner {
         if (newMaxFeePct >= 1e18) {
             revert BookSingleChain__NewFeePctTooHigh();
         }
