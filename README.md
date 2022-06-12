@@ -1,15 +1,11 @@
 # <h1 align="center"> CFMM Contracts </h1>
 
-
 ![Github Actions](https://github.com/foundry-rs/forge-template/workflows/CI/badge.svg)
-
 
 ## Getting Started
 
-This project uses [Foundry](https://getfoundry.sh). See the [book](https://book.getfoundry.sh/getting-started/installation.html) for instructions on how to install and use Foundry. 
-We follow [Nascent development process](https://github.com/nascentxyz/simple-security-toolkit/blob/main/development-process.md) and security guidelines **strictly**. 
-
-
+This project uses [Foundry](https://getfoundry.sh). See the [book](https://book.getfoundry.sh/getting-started/installation.html) for instructions on how to install and use Foundry.
+We follow [Nascent development process](https://github.com/nascentxyz/simple-security-toolkit/blob/main/development-process.md) and security guidelines **strictly**.
 
 ## Writing your first test
 
@@ -30,3 +26,8 @@ contract ContractTest is Test {
 }
 ```
 
+## Running [Slither](https://github.com/crytic/slither)
+
+If it is the first time you're using slither, follow the steps in the [foundry book](https://book.getfoundry.sh/config/static-analyzers.html) to set up your environment.
+
+To run slither do `slither ./src` from the root of the project.
