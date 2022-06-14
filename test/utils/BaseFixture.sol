@@ -33,4 +33,13 @@ contract BaseFixture is Test {
         uint256 targetBlock = block.number + numBlocks;
         vm.roll(targetBlock);
     }
+
+    // signs a message with the given private key
+    function sign(uint256 pk, bytes32 messageHash)
+        internal
+        returns (bytes memory)
+    {
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(pk, messageHash);
+        return bytes.concat(r, s, bytes1(v));
+    }
 }

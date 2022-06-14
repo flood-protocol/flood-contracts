@@ -115,20 +115,12 @@ contract TradeTest is TradeFixture {
             )
         );
 
-        // Prepare a message to updates the fee.
         uint256 newFeePct = testFeePct + 1;
-        bytes32 messageHash = keccak256(
-            abi.encode(SIGNATURE_DELIMITER, tradeId, newFeePct)
-        );
-        bytes32 ethSignedMessageHash = ECDSA.toEthSignedMessageHash(
-            messageHash
-        );
-
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(
+        bytes memory aliceSignature = _signFeeUpdate(
             ALICE_PK,
-            ethSignedMessageHash
+            tradeId,
+            newFeePct
         );
-        bytes memory aliceSignature = bytes.concat(r, s, bytes1(v));
 
         vm.expectEmit(true, true, false, true, address(book));
         emit UpdatedFeeForTrade(alice, tradeId, newFeePct);
@@ -136,9 +128,9 @@ contract TradeTest is TradeFixture {
         book.updateFeeForTrade(alice, tradeId, newFeePct, aliceSignature);
     }
 
-    function testCannotUpdateFeeForOthers() public {
+    function testCannotUpdateFeeWithInvalidSignature() public {
         // Simulate a trade request. We assume that the request is valid and executed correctly.
-        uint256 tradeIndex = book.numberOfTrades() + 1;
+        uint128 tradeIndex = book.numberOfTrades() + 1;
         bytes32 tradeId = keccak256(
             abi.encode(
                 testTokenIn,
@@ -150,25 +142,16 @@ contract TradeTest is TradeFixture {
             )
         );
 
-        // Prepare a message to updates the fee.
         uint256 newFeePct = testFeePct + 1;
-        bytes32 messageHash = keccak256(
-            abi.encode(SIGNATURE_DELIMITER, tradeId, newFeePct)
-        );
-        bytes32 ethSignedMessageHash = ECDSA.toEthSignedMessageHash(
-            messageHash
-        );
-
-        // Sign the message with Bob's private key.
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(BOB_PK, ethSignedMessageHash);
-        bytes memory bobSignature = bytes.concat(r, s, bytes1(v));
+        // Sign a fee update with Bob's private key.
+        bytes memory bobSignature = _signFeeUpdate(BOB_PK, tradeId, newFeePct);
         vm.expectRevert(BookSingleChain__InvalidSignature.selector);
         book.updateFeeForTrade(alice, tradeId, newFeePct, bobSignature);
     }
 
     function testCannotUpdateFeePastMax() public {
         // Simulate a trade request. We assume that the request is valid and executed correctly.
-        uint256 tradeIndex = book.numberOfTrades() + 1;
+        uint128 tradeIndex = book.numberOfTrades() + 1;
         bytes32 tradeId = keccak256(
             abi.encode(
                 testTokenIn,
@@ -180,20 +163,12 @@ contract TradeTest is TradeFixture {
             )
         );
 
-        // Prepare a message to updates the fee.
         uint256 newFeePct = book.maxFeePct() + 1;
-        bytes32 messageHash = keccak256(
-            abi.encode(SIGNATURE_DELIMITER, tradeId, newFeePct)
-        );
-        bytes32 ethSignedMessageHash = ECDSA.toEthSignedMessageHash(
-            messageHash
-        );
-
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(
+        bytes memory aliceSignature = _signFeeUpdate(
             ALICE_PK,
-            ethSignedMessageHash
+            tradeId,
+            newFeePct
         );
-        bytes memory aliceSignature = bytes.concat(r, s, bytes1(v));
         vm.expectRevert(
             abi.encodeWithSelector(
                 BookSingleChain__FeePctTooHigh.selector,
@@ -224,20 +199,13 @@ contract TradeTest is TradeFixture {
             .with_key(tradeId)
             .checked_write(block.number);
 
-        // Prepare a message to updates the fee.
         uint256 newFeePct = testFeePct + 1;
-        bytes32 messageHash = keccak256(
-            abi.encode(SIGNATURE_DELIMITER, tradeId, newFeePct)
-        );
-        bytes32 ethSignedMessageHash = ECDSA.toEthSignedMessageHash(
-            messageHash
-        );
 
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(
+        bytes memory aliceSignature = _signFeeUpdate(
             ALICE_PK,
-            ethSignedMessageHash
+            tradeId,
+            newFeePct
         );
-        bytes memory aliceSignature = bytes.concat(r, s, bytes1(v));
         vm.expectRevert(
             abi.encodeWithSelector(
                 BookSingleChain__TradeAlreadyFilled.selector,
@@ -264,6 +232,8 @@ contract TradeTest is TradeFixture {
         deal(testTokenOut, bob, amountOut);
         uint256 bobBalanceBefore = ERC20(testTokenOut).balanceOf(bob);
         vm.prank(bob);
+        vm.expectEmit(true, true, true, true, address(book));
+        emit TradeFilled(bob, tradeId, block.number, testFeePct, amountOut);
         book.fillTrade(
             testTokenIn,
             testTokenOut,
@@ -341,7 +311,7 @@ contract TradeTest is TradeFixture {
         );
     }
 
-    function testCannotTradeIfNoTokens(uint256 amountOut) public {
+    function testCannotFillIfNoTokens(uint256 amountOut) public {
         vm.assume(amountOut > 0);
         vm.prank(bob);
         vm.expectRevert(bytes("TRANSFER_FROM_FAILED"));
@@ -353,6 +323,197 @@ contract TradeTest is TradeFixture {
             testTo,
             1,
             amountOut
+        );
+    }
+
+    function testFillTradeWithUpdatedFee(
+        uint256 amountIn,
+        uint256 amountOut,
+        uint256 newFeePct
+    ) public {
+        vm.assume(amountIn > 0);
+        vm.assume(newFeePct < book.maxFeePct());
+        vm.prank(alice);
+        deal(testTokenIn, alice, amountIn);
+        (uint128 tradeIndex, bytes32 tradeId) = _requestTrade(
+            testTokenIn,
+            testTokenOut,
+            amountIn,
+            testFeePct,
+            testTo,
+            alice
+        );
+
+        // Sign a message from Alice updating the fee.
+        bytes memory aliceSignature = _signFeeUpdate(
+            ALICE_PK,
+            tradeId,
+            newFeePct
+        );
+        deal(testTokenOut, bob, amountOut);
+        uint256 bobBalanceBefore = ERC20(testTokenOut).balanceOf(bob);
+        vm.prank(bob);
+        vm.expectEmit(true, true, true, true, address(book));
+        // check the fee is updated
+        emit TradeFilled(bob, tradeId, block.number, newFeePct, amountOut);
+        book.fillTradeWithUpdatedFee(
+            testTokenIn,
+            testTokenOut,
+            amountIn,
+            testFeePct,
+            testTo,
+            tradeIndex,
+            amountOut,
+            alice,
+            newFeePct,
+            aliceSignature
+        );
+        // Check bob submitted amountOut tokens
+        assertEq(
+            ERC20(testTokenOut).balanceOf(bob) + amountOut,
+            bobBalanceBefore
+        );
+
+        uint256 filledAtInStorage = stdstore
+            .target(address(book))
+            .sig(book.filledAtBlock.selector)
+            .with_key(tradeId)
+            .read_uint();
+        assertEq(filledAtInStorage, block.number);
+
+        address filledByInStorage = stdstore
+            .target(address(book))
+            .sig(book.filledBy.selector)
+            .with_key(tradeId)
+            .read_address();
+        assertEq(filledByInStorage, bob);
+        uint256 filledAmountInStorage = stdstore
+            .target(address(book))
+            .sig(book.filledAmount.selector)
+            .with_key(tradeId)
+            .read_uint();
+        assertEq(filledAmountInStorage, amountOut);
+    }
+
+    function testCannotFillWithUpdateFeeForFilledTrade() public {
+        // Simulate a trade request. We assume that the request is valid and executed correctly.
+        uint128 tradeIndex = book.numberOfTrades() + 1;
+        bytes32 tradeId = keccak256(
+            abi.encode(
+                testTokenIn,
+                testTokenOut,
+                testAmount,
+                testFeePct,
+                testTo,
+                tradeIndex
+            )
+        );
+
+        // Artificially fill the trade at the past block.
+        stdstore
+            .target(address(book))
+            .sig(book.filledAtBlock.selector)
+            .with_key(tradeId)
+            .checked_write(block.number);
+
+        // Prepare a message to updates the fee.
+        uint256 newFeePct = testFeePct + 1;
+        bytes memory aliceSignature = _signFeeUpdate(
+            ALICE_PK,
+            tradeId,
+            newFeePct
+        );
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                BookSingleChain__TradeAlreadyFilled.selector,
+                tradeId
+            )
+        );
+        book.fillTradeWithUpdatedFee(
+            testTokenIn,
+            testTokenOut,
+            testAmount,
+            testFeePct,
+            testTo,
+            tradeIndex,
+            1,
+            alice,
+            newFeePct,
+            aliceSignature
+        );
+    }
+
+    function testCannotFillWithUpdateFeePastMax() public {
+        // Simulate a trade request. We assume that the request is valid and executed correctly.
+        uint128 tradeIndex = book.numberOfTrades() + 1;
+        bytes32 tradeId = keccak256(
+            abi.encode(
+                testTokenIn,
+                testTokenOut,
+                testAmount,
+                testFeePct,
+                testTo,
+                tradeIndex
+            )
+        );
+
+        uint256 newFeePct = book.maxFeePct() + 1;
+
+        bytes memory aliceSignature = _signFeeUpdate(
+            ALICE_PK,
+            tradeId,
+            newFeePct
+        );
+
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                BookSingleChain__FeePctTooHigh.selector,
+                newFeePct
+            )
+        );
+        book.fillTradeWithUpdatedFee(
+            testTokenIn,
+            testTokenOut,
+            testAmount,
+            testFeePct,
+            testTo,
+            tradeIndex,
+            1,
+            alice,
+            newFeePct,
+            aliceSignature
+        );
+    }
+
+    function testCannotFillTradeWithUpdateFeeWithInvalidSignature() public {
+        // Simulate a trade request. We assume that the request is valid and executed correctly.
+        uint128 tradeIndex = book.numberOfTrades() + 1;
+        bytes32 tradeId = keccak256(
+            abi.encode(
+                testTokenIn,
+                testTokenOut,
+                testAmount,
+                testFeePct,
+                testTo,
+                tradeIndex
+            )
+        );
+
+        uint256 newFeePct = testFeePct + 1;
+        // Bob signs the feeUpdate message for Alice trade
+        bytes memory bobSignature = _signFeeUpdate(BOB_PK, tradeId, newFeePct);
+        vm.expectRevert(BookSingleChain__InvalidSignature.selector);
+        book.fillTradeWithUpdatedFee(
+            testTokenIn,
+            testTokenOut,
+            testAmount,
+            testFeePct,
+            testTo,
+            tradeIndex,
+            1,
+            alice,
+            newFeePct,
+            bobSignature
         );
     }
 }
