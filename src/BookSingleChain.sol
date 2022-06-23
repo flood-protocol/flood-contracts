@@ -5,6 +5,7 @@ import "solmate/tokens/ERC20.sol";
 import "solmate/auth/Owned.sol";
 import "solmate/utils/SafeTransferLib.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "./AllKnowingOracle.sol";
 
 error BookSingleChain__InvalidToken(address token);
 error BookSingleChain__FeePctTooHigh(uint256 fee);
@@ -19,6 +20,7 @@ error BookSingleChain__TradeAlreadyFilled(bytes32 tradeId);
 error BookSingleChain__TradeNotFilled(bytes32 tradeId);
 error BookSingleChain__InvalidSignature();
 error BookSingleChain__DisputePeriodNotOver(uint256 blocksLeft);
+error BookSingleChain__DisputePeriodOver();
 
 bytes32 constant SIGNATURE_DELIMITER = keccak256("LAGUNA-V1");
 
@@ -54,6 +56,9 @@ contract BookSingleChain is Owned {
     // A mapping from a trade id to the amount of tokens received by the trader that requested the trade.
     mapping(bytes32 => uint256) public filledAmount;
 
+    // Oracle used for dispute resolution
+    IOracle public immutable oracle;
+
     /****************************************
      *                EVENTS                *
      ****************************************/
@@ -87,12 +92,22 @@ contract BookSingleChain is Owned {
         uint256 indexed filledAmount,
         uint256 feePct
     );
+    event TradeDisputed(
+        address indexed relayer,
+        bytes32 indexed tradeId,
+        uint256 indexed filledAmount,
+        uint256 feePct
+    );
 
     /**
      * @notice Constructs the order book.
      * @param _safeBlockThreshold The number of blocks in which a trade can be disputed.
+     * @param _oracleAddress The address of the oracle used for dispute resolution.
      */
-    constructor(uint256 _safeBlockThreshold) Owned(msg.sender) {
+    constructor(uint256 _safeBlockThreshold, address _oracleAddress)
+        Owned(msg.sender)
+    {
+        oracle = IOracle(_oracleAddress);
         safeBlockThreshold = _safeBlockThreshold;
         emit SafeBlockThresholdChanged(safeBlockThreshold);
         maxFeePct = 0.25 * 1e18;
@@ -231,6 +246,7 @@ contract BookSingleChain is Owned {
      * @param feePct The fee percentage. This is to be interpreted as a "distance" from the optimal execution price.
      * @param to The address to receive the tokens bought.
      * @param tradeIndex The index of the trade to fill.
+     * @param amountToSend The amount of `tokenOut` to send to the requestor.
      */
     function fillTrade(
         address tokenIn,
@@ -254,15 +270,9 @@ contract BookSingleChain is Owned {
         if (filledAtBlock[tradeId] > 0) {
             revert BookSingleChain__TradeAlreadyFilled(tradeId);
         }
-        filledAtBlock[tradeId] = block.number;
-        filledBy[tradeId] = msg.sender;
-        filledAmount[tradeId] = amountToSend;
 
-        ERC20(tokenOut).safeTransferFrom(
-            msg.sender,
-            address(this),
-            amountToSend
-        );
+        _fillTrade(tokenOut, tradeId, amountToSend);
+
         emit TradeFilled(
             msg.sender,
             tradeId,
@@ -272,8 +282,54 @@ contract BookSingleChain is Owned {
         );
     }
 
-    // TODO: Implement
-    function fillTradeWithUpdatedFee() external {}
+    /**
+     * @notice Called by relayers to execute the same logic as `fillTrade` but with `updatedFeePct` instead of `feePct`.
+     * This updated fee must have been requested by the `trader` that initiated the trade, by cryptographically signing a message `updatedFeePct`.
+     * A trader will usually call `updateFeeForTrade` to signal to relayers the new fee and make its signature available.
+     * @param tokenIn The token to be sold.
+     * @param tokenOut The token to be bought.
+     * @param amountIn The amount of `tokenIn` to be sold.
+     * @param feePct The fee percentage. This is to be interpreted as a "distance" from the optimal execution price.
+     * @param to The address to receive the tokens bought.
+     * @param tradeIndex The index of the trade to fill.
+     * @param amountToSend The amount of `tokenOut` to send to the requestor.
+     * @param trader The address of the trader who initially requested the trade.
+     * @param newFeePct The updated fee percentage.
+     * @param traderSignature A signed message by the trader that first requested the trade.
+     */
+    function fillTradeWithUpdatedFee(
+        address tokenIn,
+        address tokenOut,
+        uint256 amountIn,
+        uint256 feePct,
+        address to,
+        uint128 tradeIndex,
+        uint256 amountToSend,
+        address trader,
+        uint256 newFeePct,
+        bytes calldata traderSignature
+    ) external {
+        bytes32 tradeId = _getTradeId(
+            tokenIn,
+            tokenOut,
+            amountIn,
+            feePct,
+            to,
+            tradeIndex
+        );
+
+        // We delegate checking if the trade is already filled to `_verifyFeeUpdateSignature`
+        _verifyFeeUpdateSignature(trader, tradeId, newFeePct, traderSignature);
+        _fillTrade(tokenOut, tradeId, amountToSend);
+        // Emit a TradeFilled event with the new fee percentage.
+        emit TradeFilled(
+            msg.sender,
+            tradeId,
+            block.number,
+            newFeePct,
+            amountToSend
+        );
+    }
 
     /**
     @notice It settles a trade by delivering tokens to both the relayer and the trader. Can only be called after `safeBlockThreshold` blocks have passed since the trade was submitted.
@@ -323,8 +379,59 @@ contract BookSingleChain is Owned {
         emit TradeSettled(relayer, tradeId, amountToTrader, feePct);
     }
 
-    //TODO: Implement
-    function disputeTrade() external {}
+    /**
+     * @notice Called by disputers to dispute a trade.
+     * For `safeBlockThreshold` blocks after a trade is submitted off-chain entities can dispute it and claim the relayer's tokens.
+     * Dispute resolution is delegated to an external oracle contract.
+     * This makes the trade available for relayers to fill again.
+     * @param tokenIn The token that was sold.
+     * @param tokenOut The token that was bought.
+     * @param amountIn The amount of `tokenIn` that was sold.
+     * @param feePct The fee percentage. This is to be interpreted as a "distance" from the optimal execution price.
+     * @param to The address to receive the tokens bought.
+     * @param tradeIndex The index of the trade to dispute.
+     */
+    function disputeTrade(
+        address tokenIn,
+        address tokenOut,
+        uint256 amountIn,
+        uint256 feePct,
+        address to,
+        uint128 tradeIndex
+    ) external {
+        bytes32 tradeId = _getTradeId(
+            tokenIn,
+            tokenOut,
+            amountIn,
+            feePct,
+            to,
+            tradeIndex
+        );
+        uint256 filledHeight = filledAtBlock[tradeId];
+
+        // Check that the trade has been filled.
+        if (filledHeight == 0) {
+            revert BookSingleChain__TradeNotFilled(tradeId);
+        }
+        // Check that the dispute period has not yet ended.
+        if (block.number - filledHeight >= safeBlockThreshold) {
+            revert BookSingleChain__DisputePeriodOver();
+        }
+
+        uint256 amountSent = filledAmount[tradeId];
+        address relayer = filledBy[tradeId];
+
+        // Approve the oracle to spend the amountSent by the relayer.
+        ERC20(tokenOut).approve(address(oracle), amountSent);
+        oracle.ask(relayer, msg.sender, tokenOut, amountSent);
+
+        // Mark the trade as unfilled to allow relayers to fill it again.
+        delete filledAtBlock[tradeId];
+        delete filledBy[tradeId];
+        delete filledAmount[tradeId];
+
+        emit TradeDisputed(relayer, tradeId, amountSent, feePct);
+    }
 
     /**************************************
      *         INTERNAL FUNCTIONS         *
@@ -335,7 +442,14 @@ contract BookSingleChain is Owned {
         bytes32 tradeId,
         uint256 newFeePct,
         bytes calldata traderSignature
-    ) internal pure {
+    ) internal view {
+        if (newFeePct > maxFeePct) {
+            revert BookSingleChain__FeePctTooHigh(newFeePct);
+        }
+        if (filledAtBlock[tradeId] > 0) {
+            revert BookSingleChain__TradeAlreadyFilled(tradeId);
+        }
+
         bytes32 expectedMessageHash = keccak256(
             abi.encode(SIGNATURE_DELIMITER, tradeId, newFeePct)
         );
@@ -350,6 +464,28 @@ contract BookSingleChain is Owned {
         if (maybeTrader != trader) {
             revert BookSingleChain__InvalidSignature();
         }
+    }
+
+    /**
+     * @notice called internally for filling a trade.
+     * All trade are accepted at face value, so no checks are performed. However, invalid trades can be disputed.
+     * @dev Relayers are expected to correctly compute the Optimal Execution Price - feePct off-chain.
+     * Failing to do so will result in a dispute and the relayer losing tokens.
+     */
+    function _fillTrade(
+        address tokenOut,
+        bytes32 tradeId,
+        uint256 amountToSend
+    ) internal {
+        filledAtBlock[tradeId] = block.number;
+        filledBy[tradeId] = msg.sender;
+        filledAmount[tradeId] = amountToSend;
+
+        ERC20(tokenOut).safeTransferFrom(
+            msg.sender,
+            address(this),
+            amountToSend
+        );
     }
 
     /**

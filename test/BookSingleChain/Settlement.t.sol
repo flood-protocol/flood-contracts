@@ -5,7 +5,7 @@ import "src/BookSingleChain.sol";
 import "forge-std/Test.sol";
 import "./Fixtures.sol";
 
-contract SettlementTest is Test, TradeFixture {
+contract SettlementTest is TradeFixture {
     using stdStorage for StdStorage;
 
     uint128 internal tradeIndex;
@@ -192,23 +192,34 @@ contract SettlementTest is Test, TradeFixture {
         );
     }
 
-    function _fillTrade(
-        address _tokenIn,
-        address _tokenOut,
-        uint256 _amountIn,
-        uint256 _feePct,
-        address _to,
-        uint128 _tradeIndex,
-        uint256 _amountToSend
-    ) internal {
-        book.fillTrade(
-            _tokenIn,
-            _tokenOut,
-            _amountIn,
-            _feePct,
-            _to,
-            _tradeIndex,
-            _amountToSend
+    function testDispute() public {
+        uint256 amountToSend = 2000_10e6;
+        deal(testTokenOut, bob, amountToSend);
+        vm.prank(bob);
+        _fillTrade(
+            testTokenIn,
+            testTokenOut,
+            testAmount,
+            testFeePct,
+            testTo,
+            tradeIndex,
+            amountToSend
         );
+
+        vm.expectEmit(true, true, true, true, address(book));
+        emit TradeDisputed(bob, tradeId, amountToSend, testFeePct);
+        deal(testTokenOut, alice, oracle.bondForStake(amountToSend));
+        vm.startPrank(alice);
+        // Have Alice approve the oracle to dispute the trade
+        ERC20(testTokenOut).approve(address(oracle), type(uint256).max);
+        book.disputeTrade(
+            testTokenIn,
+            testTokenOut,
+            testAmount,
+            testFeePct,
+            testTo,
+            tradeIndex
+        );
+        vm.stopPrank();
     }
 }
