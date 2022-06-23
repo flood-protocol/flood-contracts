@@ -12,8 +12,8 @@ interface IAllKnowingOracleEvents {
         address indexed proposer,
         address indexed disputer,
         address bondToken,
-        uint256 bond,
-        uint256 stake
+        uint256 stake,
+        uint256 bond
     );
     event BondPctChanged(uint256 newPct);
     event RequestSettled(bytes32 id, bool answer);
@@ -46,9 +46,8 @@ contract OracleFixture is BaseFixture, TokenFixture {
         address proposer,
         address disputer,
         address bondToken,
-        uint256 bond,
         uint256 stake
     ) internal returns (bytes32) {
-        return oracle.ask(proposer, disputer, bondToken, bond, stake);
+        return oracle.ask(proposer, disputer, bondToken, stake);
     }
 }

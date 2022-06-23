@@ -26,7 +26,7 @@ contract AllKnowingOracleTest is Test, IAllKnowingOracleEvents, OracleFixture {
         // above this, the oracle will reject the request as the math (stake * 25 / 100) in the contract will overflow
         vm.assume(stake < type(uint256).max / 25);
         uint256 bond = oracle.bondForStake(stake);
-        bytes32 id = keccak256(abi.encode(alice, bob, USDC, bond, stake));
+        bytes32 id = keccak256(abi.encode(alice, bob, USDC, stake, bond));
         // Give alice & bob some tokens
         deal(USDC, alice, stake);
         deal(USDC, bob, bond);
@@ -35,8 +35,8 @@ contract AllKnowingOracleTest is Test, IAllKnowingOracleEvents, OracleFixture {
         uint256 bobBalanceBefore = ERC20(USDC).balanceOf(bob);
         vm.prank(alice);
         vm.expectEmit(true, true, true, true, address(oracle));
-        emit NewRequest(id, alice, bob, USDC, bond, stake);
-        bytes32 realId = oracle.ask(alice, bob, USDC, bond, stake);
+        emit NewRequest(id, alice, bob, USDC, stake, bond);
+        bytes32 realId = _ask(alice, bob, USDC, stake);
         assertEq(id, realId);
 
         // Check that the request is in the oracle's list of pending requests
@@ -44,8 +44,8 @@ contract AllKnowingOracleTest is Test, IAllKnowingOracleEvents, OracleFixture {
             address _proposer,
             address _disputer,
             address _bondToken,
-            uint256 _bond,
             uint256 _stake,
+            uint256 _bond,
             bool _answer,
             RequestState _state
         ) = oracle.requests(id);
@@ -61,10 +61,11 @@ contract AllKnowingOracleTest is Test, IAllKnowingOracleEvents, OracleFixture {
         assertEq(ERC20(USDC).balanceOf(bob), bobBalanceBefore - bond);
     }
 
-    function testAskForOtherProposer(address proposer) public {
+    function testAskForOtherProposer() public {
         uint256 stake = 100;
         uint256 bond = 25;
-        bytes32 id = keccak256(abi.encode(proposer, bob, USDC, bond, stake));
+        address proposer = charlie;
+        bytes32 id = keccak256(abi.encode(proposer, bob, USDC, stake, bond));
         // Give alice & bob some tokens
         deal(USDC, alice, stake);
         deal(USDC, bob, bond);
@@ -72,16 +73,16 @@ contract AllKnowingOracleTest is Test, IAllKnowingOracleEvents, OracleFixture {
         uint256 aliceBalanceBefore = ERC20(USDC).balanceOf(alice);
         vm.prank(alice);
         vm.expectEmit(true, true, true, true, address(oracle));
-        emit NewRequest(id, proposer, bob, USDC, bond, stake);
-        _ask(proposer, bob, USDC, 25, 100);
+        emit NewRequest(id, proposer, bob, USDC, stake, bond);
+        _ask(proposer, bob, USDC, 100);
 
         // Check that the request is in the oracle's list of pending requests
         (
             address _proposer,
             address _disputer,
             address _bondToken,
-            uint256 _bond,
             uint256 _stake,
+            uint256 _bond,
             bool _answer,
             RequestState _state
         ) = oracle.requests(id);
@@ -107,13 +108,13 @@ contract AllKnowingOracleTest is Test, IAllKnowingOracleEvents, OracleFixture {
             )
         );
         vm.prank(alice);
-        oracle.ask(alice, bob, bondToken, 25, 100);
+        oracle.ask(alice, bob, bondToken, 100);
     }
 
-    function testCannotAskWithInsufficientBond() public {
-        vm.expectRevert(AllKnowingOracle__BondTooSmall.selector);
+    function testCannotAskWithInsufficientBalanceForBond() public {
         vm.prank(alice);
-        oracle.ask(alice, bob, USDC, 24, 100);
+        vm.expectRevert("TRANSFER_FROM_FAILED");
+        _ask(alice, bob, USDC, 100);
     }
 
     function testCannotAskIfNoAllowance() public {
@@ -122,7 +123,7 @@ contract AllKnowingOracleTest is Test, IAllKnowingOracleEvents, OracleFixture {
         ERC20(USDC).approve(address(oracle), 0);
         vm.expectRevert("TRANSFER_FROM_FAILED");
         vm.prank(alice);
-        oracle.ask(alice, bob, USDC, 25, 100);
+        oracle.ask(alice, bob, USDC, 100);
     }
 
     function testSettle(bool answer, uint256 stake) public {
@@ -135,7 +136,7 @@ contract AllKnowingOracleTest is Test, IAllKnowingOracleEvents, OracleFixture {
 
         // lets ask the oracle about this request
         vm.prank(alice);
-        bytes32 id = oracle.ask(alice, bob, USDC, bond, stake);
+        bytes32 id = oracle.ask(alice, bob, USDC, stake);
 
         uint256 aliceBalanceBefore = ERC20(USDC).balanceOf(alice);
         uint256 bobBalanceBefore = ERC20(USDC).balanceOf(bob);
@@ -181,7 +182,7 @@ contract AllKnowingOracleTest is Test, IAllKnowingOracleEvents, OracleFixture {
         deal(USDC, alice, stake);
         deal(USDC, bob, bond);
         vm.prank(alice);
-        bytes32 id = _ask(alice, bob, USDC, bond, stake);
+        bytes32 id = _ask(alice, bob, USDC, stake);
         vm.prank(oracle.owner());
         _settle(id, answer);
         vm.prank(oracle.owner());

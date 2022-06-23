@@ -36,6 +36,12 @@ interface IBookSingleChainEvents {
         uint256 indexed filledAmount,
         uint256 feePct
     );
+    event TradeDisputed(
+        address indexed relayer,
+        bytes32 indexed tradeId,
+        uint256 indexed filledAmount,
+        uint256 feePct
+    );
 }
 
 contract BaseBookFixture is IBookSingleChainEvents, OracleFixture {
@@ -106,5 +112,25 @@ contract TradeFixture is BaseBookFixture {
             messageHash
         );
         return sign(pk, ethSignedMessageHash);
+    }
+
+    function _fillTrade(
+        address _tokenIn,
+        address _tokenOut,
+        uint256 _amountIn,
+        uint256 _feePct,
+        address _to,
+        uint128 _tradeIndex,
+        uint256 _amountToSend
+    ) internal {
+        book.fillTrade(
+            _tokenIn,
+            _tokenOut,
+            _amountIn,
+            _feePct,
+            _to,
+            _tradeIndex,
+            _amountToSend
+        );
     }
 }

@@ -421,17 +421,9 @@ contract BookSingleChain is Owned {
         uint256 amountSent = filledAmount[tradeId];
         address relayer = filledBy[tradeId];
 
-        uint256 disputeBondAmount = oracle.bondForStake(amountSent);
-
         // Approve the oracle to spend the amountSent by the relayer.
         ERC20(tokenOut).approve(address(oracle), amountSent);
-        oracle.ask(
-            relayer,
-            msg.sender,
-            tokenOut,
-            amountSent,
-            disputeBondAmount
-        );
+        oracle.ask(relayer, msg.sender, tokenOut, amountSent);
 
         // Mark the trade as unfilled to allow relayers to fill it again.
         delete filledAtBlock[tradeId];

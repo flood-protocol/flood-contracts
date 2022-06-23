@@ -20,8 +20,8 @@ struct Request {
     address proposer;
     address disputer;
     address bondToken;
-    uint256 bond;
     uint256 stake;
+    uint256 bond;
     bool answer;
     RequestState state;
 }
@@ -31,7 +31,6 @@ interface IOracle {
         address proposer,
         address disputer,
         address bondToken,
-        uint256 bond,
         uint256 stake
     ) external returns (bytes32);
 
@@ -64,8 +63,8 @@ contract AllKnowingOracle is IOracle, Owned {
         address indexed proposer,
         address indexed disputer,
         address bondToken,
-        uint256 bond,
-        uint256 stake
+        uint256 stake,
+        uint256 bond
     );
     event BondPctChanged(uint256 newPct);
     event RequestSettled(bytes32 indexed id, bool answer);
@@ -144,7 +143,6 @@ contract AllKnowingOracle is IOracle, Owned {
      * @param proposer Address of the proposer
      * @param disputer Address of the disputer
      * @param bondToken Token to use for the bond
-     * @param bond Amount which must be posted by the disputer
      * @param stake Stake to use for the dispute
      * @return ID of the request
      */
@@ -152,21 +150,17 @@ contract AllKnowingOracle is IOracle, Owned {
         address proposer,
         address disputer,
         address bondToken,
-        uint256 bond,
         uint256 stake
     ) external returns (bytes32) {
         // Check if the token is whitelisted
         if (!whitelistedTokens[bondToken]) {
             revert AllKnowingOracle__NotWhitelisted(bondToken);
         }
-        // Check if the bond is sufficient
-        if (bond < _bondForStake(stake)) {
-            revert AllKnowingOracle__BondTooSmall();
-        }
-
+        // Calculate the amount to bond to secure this request
+        uint256 bond = _bondForStake(stake);
         // Generate a unique id
         bytes32 id = keccak256(
-            abi.encode(proposer, disputer, bondToken, bond, stake)
+            abi.encode(proposer, disputer, bondToken, stake, bond)
         );
         // Check if the request already exists
         if (requests[id].state == RequestState.Pending) {
@@ -178,8 +172,8 @@ contract AllKnowingOracle is IOracle, Owned {
             proposer,
             disputer,
             bondToken,
-            bond,
             stake,
+            bond,
             false,
             RequestState.Pending
         );
@@ -191,7 +185,7 @@ contract AllKnowingOracle is IOracle, Owned {
         ERC20(bondToken).safeTransferFrom(disputer, address(this), bond);
         ERC20(bondToken).safeTransferFrom(msg.sender, address(this), stake);
 
-        emit NewRequest(id, proposer, disputer, bondToken, bond, stake);
+        emit NewRequest(id, proposer, disputer, bondToken, stake, bond);
 
         return id;
     }
