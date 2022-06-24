@@ -1,0 +1,14 @@
+{
+  "version": "0.1.0",
+  "name": "@fulmin-labs/contracts",
+  "scripts": {
+    "generate": "rm -rf typescript && npx typechain --target ethers-v5 --out-dir lib \"../../out/**/!(*(*.t|*Fixture?(s)|Test|Vm|Script).sol)/*.json\""
+  },
+  "files": [
+    "lib/**/*"
+  ],
+  "devDependencies": {
+    "@typechain/ethers-v5": "^10.1.0",
+    "typechain": "^8.1.0"
+  }
+}
