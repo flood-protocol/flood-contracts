@@ -1,0 +1,7 @@
+{
+  "yarn": false,
+  "publishConfig": {
+    "access": "restricted",
+    "registry": "https://registry.npmjs.org"
+  }
+}
