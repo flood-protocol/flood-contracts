@@ -2,7 +2,7 @@
   "version": "0.1.0",
   "name": "@fulmin-labs/contracts",
   "scripts": {
-    "generate": "rm -rf typescript && npx typechain --target ethers-v5 --out-dir lib \"../../out/**/!(*(*.t|*Fixture?(s)|Test|Vm|Script).sol)/*.json\""
+    "generate": "rm -rf typescript && npx typechain --target ethers-v5 --out-dir lib \"../../out/**/!(*(*.t|*.s|*Fixture?(s)|Test|Vm|Script).sol)/*.json\""
   },
   "files": [
     "lib/**/*"
