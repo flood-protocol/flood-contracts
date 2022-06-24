@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "generate": "rm -rf typescript && npx typechain --target ethers-v5 --out-dir lib \"../../out/**/!(*(*.t|*Fixture?(s)|Test|Vm|Script).sol)/*.json\""
+  },
+  "devDependencies": {
+    "@typechain/ethers-v5": "^10.1.0",
+    "typechain": "^8.1.0"
+  }
+}
