@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Unlicense
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.15;
 
 import "./Fixtures.sol";
 
@@ -84,11 +84,22 @@ contract DisputeTest is TradeFixture {
         );
         uint256 disputerBalanceBefore = ERC20(testTokenOut).balanceOf(disputer);
 
+        // check that the request was received by the oracle
+        bytes32 reqId = keccak256(
+            abi.encode(relayer, disputer, testTokenOut, testAmountToSend, bond)
+        );
+
         vm.prank(disputer);
         ERC20(testTokenOut).approve(address(oracle), type(uint256).max);
         vm.prank(disputer);
         vm.expectEmit(true, true, true, true, address(book));
-        emit TradeDisputed(relayer, tradeId, testAmountToSend, testFeePct);
+        emit TradeDisputed(
+            relayer,
+            tradeId,
+            reqId,
+            testAmountToSend,
+            testFeePct
+        );
         book.disputeTrade(
             testTokenIn,
             testTokenOut,
@@ -98,10 +109,6 @@ contract DisputeTest is TradeFixture {
             tradeIndex
         );
 
-        // check that the request was received by the oracle
-        bytes32 reqId = keccak256(
-            abi.encode(relayer, disputer, testTokenOut, testAmountToSend, bond)
-        );
         (
             address _reqProposer,
             address _reqDisputer,
