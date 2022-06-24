@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: Unlicense
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.15;
 
 import "src/AllKnowingOracle.sol";
 import "./Fixtures.sol";
 import "forge-std/Test.sol";
 
-contract AllKnowingOracleTest is Test, IAllKnowingOracleEvents, OracleFixture {
+contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
     using stdStorage for StdStorage;
 
     function setUp() public override {
@@ -140,10 +140,8 @@ contract AllKnowingOracleTest is Test, IAllKnowingOracleEvents, OracleFixture {
 
         uint256 aliceBalanceBefore = ERC20(USDC).balanceOf(alice);
         uint256 bobBalanceBefore = ERC20(USDC).balanceOf(bob);
-
-        // grab the owner of the oracle, as its the only one that can settle
-        address owner = oracle.owner();
-        vm.prank(owner);
+        // charlie settles the request
+        vm.prank(charlie);
         oracle.settle(id, answer);
 
         // Check the request is now settled
@@ -169,8 +167,8 @@ contract AllKnowingOracleTest is Test, IAllKnowingOracleEvents, OracleFixture {
         }
     }
 
-    function testCannotSettleAsNonOwner() public {
-        vm.expectRevert("UNAUTHORIZED");
+    function testCannotSettleAsIfNotSettler() public {
+        vm.expectRevert(AllKnowingOracle__NonSettler.selector);
         vm.prank(alice);
         _settle(bytes32(0), true);
     }

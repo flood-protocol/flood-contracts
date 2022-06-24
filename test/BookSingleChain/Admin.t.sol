@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Unlicense
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.15;
 
 import "src/BookSingleChain.sol";
 import "forge-std/Test.sol";

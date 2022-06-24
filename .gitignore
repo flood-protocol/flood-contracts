@@ -2,3 +2,6 @@ cache/
 out/
 **/node_modules
 **/target
+*.env
+.env
+broadcast

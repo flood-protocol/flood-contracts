@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Unlicense
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.15;
 
 import "../utils/BaseFixture.sol";
 import "../utils/TokenFixture.sol";
@@ -39,7 +39,8 @@ interface IBookSingleChainEvents {
     event TradeDisputed(
         address indexed relayer,
         bytes32 indexed tradeId,
-        uint256 indexed filledAmount,
+        bytes32 indexed disputeId,
+        uint256 filledAmount,
         uint256 feePct
     );
 }

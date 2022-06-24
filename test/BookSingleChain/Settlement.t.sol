@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Unlicense
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.15;
 
 import "src/BookSingleChain.sol";
 import "forge-std/Test.sol";
@@ -190,36 +190,5 @@ contract SettlementTest is TradeFixture {
             testTo,
             tradeIndex
         );
-    }
-
-    function testDispute() public {
-        uint256 amountToSend = 2000_10e6;
-        deal(testTokenOut, bob, amountToSend);
-        vm.prank(bob);
-        _fillTrade(
-            testTokenIn,
-            testTokenOut,
-            testAmount,
-            testFeePct,
-            testTo,
-            tradeIndex,
-            amountToSend
-        );
-
-        vm.expectEmit(true, true, true, true, address(book));
-        emit TradeDisputed(bob, tradeId, amountToSend, testFeePct);
-        deal(testTokenOut, alice, oracle.bondForStake(amountToSend));
-        vm.startPrank(alice);
-        // Have Alice approve the oracle to dispute the trade
-        ERC20(testTokenOut).approve(address(oracle), type(uint256).max);
-        book.disputeTrade(
-            testTokenIn,
-            testTokenOut,
-            testAmount,
-            testFeePct,
-            testTo,
-            tradeIndex
-        );
-        vm.stopPrank();
     }
 }

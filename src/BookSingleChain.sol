@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Unlicense
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.15;
 
 import "solmate/tokens/ERC20.sol";
 import "solmate/auth/Owned.sol";
@@ -95,7 +95,8 @@ contract BookSingleChain is Owned {
     event TradeDisputed(
         address indexed relayer,
         bytes32 indexed tradeId,
-        uint256 indexed filledAmount,
+        bytes32 indexed disputeId,
+        uint256 filledAmount,
         uint256 feePct
     );
 
@@ -420,17 +421,20 @@ contract BookSingleChain is Owned {
 
         uint256 amountSent = filledAmount[tradeId];
         address relayer = filledBy[tradeId];
-
-        // Approve the oracle to spend the amountSent by the relayer.
-        ERC20(tokenOut).approve(address(oracle), amountSent);
-        oracle.ask(relayer, msg.sender, tokenOut, amountSent);
-
         // Mark the trade as unfilled to allow relayers to fill it again.
         delete filledAtBlock[tradeId];
         delete filledBy[tradeId];
         delete filledAmount[tradeId];
 
-        emit TradeDisputed(relayer, tradeId, amountSent, feePct);
+        // Approve the oracle to spend the amountSent by the relayer.
+        ERC20(tokenOut).safeApprove(address(oracle), amountSent);
+        bytes32 disputeId = oracle.ask(
+            relayer,
+            msg.sender,
+            tokenOut,
+            amountSent
+        );
+        emit TradeDisputed(relayer, tradeId, disputeId, amountSent, feePct);
     }
 
     /**************************************
