@@ -249,7 +249,7 @@ export interface BookSingleChainInterface extends utils.Interface {
     "OwnerUpdated(address,address)": EventFragment;
     "SafeBlockThresholdChanged(uint256)": EventFragment;
     "TokenWhitelisted(address,bool)": EventFragment;
-    "TradeDisputed(address,bytes32,uint256,uint256)": EventFragment;
+    "TradeDisputed(address,bytes32,bytes32,uint256,uint256)": EventFragment;
     "TradeFilled(address,bytes32,uint256,uint256,uint256)": EventFragment;
     "TradeRequested(address,address,uint256,uint256,address,uint256)": EventFragment;
     "TradeSettled(address,bytes32,uint256,uint256)": EventFragment;
@@ -315,11 +315,12 @@ export type TokenWhitelistedEventFilter =
 export interface TradeDisputedEventObject {
   relayer: string;
   tradeId: string;
+  disputeId: string;
   filledAmount: BigNumber;
   feePct: BigNumber;
 }
 export type TradeDisputedEvent = TypedEvent<
-  [string, string, BigNumber, BigNumber],
+  [string, string, string, BigNumber, BigNumber],
   TradeDisputedEventObject
 >;
 
@@ -780,16 +781,18 @@ export interface BookSingleChain extends BaseContract {
       whitelisted?: null
     ): TokenWhitelistedEventFilter;
 
-    "TradeDisputed(address,bytes32,uint256,uint256)"(
+    "TradeDisputed(address,bytes32,bytes32,uint256,uint256)"(
       relayer?: PromiseOrValue<string> | null,
       tradeId?: PromiseOrValue<BytesLike> | null,
-      filledAmount?: PromiseOrValue<BigNumberish> | null,
+      disputeId?: PromiseOrValue<BytesLike> | null,
+      filledAmount?: null,
       feePct?: null
     ): TradeDisputedEventFilter;
     TradeDisputed(
       relayer?: PromiseOrValue<string> | null,
       tradeId?: PromiseOrValue<BytesLike> | null,
-      filledAmount?: PromiseOrValue<BigNumberish> | null,
+      disputeId?: PromiseOrValue<BytesLike> | null,
+      filledAmount?: null,
       feePct?: null
     ): TradeDisputedEventFilter;
 

@@ -37,6 +37,8 @@ export interface AllKnowingOracleInterface extends utils.Interface {
     "setBondPct(uint256)": FunctionFragment;
     "setOwner(address)": FunctionFragment;
     "settle(bytes32,bool)": FunctionFragment;
+    "settlers(address)": FunctionFragment;
+    "whitelistSettler(address,bool)": FunctionFragment;
     "whitelistToken(address,bool)": FunctionFragment;
     "whitelistedTokens(address)": FunctionFragment;
   };
@@ -51,6 +53,8 @@ export interface AllKnowingOracleInterface extends utils.Interface {
       | "setBondPct"
       | "setOwner"
       | "settle"
+      | "settlers"
+      | "whitelistSettler"
       | "whitelistToken"
       | "whitelistedTokens"
   ): FunctionFragment;
@@ -90,6 +94,14 @@ export interface AllKnowingOracleInterface extends utils.Interface {
     values: [PromiseOrValue<BytesLike>, PromiseOrValue<boolean>]
   ): string;
   encodeFunctionData(
+    functionFragment: "settlers",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "whitelistSettler",
+    values: [PromiseOrValue<string>, PromiseOrValue<boolean>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "whitelistToken",
     values: [PromiseOrValue<string>, PromiseOrValue<boolean>]
   ): string;
@@ -112,6 +124,11 @@ export interface AllKnowingOracleInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "setBondPct", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "setOwner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "settle", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "settlers", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "whitelistSettler",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "whitelistToken",
     data: BytesLike
@@ -126,6 +143,7 @@ export interface AllKnowingOracleInterface extends utils.Interface {
     "NewRequest(bytes32,address,address,address,uint256,uint256)": EventFragment;
     "OwnerUpdated(address,address)": EventFragment;
     "RequestSettled(bytes32,bool)": EventFragment;
+    "SettlerWhitelisted(address,bool)": EventFragment;
     "TokenWhitelisted(address,bool)": EventFragment;
   };
 
@@ -133,6 +151,7 @@ export interface AllKnowingOracleInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "NewRequest"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnerUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RequestSettled"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "SettlerWhitelisted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TokenWhitelisted"): EventFragment;
 }
 
@@ -182,6 +201,18 @@ export type RequestSettledEvent = TypedEvent<
 >;
 
 export type RequestSettledEventFilter = TypedEventFilter<RequestSettledEvent>;
+
+export interface SettlerWhitelistedEventObject {
+  settler: string;
+  enabled: boolean;
+}
+export type SettlerWhitelistedEvent = TypedEvent<
+  [string, boolean],
+  SettlerWhitelistedEventObject
+>;
+
+export type SettlerWhitelistedEventFilter =
+  TypedEventFilter<SettlerWhitelistedEvent>;
 
 export interface TokenWhitelistedEventObject {
   token: string;
@@ -255,7 +286,7 @@ export interface AllKnowingOracle extends BaseContract {
     >;
 
     setBondPct(
-      _pct: PromiseOrValue<BigNumberish>,
+      newPct: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -267,6 +298,17 @@ export interface AllKnowingOracle extends BaseContract {
     settle(
       id: PromiseOrValue<BytesLike>,
       answer: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    settlers(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
+    whitelistSettler(
+      settler: PromiseOrValue<string>,
+      enabled: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -315,7 +357,7 @@ export interface AllKnowingOracle extends BaseContract {
   >;
 
   setBondPct(
-    _pct: PromiseOrValue<BigNumberish>,
+    newPct: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -327,6 +369,17 @@ export interface AllKnowingOracle extends BaseContract {
   settle(
     id: PromiseOrValue<BytesLike>,
     answer: PromiseOrValue<boolean>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  settlers(
+    arg0: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
+  whitelistSettler(
+    settler: PromiseOrValue<string>,
+    enabled: PromiseOrValue<boolean>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -375,7 +428,7 @@ export interface AllKnowingOracle extends BaseContract {
     >;
 
     setBondPct(
-      _pct: PromiseOrValue<BigNumberish>,
+      newPct: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -387,6 +440,17 @@ export interface AllKnowingOracle extends BaseContract {
     settle(
       id: PromiseOrValue<BytesLike>,
       answer: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    settlers(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    whitelistSettler(
+      settler: PromiseOrValue<string>,
+      enabled: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -441,6 +505,15 @@ export interface AllKnowingOracle extends BaseContract {
       answer?: null
     ): RequestSettledEventFilter;
 
+    "SettlerWhitelisted(address,bool)"(
+      settler?: PromiseOrValue<string> | null,
+      enabled?: null
+    ): SettlerWhitelistedEventFilter;
+    SettlerWhitelisted(
+      settler?: PromiseOrValue<string> | null,
+      enabled?: null
+    ): SettlerWhitelistedEventFilter;
+
     "TokenWhitelisted(address,bool)"(
       token?: PromiseOrValue<string> | null,
       enabled?: null
@@ -475,7 +548,7 @@ export interface AllKnowingOracle extends BaseContract {
     ): Promise<BigNumber>;
 
     setBondPct(
-      _pct: PromiseOrValue<BigNumberish>,
+      newPct: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -487,6 +560,17 @@ export interface AllKnowingOracle extends BaseContract {
     settle(
       id: PromiseOrValue<BytesLike>,
       answer: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    settlers(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    whitelistSettler(
+      settler: PromiseOrValue<string>,
+      enabled: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -526,7 +610,7 @@ export interface AllKnowingOracle extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     setBondPct(
-      _pct: PromiseOrValue<BigNumberish>,
+      newPct: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -538,6 +622,17 @@ export interface AllKnowingOracle extends BaseContract {
     settle(
       id: PromiseOrValue<BytesLike>,
       answer: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    settlers(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    whitelistSettler(
+      settler: PromiseOrValue<string>,
+      enabled: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
