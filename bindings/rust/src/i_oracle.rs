@@ -18,7 +18,7 @@ pub mod ioracle_mod {
     use std::sync::Arc;
     pub static IORACLE_ABI: ethers::contract::Lazy<ethers::core::abi::Abi> =
         ethers::contract::Lazy::new(|| {
-            serde_json :: from_str ("[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"proposer\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"disputer\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"bondToken\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"stake\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"ask\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"stake\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"bondForStake\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"id\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"bool\",\"name\":\"answer\",\"type\":\"bool\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"settle\",\"outputs\":[]}]") . expect ("invalid abi")
+            serde_json :: from_str ("[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"proposer\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"disputer\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"bondToken\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"stake\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"ask\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"stake\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"bondForStake\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"proposer\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"disputer\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"bondToken\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"stake\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getRequestId\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"id\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"bool\",\"name\":\"answer\",\"type\":\"bool\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"settle\",\"outputs\":[]}]") . expect ("invalid abi")
         });
     pub struct IOracle<M>(ethers::contract::Contract<M>);
     impl<M> Clone for IOracle<M> {
@@ -56,7 +56,7 @@ pub mod ioracle_mod {
             disputer: ethers::core::types::Address,
             bond_token: ethers::core::types::Address,
             stake: ethers::core::types::U256,
-        ) -> ethers::contract::builders::ContractCall<M, [u8; 32]> {
+        ) -> ethers::contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([175, 88, 153, 252], (proposer, disputer, bond_token, stake))
                 .expect("method not found (this should never happen)")
@@ -68,6 +68,21 @@ pub mod ioracle_mod {
         ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::U256> {
             self.0
                 .method_hash([7, 222, 153, 246], stake)
+                .expect("method not found (this should never happen)")
+        }
+        #[doc = "Calls the contract's `getRequestId` (0x84bfabcf) function"]
+        pub fn get_request_id(
+            &self,
+            proposer: ethers::core::types::Address,
+            disputer: ethers::core::types::Address,
+            bond_token: ethers::core::types::Address,
+            stake: ethers::core::types::U256,
+        ) -> ethers::contract::builders::ContractCall<M, [u8; 32]> {
+            self.0
+                .method_hash(
+                    [132, 191, 171, 207],
+                    (proposer, disputer, bond_token, stake),
+                )
                 .expect("method not found (this should never happen)")
         }
         #[doc = "Calls the contract's `settle` (0xfc361c38) function"]
@@ -117,6 +132,26 @@ pub mod ioracle_mod {
     pub struct BondForStakeCall {
         pub stake: ethers::core::types::U256,
     }
+    #[doc = "Container type for all input parameters for the `getRequestId`function with signature `getRequestId(address,address,address,uint256)` and selector `[132, 191, 171, 207]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethcall(
+        name = "getRequestId",
+        abi = "getRequestId(address,address,address,uint256)"
+    )]
+    pub struct GetRequestIdCall {
+        pub proposer: ethers::core::types::Address,
+        pub disputer: ethers::core::types::Address,
+        pub bond_token: ethers::core::types::Address,
+        pub stake: ethers::core::types::U256,
+    }
     #[doc = "Container type for all input parameters for the `settle`function with signature `settle(bytes32,bool)` and selector `[252, 54, 28, 56]`"]
     #[derive(
         Clone,
@@ -136,6 +171,7 @@ pub mod ioracle_mod {
     pub enum IOracleCalls {
         Ask(AskCall),
         BondForStake(BondForStakeCall),
+        GetRequestId(GetRequestIdCall),
         Settle(SettleCall),
     }
     impl ethers::core::abi::AbiDecode for IOracleCalls {
@@ -147,6 +183,11 @@ pub mod ioracle_mod {
                 <BondForStakeCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
             {
                 return Ok(IOracleCalls::BondForStake(decoded));
+            }
+            if let Ok(decoded) =
+                <GetRequestIdCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(IOracleCalls::GetRequestId(decoded));
             }
             if let Ok(decoded) = <SettleCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
             {
@@ -160,6 +201,7 @@ pub mod ioracle_mod {
             match self {
                 IOracleCalls::Ask(element) => element.encode(),
                 IOracleCalls::BondForStake(element) => element.encode(),
+                IOracleCalls::GetRequestId(element) => element.encode(),
                 IOracleCalls::Settle(element) => element.encode(),
             }
         }
@@ -169,6 +211,7 @@ pub mod ioracle_mod {
             match self {
                 IOracleCalls::Ask(element) => element.fmt(f),
                 IOracleCalls::BondForStake(element) => element.fmt(f),
+                IOracleCalls::GetRequestId(element) => element.fmt(f),
                 IOracleCalls::Settle(element) => element.fmt(f),
             }
         }
@@ -181,6 +224,11 @@ pub mod ioracle_mod {
     impl ::std::convert::From<BondForStakeCall> for IOracleCalls {
         fn from(var: BondForStakeCall) -> Self {
             IOracleCalls::BondForStake(var)
+        }
+    }
+    impl ::std::convert::From<GetRequestIdCall> for IOracleCalls {
+        fn from(var: GetRequestIdCall) -> Self {
+            IOracleCalls::GetRequestId(var)
         }
     }
     impl ::std::convert::From<SettleCall> for IOracleCalls {

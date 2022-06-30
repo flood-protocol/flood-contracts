@@ -1,5 +1,6 @@
 {
   "filter_paths": "lib",
+  "detectors_to_exclude": "solc-version",
   "solc_remaps": [
     "@openzeppelin/=lib/openzeppelin-contracts/",
     "ds-test/=lib/solmate/lib/ds-test/src/",
