@@ -18,7 +18,7 @@ pub mod iallknowingoracleevents_mod {
     use std::sync::Arc;
     pub static IALLKNOWINGORACLEEVENTS_ABI: ethers::contract::Lazy<ethers::core::abi::Abi> =
         ethers::contract::Lazy::new(|| {
-            serde_json :: from_str ("[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"newPct\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"BondPctChanged\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"id\",\"type\":\"bytes32\",\"components\":[],\"indexed\":true},{\"internalType\":\"address\",\"name\":\"proposer\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"address\",\"name\":\"disputer\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"address\",\"name\":\"bondToken\",\"type\":\"address\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"stake\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"bond\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"NewRequest\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"id\",\"type\":\"bytes32\",\"components\":[],\"indexed\":false},{\"internalType\":\"bool\",\"name\":\"answer\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"RequestSettled\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"bool\",\"name\":\"enabled\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"TokenWhitelisted\",\"outputs\":[],\"anonymous\":false}]") . expect ("invalid abi")
+            serde_json :: from_str ("[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"newPct\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"BondPctChanged\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"id\",\"type\":\"bytes32\",\"components\":[],\"indexed\":true},{\"internalType\":\"address\",\"name\":\"proposer\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"address\",\"name\":\"disputer\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"address\",\"name\":\"bondToken\",\"type\":\"address\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"stake\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"bond\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"NewRequest\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"id\",\"type\":\"bytes32\",\"components\":[],\"indexed\":false},{\"internalType\":\"bool\",\"name\":\"answer\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"RequestSettled\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"settler\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"bool\",\"name\":\"enabled\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"SettlerWhitelisted\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"bool\",\"name\":\"enabled\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"TokenWhitelisted\",\"outputs\":[],\"anonymous\":false}]") . expect ("invalid abi")
         });
     pub struct IAllKnowingOracleEvents<M>(ethers::contract::Contract<M>);
     impl<M> Clone for IAllKnowingOracleEvents<M> {
@@ -68,6 +68,12 @@ pub mod iallknowingoracleevents_mod {
         pub fn request_settled_filter(
             &self,
         ) -> ethers::contract::builders::Event<M, RequestSettledFilter> {
+            self.0.event()
+        }
+        #[doc = "Gets the contract's `SettlerWhitelisted` event"]
+        pub fn settler_whitelisted_filter(
+            &self,
+        ) -> ethers::contract::builders::Event<M, SettlerWhitelistedFilter> {
             self.0.event()
         }
         #[doc = "Gets the contract's `TokenWhitelisted` event"]
@@ -150,6 +156,21 @@ pub mod iallknowingoracleevents_mod {
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
     )]
+    #[ethevent(name = "SettlerWhitelisted", abi = "SettlerWhitelisted(address,bool)")]
+    pub struct SettlerWhitelistedFilter {
+        #[ethevent(indexed)]
+        pub settler: ethers::core::types::Address,
+        pub enabled: bool,
+    }
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthEvent,
+        ethers :: contract :: EthDisplay,
+    )]
     #[ethevent(name = "TokenWhitelisted", abi = "TokenWhitelisted(address,bool)")]
     pub struct TokenWhitelistedFilter {
         #[ethevent(indexed)]
@@ -161,6 +182,7 @@ pub mod iallknowingoracleevents_mod {
         BondPctChangedFilter(BondPctChangedFilter),
         NewRequestFilter(NewRequestFilter),
         RequestSettledFilter(RequestSettledFilter),
+        SettlerWhitelistedFilter(SettlerWhitelistedFilter),
         TokenWhitelistedFilter(TokenWhitelistedFilter),
     }
     impl ethers::contract::EthLogDecode for IAllKnowingOracleEventsEvents {
@@ -177,6 +199,11 @@ pub mod iallknowingoracleevents_mod {
             if let Ok(decoded) = RequestSettledFilter::decode_log(log) {
                 return Ok(IAllKnowingOracleEventsEvents::RequestSettledFilter(decoded));
             }
+            if let Ok(decoded) = SettlerWhitelistedFilter::decode_log(log) {
+                return Ok(IAllKnowingOracleEventsEvents::SettlerWhitelistedFilter(
+                    decoded,
+                ));
+            }
             if let Ok(decoded) = TokenWhitelistedFilter::decode_log(log) {
                 return Ok(IAllKnowingOracleEventsEvents::TokenWhitelistedFilter(
                     decoded,
@@ -191,6 +218,7 @@ pub mod iallknowingoracleevents_mod {
                 IAllKnowingOracleEventsEvents::BondPctChangedFilter(element) => element.fmt(f),
                 IAllKnowingOracleEventsEvents::NewRequestFilter(element) => element.fmt(f),
                 IAllKnowingOracleEventsEvents::RequestSettledFilter(element) => element.fmt(f),
+                IAllKnowingOracleEventsEvents::SettlerWhitelistedFilter(element) => element.fmt(f),
                 IAllKnowingOracleEventsEvents::TokenWhitelistedFilter(element) => element.fmt(f),
             }
         }
