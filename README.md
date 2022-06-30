@@ -1,7 +1,5 @@
 # <h1 align="center"> CFMM Contracts </h1>
 
-![Github Actions](https://github.com/foundry-rs/forge-template/workflows/CI/badge.svg)
-
 ## Getting Started
 
 This project uses [Foundry](https://getfoundry.sh). See the [book](https://book.getfoundry.sh/getting-started/installation.html) for instructions on how to install and use Foundry.

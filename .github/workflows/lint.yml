@@ -6,7 +6,7 @@ on:
   pull_request:
 
 jobs:
-  run-ci:
+  slither:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -22,3 +22,5 @@ jobs:
       - name: Run Slither
         uses: crytic/slither-action@main
         id: slither
+        with:
+          target: "src/"
