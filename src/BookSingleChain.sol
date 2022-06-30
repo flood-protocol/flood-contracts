@@ -4,6 +4,7 @@ pragma solidity ^0.8.15;
 import "solmate/tokens/ERC20.sol";
 import "solmate/auth/Owned.sol";
 import "solmate/utils/SafeTransferLib.sol";
+import "solmate/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "./AllKnowingOracle.sol";
 
@@ -37,7 +38,7 @@ struct FilledTrade {
  * If a trade is not disputed within the dispute period, the relayer can call `refund` to obtain the other side of the trade it filled.
  * @notice This implementation gives immense power to the owner of the contract, and only allows one relayer / disputer. This is not intended for production use, but rather for a small scale test.
  */
-contract BookSingleChain is Owned {
+contract BookSingleChain is Owned, ReentrancyGuard {
     using SafeTransferLib for ERC20;
 
     // Number of trades done so far. Used to generate trade ids.
@@ -399,7 +400,7 @@ contract BookSingleChain is Owned {
         uint256 feePct,
         address to,
         uint128 tradeIndex
-    ) external {
+    ) external nonReentrant {
         bytes32 tradeId = _getTradeId(
             tokenIn,
             tokenOut,
@@ -426,15 +427,16 @@ contract BookSingleChain is Owned {
         delete filledBy[tradeId];
         delete filledAmount[tradeId];
 
-        // Approve the oracle to spend the amountSent by the relayer.
-        ERC20(tokenOut).safeApprove(address(oracle), amountSent);
-        bytes32 disputeId = oracle.ask(
+        bytes32 disputeId = oracle.getRequestId(
             relayer,
             msg.sender,
             tokenOut,
             amountSent
         );
         emit TradeDisputed(relayer, tradeId, disputeId, amountSent, feePct);
+        // Approve the oracle to spend the amountSent by the relayer.
+        ERC20(tokenOut).safeApprove(address(oracle), amountSent);
+        oracle.ask(relayer, msg.sender, tokenOut, amountSent);
     }
 
     /**************************************

@@ -39,17 +39,4 @@ contract OracleFixture is BaseFixture, TokenFixture {
         oracle.whitelistToken(WETH, true);
         oracle.whitelistSettler(charlie, true);
     }
-
-    function _settle(bytes32 id, bool answer) internal {
-        oracle.settle(id, answer);
-    }
-
-    function _ask(
-        address proposer,
-        address disputer,
-        address bondToken,
-        uint256 stake
-    ) internal returns (bytes32) {
-        return oracle.ask(proposer, disputer, bondToken, stake);
-    }
 }
