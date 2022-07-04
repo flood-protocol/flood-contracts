@@ -12,6 +12,7 @@ error BookSingleChain__InvalidToken(address token);
 error BookSingleChain__FeePctTooHigh(uint256 fee);
 error BookSingleChain__SameToken();
 error BookSingleChain__NewFeePctTooHigh();
+error BookSingleChain__UnsafeTokenToWhitelist(address token);
 error BookSingleChain__ZeroAmount();
 // the recipient of a transfer was the 0 address
 error BookSingleChain__SentToBlackHole();
@@ -134,6 +135,7 @@ contract BookSingleChain is Owned, ReentrancyGuard {
 
     /**
      * @notice Adds a token to the whitelist.
+     * Only allows tokens whitelisted by the oracle to make sure all trades are disputable.
      * @param token The token to add to the whitelist.
      * @param whitelisted If `true` whitelists the token, if `false` it removes it.
      */
@@ -141,6 +143,9 @@ contract BookSingleChain is Owned, ReentrancyGuard {
         external
         onlyOwner
     {
+        if (whitelisted && !oracle.whitelistedTokens(token)) {
+            revert BookSingleChain__UnsafeTokenToWhitelist(token);
+        }
         whitelistedTokens[token] = whitelisted;
         emit TokenWhitelisted(token, whitelisted);
     }

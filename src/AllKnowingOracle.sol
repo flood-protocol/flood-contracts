@@ -45,6 +45,8 @@ interface IOracle {
         address bondToken,
         uint256 stake
     ) external view returns (bytes32);
+
+    function whitelistedTokens(address token) external view returns (bool);
 }
 
 /**

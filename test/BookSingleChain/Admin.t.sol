@@ -9,6 +9,11 @@ contract AdminTest is BaseBookFixture {
     using stdStorage for StdStorage;
 
     function testTokenWhitelist(address token, bool enabled) public {
+        // pre whitelist the token in the oracle
+        if (enabled) {
+            oracle.whitelistToken(token, enabled);
+        }
+
         // check that the whitelisted mapping starts as false
         bool whitelistedBefore = stdstore
             .target(address(book))
@@ -16,11 +21,6 @@ contract AdminTest is BaseBookFixture {
             .with_key(token)
             .read_bool();
         assertFalse(whitelistedBefore);
-
-        // should fail if not called by the owner
-        vm.expectRevert(bytes("UNAUTHORIZED"));
-        vm.prank(alice);
-        book.whitelistToken(token, enabled);
 
         vm.expectEmit(true, false, false, true, address(book));
         emit TokenWhitelisted(token, enabled);
@@ -32,6 +32,23 @@ contract AdminTest is BaseBookFixture {
             .with_key(token)
             .read_bool();
         assertEq(realWhitelisted, enabled, "Token should be whitelisted");
+    }
+
+    function testCannotWhitelistAsNonOwner(address token, bool enabled) public {
+        vm.expectRevert(bytes("UNAUTHORIZED"));
+        vm.prank(alice);
+        book.whitelistToken(token, enabled);
+    }
+
+    function testCannotWhitelistUnsafeToken(address token) public {
+        vm.assume(oracle.whitelistedTokens(token) == false);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                BookSingleChain__UnsafeTokenToWhitelist.selector,
+                token
+            )
+        );
+        book.whitelistToken(token, true);
     }
 
     function testThresholdChange(uint256 newThreshold) public {
