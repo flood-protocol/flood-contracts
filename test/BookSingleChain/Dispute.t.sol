@@ -6,8 +6,7 @@ import "./Fixtures.sol";
 contract DisputeTest is TradeFixture {
     using stdStorage for StdStorage;
 
-    uint128 internal tradeIndex;
-    bytes32 internal tradeId;
+    uint256 internal tradeIndex;
     address internal relayer = bob;
     address internal disputer = charlie;
     uint256 internal testAmountToSend = 2000 * 1e6;
@@ -15,7 +14,7 @@ contract DisputeTest is TradeFixture {
     function setUp() public override {
         super.setUp();
         deal(testTokenIn, alice, testAmount);
-        (uint128 _tradeIndex, bytes32 _tradeId) = _requestTrade(
+        uint256 _tradeIndex = _requestTrade(
             testTokenIn,
             testTokenOut,
             testAmount,
@@ -24,27 +23,20 @@ contract DisputeTest is TradeFixture {
             alice
         );
         tradeIndex = _tradeIndex;
-        tradeId = _tradeId;
+        tradeIndex = _tradeIndex;
 
         deal(testTokenOut, relayer, testAmountToSend);
         vm.prank(relayer);
-        _fillTrade(
-            testTokenIn,
-            testTokenOut,
-            testAmount,
-            testFeePct,
-            testTo,
-            tradeIndex,
-            testAmountToSend
-        );
+        _fillTrade(testTokenOut, testFeePct, tradeIndex, testAmountToSend);
     }
 
     function testDispute() public {
         // Lets check the trade was filled correctly and storage variables are set
         uint256 filledAmountInStorageBefore = stdstore
             .target(address(book))
-            .sig(book.filledAmount.selector)
-            .with_key(tradeId)
+            .sig(book.filledTrades.selector)
+            .with_key(tradeIndex)
+            .depth(1)
             .read_uint();
 
         assertEq(
@@ -54,8 +46,9 @@ contract DisputeTest is TradeFixture {
         );
         address filledByInStorageBefore = stdstore
             .target(address(book))
-            .sig(book.filledBy.selector)
-            .with_key(tradeId)
+            .sig(book.filledTrades.selector)
+            .with_key(tradeIndex)
+            .depth(0)
             .read_address();
 
         assertEq(
@@ -66,8 +59,9 @@ contract DisputeTest is TradeFixture {
 
         uint256 filleAtBlockInStorageBefore = stdstore
             .target(address(book))
-            .sig(book.filledAtBlock.selector)
-            .with_key(tradeId)
+            .sig(book.filledTrades.selector)
+            .with_key(tradeIndex)
+            .depth(2)
             .read_uint();
 
         assertEq(
@@ -95,19 +89,12 @@ contract DisputeTest is TradeFixture {
         vm.expectEmit(true, true, true, true, address(book));
         emit TradeDisputed(
             relayer,
-            tradeId,
+            tradeIndex,
             reqId,
             testAmountToSend,
             testFeePct
         );
-        book.disputeTrade(
-            testTokenIn,
-            testTokenOut,
-            testAmount,
-            testFeePct,
-            testTo,
-            tradeIndex
-        );
+        book.disputeTrade(testTokenOut, testFeePct, tradeIndex);
 
         (
             address _reqProposer,
@@ -162,8 +149,9 @@ contract DisputeTest is TradeFixture {
         // check that the storage variables have been unset
         uint256 filledAmountInStorageAfter = stdstore
             .target(address(book))
-            .sig(book.filledAmount.selector)
-            .with_key(tradeId)
+            .sig(book.filledTrades.selector)
+            .with_key(tradeIndex)
+            .depth(1)
             .read_uint();
 
         assertEq(
@@ -174,8 +162,9 @@ contract DisputeTest is TradeFixture {
 
         address filledByInStorageAfter = stdstore
             .target(address(book))
-            .sig(book.filledBy.selector)
-            .with_key(tradeId)
+            .sig(book.filledTrades.selector)
+            .with_key(tradeIndex)
+            .depth(0)
             .read_address();
 
         assertEq(
@@ -186,8 +175,9 @@ contract DisputeTest is TradeFixture {
 
         uint256 filleAtBlockInStorageAfter = stdstore
             .target(address(book))
-            .sig(book.filledAtBlock.selector)
-            .with_key(tradeId)
+            .sig(book.filledTrades.selector)
+            .with_key(tradeIndex)
+            .depth(2)
             .read_uint();
 
         assertEq(
@@ -200,41 +190,18 @@ contract DisputeTest is TradeFixture {
     function testCannotDisputeIfPeriodIsOver() public {
         skipBlocks(testSafeBlockThreashold + 1);
         vm.expectRevert(BookSingleChain__DisputePeriodOver.selector);
-        book.disputeTrade(
-            testTokenIn,
-            testTokenOut,
-            testAmount,
-            testFeePct,
-            testTo,
-            tradeIndex
-        );
+        book.disputeTrade(testTokenOut, testFeePct, tradeIndex);
     }
 
     function testCannotDisputeIfNotFilled() public {
-        bytes32 nonExistentTradeId = keccak256(
-            abi.encode(
-                testTokenIn,
-                testTokenOut,
-                testAmount + 1,
-                testFeePct,
-                testTo,
-                tradeIndex
-            )
-        );
+        uint256 nonExistingTradeIndex = type(uint256).max - 1;
         vm.expectRevert(
             abi.encodeWithSelector(
                 BookSingleChain__TradeNotFilled.selector,
-                nonExistentTradeId
+                nonExistingTradeIndex
             )
         );
         // dispute a trade which was never filled
-        book.disputeTrade(
-            testTokenIn,
-            testTokenOut,
-            testAmount + 1,
-            testFeePct,
-            testTo,
-            tradeIndex
-        );
+        book.disputeTrade(testTokenOut, testFeePct, nonExistingTradeIndex);
     }
 }

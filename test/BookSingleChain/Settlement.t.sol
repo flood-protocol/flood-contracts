@@ -8,13 +8,12 @@ import "./Fixtures.sol";
 contract SettlementTest is TradeFixture {
     using stdStorage for StdStorage;
 
-    uint128 internal tradeIndex;
-    bytes32 internal tradeId;
+    uint256 internal tradeIndex;
 
     function setUp() public override {
         super.setUp();
         deal(testTokenIn, alice, testAmount);
-        (uint128 _tradeIndex, bytes32 _tradeId) = _requestTrade(
+        uint256 _tradeIndex = _requestTrade(
             testTokenIn,
             testTokenOut,
             testAmount,
@@ -23,7 +22,6 @@ contract SettlementTest is TradeFixture {
             alice
         );
         tradeIndex = _tradeIndex;
-        tradeId = _tradeId;
     }
 
     function testSettlement() public {
@@ -33,21 +31,14 @@ contract SettlementTest is TradeFixture {
         uint256 amountToSend = 2000 * 1e6;
         deal(testTokenOut, bob, amountToSend);
         vm.prank(relayer);
-        _fillTrade(
-            testTokenIn,
-            testTokenOut,
-            testAmount,
-            testFeePct,
-            testTo,
-            tradeIndex,
-            amountToSend
-        );
+        _fillTrade(testTokenOut, testFeePct, tradeIndex, amountToSend);
 
         // lets check the trade was filled correctly and storage variables are set
         uint256 filledAmountInStorageBefore = stdstore
             .target(address(book))
-            .sig(book.filledAmount.selector)
-            .with_key(tradeId)
+            .sig(book.filledTrades.selector)
+            .with_key(tradeIndex)
+            .depth(1)
             .read_uint();
 
         assertEq(
@@ -57,8 +48,9 @@ contract SettlementTest is TradeFixture {
         );
         address filledByInStorageBefore = stdstore
             .target(address(book))
-            .sig(book.filledBy.selector)
-            .with_key(tradeId)
+            .sig(book.filledTrades.selector)
+            .with_key(tradeIndex)
+            .depth(0)
             .read_address();
 
         assertEq(
@@ -69,8 +61,9 @@ contract SettlementTest is TradeFixture {
 
         uint256 filledAtBlockInStorageBefore = stdstore
             .target(address(book))
-            .sig(book.filledAtBlock.selector)
-            .with_key(tradeId)
+            .sig(book.filledTrades.selector)
+            .with_key(tradeIndex)
+            .depth(2)
             .read_uint();
 
         assertEq(
@@ -88,7 +81,7 @@ contract SettlementTest is TradeFixture {
         skipBlocks(book.safeBlockThreshold());
 
         vm.expectEmit(true, true, true, true, address(book));
-        emit TradeSettled(relayer, tradeId, filledAmount, testFeePct);
+        emit TradeSettled(relayer, tradeIndex, filledAmount, testFeePct);
         book.settleTrade(
             testTokenIn,
             testTokenOut,
@@ -101,8 +94,9 @@ contract SettlementTest is TradeFixture {
         // check that the storage variables have been reset
         uint256 filledAmountInStorageAfter = stdstore
             .target(address(book))
-            .sig(book.filledAmount.selector)
-            .with_key(tradeId)
+            .sig(book.filledTrades.selector)
+            .with_key(tradeIndex)
+            .depth(1)
             .read_uint();
 
         assertEq(
@@ -112,8 +106,8 @@ contract SettlementTest is TradeFixture {
         );
         address filledByInStorageAfter = stdstore
             .target(address(book))
-            .sig(book.filledBy.selector)
-            .with_key(tradeId)
+            .sig(book.filledTrades.selector)
+            .with_key(tradeIndex)
             .read_address();
 
         assertEq(
@@ -123,8 +117,9 @@ contract SettlementTest is TradeFixture {
         );
         uint256 filledAtBlockInStorageAfter = stdstore
             .target(address(book))
-            .sig(book.filledAtBlock.selector)
-            .with_key(tradeId)
+            .sig(book.filledTrades.selector)
+            .with_key(tradeIndex)
+            .depth(2)
             .read_uint();
 
         assertEq(
@@ -150,15 +145,7 @@ contract SettlementTest is TradeFixture {
         uint256 amountToSend = 2000_10e6;
         deal(testTokenOut, bob, amountToSend);
         vm.prank(bob);
-        _fillTrade(
-            testTokenIn,
-            testTokenOut,
-            testAmount,
-            testFeePct,
-            testTo,
-            tradeIndex,
-            amountToSend
-        );
+        _fillTrade(testTokenOut, testFeePct, tradeIndex, amountToSend);
         vm.expectRevert(
             abi.encodeWithSelector(
                 BookSingleChain__DisputePeriodNotOver.selector,
@@ -179,7 +166,7 @@ contract SettlementTest is TradeFixture {
         vm.expectRevert(
             abi.encodeWithSelector(
                 BookSingleChain__TradeNotFilled.selector,
-                tradeId
+                tradeIndex
             )
         );
         book.settleTrade(

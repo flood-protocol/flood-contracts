@@ -8,37 +8,37 @@ import "src/BookSingleChain.sol";
 
 interface IBookSingleChainEvents {
     event SafeBlockThresholdChanged(uint256 newSafeBlockThreshold);
-    event MaxFeePctChanged(uint128 newMaxFeePct);
+    event MaxFeePctChanged(uint256 newMaxFeePct);
     event TokenWhitelisted(address indexed token, bool whitelisted);
     event TradeRequested(
         address indexed tokenIn,
         address indexed tokenOut,
+        uint256 amountIn,
         uint256 feePct,
-        uint256 amount,
         address to,
         uint256 indexed tradeIndex
     );
     event UpdatedFeeForTrade(
         address indexed trader,
-        bytes32 indexed tradeId,
+        uint256 indexed tradeIndex,
         uint256 newFeePct
     );
     event TradeFilled(
         address indexed relayer,
-        bytes32 indexed tradeId,
+        uint256 indexed tradeIndex,
         uint256 indexed filledAtBlock,
         uint256 feePct,
         uint256 amountOut
     );
     event TradeSettled(
         address indexed relayer,
-        bytes32 indexed tradeId,
+        uint256 indexed tradeIndex,
         uint256 indexed filledAmount,
         uint256 feePct
     );
     event TradeDisputed(
         address indexed relayer,
-        bytes32 indexed tradeId,
+        uint256 indexed tradeIndex,
         bytes32 indexed disputeId,
         uint256 filledAmount,
         uint256 feePct
@@ -91,23 +91,21 @@ contract TradeFixture is BaseBookFixture {
         uint256 feePct,
         address to,
         address who
-    ) internal returns (uint128, bytes32) {
-        uint128 tradeIndex = book.numberOfTrades();
-        bytes32 tradeId = keccak256(
-            abi.encode(tokenIn, tokenOut, amount, feePct, to, tradeIndex)
-        );
+    ) internal returns (uint256) {
+        uint256 tradeIndex = book.numberOfTrades();
+
         vm.prank(who);
         book.requestTrade(tokenIn, tokenOut, amount, feePct, to);
-        return (tradeIndex, tradeId);
+        return tradeIndex;
     }
 
     function _signFeeUpdate(
         uint256 pk,
-        bytes32 tradeId,
+        uint256 tradeIndex,
         uint256 newFeePct
     ) internal returns (bytes memory) {
         bytes32 messageHash = keccak256(
-            abi.encode(SIGNATURE_DELIMITER, tradeId, newFeePct)
+            abi.encode(SIGNATURE_DELIMITER, tradeIndex, newFeePct)
         );
         bytes32 ethSignedMessageHash = ECDSA.toEthSignedMessageHash(
             messageHash
@@ -116,22 +114,11 @@ contract TradeFixture is BaseBookFixture {
     }
 
     function _fillTrade(
-        address _tokenIn,
         address _tokenOut,
-        uint256 _amountIn,
         uint256 _feePct,
-        address _to,
-        uint128 _tradeIndex,
+        uint256 _tradeIndex,
         uint256 _amountToSend
     ) internal {
-        book.fillTrade(
-            _tokenIn,
-            _tokenOut,
-            _amountIn,
-            _feePct,
-            _to,
-            _tradeIndex,
-            _amountToSend
-        );
+        book.fillTrade(_tokenOut, _feePct, _tradeIndex, _amountToSend);
     }
 }

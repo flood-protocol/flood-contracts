@@ -7,6 +7,7 @@ import "solmate/utils/SafeTransferLib.sol";
 import "solmate/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "./AllKnowingOracle.sol";
+import "forge-std/Test.sol";
 
 error BookSingleChain__InvalidToken(address token);
 error BookSingleChain__FeePctTooHigh(uint256 fee);
@@ -54,8 +55,8 @@ contract BookSingleChain is Owned, ReentrancyGuard {
     // A mapping with the tokens that are supported by this contract.
     mapping(address => bool) public whitelistedTokens;
 
-    // An array of trades that have been filled. They are indexed by trade_index so the array might be sparse.
-    FilledTrade[] public filledTrades;
+    // A mapping of trades that have been filled. They are indexed by trade_index so the array might be sparse.
+    mapping(uint256 => FilledTrade) public filledTrades;
 
     // Oracle used for dispute resolution
     IOracle public immutable oracle;
@@ -231,7 +232,7 @@ contract BookSingleChain is Owned, ReentrancyGuard {
         if (newFeePct > maxFeePct) {
             revert BookSingleChain__FeePctTooHigh(newFeePct);
         }
-        if (filledTrades[tradeIndex].blockHeight > 0) {
+        if (_isTradeFilled(tradeIndex)) {
             revert BookSingleChain__TradeAlreadyFilled(tradeIndex);
         }
 
@@ -368,12 +369,11 @@ contract BookSingleChain is Owned, ReentrancyGuard {
         uint256 feePct,
         uint256 tradeIndex
     ) external nonReentrant {
-        FilledTrade storage maybeTrade = filledTrades[tradeIndex];
-
         // Check that the trade has been filled.
-        if (maybeTrade.blockHeight == 0) {
+        if (!_isTradeFilled(tradeIndex)) {
             revert BookSingleChain__TradeNotFilled(tradeIndex);
         }
+        FilledTrade memory maybeTrade = filledTrades[tradeIndex];
         // Check that the dispute period has not yet ended.
         if (block.number - maybeTrade.blockHeight >= safeBlockThreshold) {
             revert BookSingleChain__DisputePeriodOver();
@@ -409,7 +409,7 @@ contract BookSingleChain is Owned, ReentrancyGuard {
         if (newFeePct > maxFeePct) {
             revert BookSingleChain__FeePctTooHigh(newFeePct);
         }
-        if (filledTrades[tradeIndex].blockHeight > 0) {
+        if (_isTradeFilled(tradeIndex)) {
             revert BookSingleChain__TradeAlreadyFilled(tradeIndex);
         }
 
