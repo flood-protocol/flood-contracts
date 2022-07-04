@@ -16,10 +16,10 @@ error BookSingleChain__UnsafeTokenToWhitelist(address token);
 error BookSingleChain__ZeroAmount();
 // the recipient of a transfer was the 0 address
 error BookSingleChain__SentToBlackHole();
-error BookSingleChain__TradeAlreadyFilled(bytes32 tradeId);
+error BookSingleChain__TradeAlreadyFilled(uint256 tradeIndex);
 
 // The trade was not filled or doesn't exist
-error BookSingleChain__TradeNotFilled(bytes32 tradeId);
+error BookSingleChain__TradeNotFilled(uint256 tradeIndex);
 error BookSingleChain__InvalidSignature();
 error BookSingleChain__DisputePeriodNotOver(uint256 blocksLeft);
 error BookSingleChain__DisputePeriodOver();
@@ -27,9 +27,12 @@ error BookSingleChain__DisputePeriodOver();
 bytes32 constant SIGNATURE_DELIMITER = keccak256("LAGUNA-V1");
 
 struct FilledTrade {
-    address trader;
+    // Address of the relayer who filled the trade
+    address relayer;
+    // Amount of tokens received by the trader who requested the trade
     uint256 amountOut;
-    uint256 filledAtBlock;
+    // block the trade was filled at
+    uint256 blockHeight;
 }
 
 /**
@@ -43,20 +46,16 @@ contract BookSingleChain is Owned, ReentrancyGuard {
     using SafeTransferLib for ERC20;
 
     // Number of trades done so far. Used to generate trade ids.
-    uint128 public numberOfTrades = 0;
+    uint256 public numberOfTrades = 0;
     // The amountIn of blocks in which a trade can be disputed.
     uint256 public safeBlockThreshold;
     // The maximum % off the optimal quote allowed. 1e18 is 100%.
-    uint128 public maxFeePct;
+    uint256 public maxFeePct;
     // A mapping with the tokens that are supported by this contract.
     mapping(address => bool) public whitelistedTokens;
 
-    // Maps each trade id to the block it was filled at.
-    mapping(bytes32 => uint256) public filledAtBlock;
-    // A mapping from a trade id to the relayer filling it.
-    mapping(bytes32 => address) public filledBy;
-    // A mapping from a trade id to the amount of tokens received by the trader that requested the trade.
-    mapping(bytes32 => uint256) public filledAmount;
+    // An array of trades that have been filled. They are indexed by trade_index so the array might be sparse.
+    FilledTrade[] public filledTrades;
 
     // Oracle used for dispute resolution
     IOracle public immutable oracle;
@@ -66,7 +65,7 @@ contract BookSingleChain is Owned, ReentrancyGuard {
      ****************************************/
 
     event SafeBlockThresholdChanged(uint256 newSafeBlockThreshold);
-    event MaxFeePctChanged(uint128 newMaxFeePct);
+    event MaxFeePctChanged(uint256 newMaxFeePct);
     event TokenWhitelisted(address indexed token, bool whitelisted);
     event TradeRequested(
         address indexed tokenIn,
@@ -78,25 +77,25 @@ contract BookSingleChain is Owned, ReentrancyGuard {
     );
     event UpdatedFeeForTrade(
         address indexed trader,
-        bytes32 indexed tradeId,
+        uint256 indexed tradeIndex,
         uint256 newFeePct
     );
     event TradeFilled(
         address indexed relayer,
-        bytes32 indexed tradeId,
+        uint256 indexed tradeIndex,
         uint256 indexed filledAtBlock,
         uint256 feePct,
         uint256 amountOut
     );
     event TradeSettled(
         address indexed relayer,
-        bytes32 indexed tradeId,
+        uint256 indexed tradeIndex,
         uint256 indexed filledAmount,
         uint256 feePct
     );
     event TradeDisputed(
         address indexed relayer,
-        bytes32 indexed tradeId,
+        uint256 indexed tradeIndex,
         bytes32 indexed disputeId,
         uint256 filledAmount,
         uint256 feePct
@@ -154,7 +153,7 @@ contract BookSingleChain is Owned, ReentrancyGuard {
      * @notice Changes the maximum fee percentage.
      * @param newMaxFeePct The new maximum fee percentage.
      */
-    function setMaxFeePct(uint128 newMaxFeePct) external onlyOwner {
+    function setMaxFeePct(uint256 newMaxFeePct) external onlyOwner {
         if (newMaxFeePct >= 1e18) {
             revert BookSingleChain__NewFeePctTooHigh();
         }
@@ -220,25 +219,30 @@ contract BookSingleChain is Owned, ReentrancyGuard {
         However, it is never possible to update the fee for a trade on behalf of another trader without their signature.
      * @param trader The address of the trader who initially requested the trade.
      * @param newFeePct The updated fee percentage.
-     * @param tradeId The ID of the trade to update.
+     * @param tradeIndex The ID of the trade to update.
      * @param traderSignature A signed message by the trader that first requested the trade.
      */
     function updateFeeForTrade(
         address trader,
-        bytes32 tradeId,
         uint256 newFeePct,
+        uint256 tradeIndex,
         bytes calldata traderSignature
     ) external {
         if (newFeePct > maxFeePct) {
             revert BookSingleChain__FeePctTooHigh(newFeePct);
         }
-        if (filledAtBlock[tradeId] > 0) {
-            revert BookSingleChain__TradeAlreadyFilled(tradeId);
+        if (filledTrades[tradeIndex].blockHeight > 0) {
+            revert BookSingleChain__TradeAlreadyFilled(tradeIndex);
         }
 
-        _verifyFeeUpdateSignature(trader, tradeId, newFeePct, traderSignature);
+        _verifyFeeUpdateSignature(
+            trader,
+            tradeIndex,
+            newFeePct,
+            traderSignature
+        );
 
-        emit UpdatedFeeForTrade(trader, tradeId, newFeePct);
+        emit UpdatedFeeForTrade(trader, tradeIndex, newFeePct);
     }
 
     /**
@@ -247,42 +251,27 @@ contract BookSingleChain is Owned, ReentrancyGuard {
      * Each trade submission is validate off-chain and can be disputed up to `safeBlockThreshold` blocks after it was submitted.
      * If the trade is found to be invalid, the relayer loses its tokens and won't get the other side of the trade.
      * After `safeBlockThreshold` blocks, the trade is considered valid and the relayer can request the other side of the trade by calling `settleTrade`.
-     * @param tokenIn The token to be sold.
      * @param tokenOut The token to be bought.
-     * @param amountIn The amount of `tokenIn` to be sold.
      * @param feePct The fee percentage. This is to be interpreted as a "distance" from the optimal execution price.
-     * @param to The address to receive the tokens bought.
      * @param tradeIndex The index of the trade to fill.
      * @param amountToSend The amount of `tokenOut` to send to the requestor.
      */
     function fillTrade(
-        address tokenIn,
         address tokenOut,
-        uint256 amountIn,
         uint256 feePct,
-        address to,
-        uint128 tradeIndex,
+        uint256 tradeIndex,
         uint256 amountToSend
     ) external {
-        // We don't need to check if the trade is valid, as the relayer is expected to do that off-chain.
-        bytes32 tradeId = _getTradeId(
-            tokenIn,
-            tokenOut,
-            amountIn,
-            feePct,
-            to,
-            tradeIndex
-        );
         // Check if the trade has already been filled, to prevent relayers losing tokens if two or more of them try to fill the same trade.
-        if (filledAtBlock[tradeId] > 0) {
-            revert BookSingleChain__TradeAlreadyFilled(tradeId);
+        if (filledTrades[tradeIndex].blockHeight > 0) {
+            revert BookSingleChain__TradeAlreadyFilled(tradeIndex);
         }
 
-        _fillTrade(tokenOut, tradeId, amountToSend);
+        _fillTrade(tokenOut, tradeIndex, amountToSend);
 
         emit TradeFilled(
             msg.sender,
-            tradeId,
+            tradeIndex,
             block.number,
             feePct,
             amountToSend
@@ -293,45 +282,33 @@ contract BookSingleChain is Owned, ReentrancyGuard {
      * @notice Called by relayers to execute the same logic as `fillTrade` but with `updatedFeePct` instead of `feePct`.
      * This updated fee must have been requested by the `trader` that initiated the trade, by cryptographically signing a message `updatedFeePct`.
      * A trader will usually call `updateFeeForTrade` to signal to relayers the new fee and make its signature available.
-     * @param tokenIn The token to be sold.
-     * @param tokenOut The token to be bought.
-     * @param amountIn The amount of `tokenIn` to be sold.
-     * @param feePct The fee percentage. This is to be interpreted as a "distance" from the optimal execution price.
-     * @param to The address to receive the tokens bought.
-     * @param tradeIndex The index of the trade to fill.
+     * @param tokenOut The token to send to the requestor.
+     * @param tradeIndex The ID of the trade to fill.
      * @param amountToSend The amount of `tokenOut` to send to the requestor.
      * @param trader The address of the trader who initially requested the trade.
      * @param newFeePct The updated fee percentage.
      * @param traderSignature A signed message by the trader that first requested the trade.
      */
     function fillTradeWithUpdatedFee(
-        address tokenIn,
         address tokenOut,
-        uint256 amountIn,
-        uint256 feePct,
-        address to,
-        uint128 tradeIndex,
+        uint256 tradeIndex,
         uint256 amountToSend,
         address trader,
         uint256 newFeePct,
         bytes calldata traderSignature
     ) external {
-        bytes32 tradeId = _getTradeId(
-            tokenIn,
-            tokenOut,
-            amountIn,
-            feePct,
-            to,
-            tradeIndex
-        );
-
         // We delegate checking if the trade is already filled to `_verifyFeeUpdateSignature`
-        _verifyFeeUpdateSignature(trader, tradeId, newFeePct, traderSignature);
-        _fillTrade(tokenOut, tradeId, amountToSend);
+        _verifyFeeUpdateSignature(
+            trader,
+            tradeIndex,
+            newFeePct,
+            traderSignature
+        );
+        _fillTrade(tokenOut, tradeIndex, amountToSend);
         // Emit a TradeFilled event with the new fee percentage.
         emit TradeFilled(
             msg.sender,
-            tradeId,
+            tradeIndex,
             block.number,
             newFeePct,
             amountToSend
@@ -353,37 +330,28 @@ contract BookSingleChain is Owned, ReentrancyGuard {
         uint256 amountIn,
         uint256 feePct,
         address to,
-        uint128 tradeIndex
+        uint256 tradeIndex
     ) external {
-        bytes32 tradeId = _getTradeId(
-            tokenIn,
-            tokenOut,
-            amountIn,
-            feePct,
-            to,
-            tradeIndex
-        );
         // Check if the trade has already been settled, is not filled or does not exist.
-        if (filledAtBlock[tradeId] == 0) {
-            revert BookSingleChain__TradeNotFilled(tradeId);
+        if (!_isTradeFilled(tradeIndex)) {
+            revert BookSingleChain__TradeNotFilled(tradeIndex);
         }
-        if (block.number - filledAtBlock[tradeId] < safeBlockThreshold) {
+        FilledTrade memory maybeTrade = filledTrades[tradeIndex];
+        if (block.number - maybeTrade.blockHeight < safeBlockThreshold) {
             // Always > 0 for the check above
             uint256 blocksLeft = safeBlockThreshold -
-                (block.number - filledAtBlock[tradeId]);
+                (block.number - maybeTrade.blockHeight);
             revert BookSingleChain__DisputePeriodNotOver(blocksLeft);
         }
-        uint256 amountToTrader = filledAmount[tradeId];
-        address relayer = filledBy[tradeId];
+        uint256 amountToTrader = maybeTrade.amountOut;
+        address relayer = maybeTrade.relayer;
 
-        delete filledAtBlock[tradeId];
-        delete filledBy[tradeId];
-        delete filledAmount[tradeId];
+        delete filledTrades[tradeIndex];
 
         ERC20(tokenOut).safeTransfer(to, amountToTrader);
         ERC20(tokenIn).safeTransfer(relayer, amountIn);
 
-        emit TradeSettled(relayer, tradeId, amountToTrader, feePct);
+        emit TradeSettled(relayer, tradeIndex, amountToTrader, feePct);
     }
 
     /**
@@ -391,46 +359,30 @@ contract BookSingleChain is Owned, ReentrancyGuard {
      * For `safeBlockThreshold` blocks after a trade is submitted off-chain entities can dispute it and claim the relayer's tokens.
      * Dispute resolution is delegated to an external oracle contract.
      * This makes the trade available for relayers to fill again.
-     * @param tokenIn The token that was sold.
      * @param tokenOut The token that was bought.
-     * @param amountIn The amount of `tokenIn` that was sold.
      * @param feePct The fee percentage. This is to be interpreted as a "distance" from the optimal execution price.
-     * @param to The address to receive the tokens bought.
-     * @param tradeIndex The index of the trade to dispute.
+     * @param tradeIndex The ID of the trade to dispute.
      */
     function disputeTrade(
-        address tokenIn,
         address tokenOut,
-        uint256 amountIn,
         uint256 feePct,
-        address to,
-        uint128 tradeIndex
+        uint256 tradeIndex
     ) external nonReentrant {
-        bytes32 tradeId = _getTradeId(
-            tokenIn,
-            tokenOut,
-            amountIn,
-            feePct,
-            to,
-            tradeIndex
-        );
-        uint256 filledHeight = filledAtBlock[tradeId];
+        FilledTrade storage maybeTrade = filledTrades[tradeIndex];
 
         // Check that the trade has been filled.
-        if (filledHeight == 0) {
-            revert BookSingleChain__TradeNotFilled(tradeId);
+        if (maybeTrade.blockHeight == 0) {
+            revert BookSingleChain__TradeNotFilled(tradeIndex);
         }
         // Check that the dispute period has not yet ended.
-        if (block.number - filledHeight >= safeBlockThreshold) {
+        if (block.number - maybeTrade.blockHeight >= safeBlockThreshold) {
             revert BookSingleChain__DisputePeriodOver();
         }
 
-        uint256 amountSent = filledAmount[tradeId];
-        address relayer = filledBy[tradeId];
+        uint256 amountSent = maybeTrade.amountOut;
+        address relayer = maybeTrade.relayer;
         // Mark the trade as unfilled to allow relayers to fill it again.
-        delete filledAtBlock[tradeId];
-        delete filledBy[tradeId];
-        delete filledAmount[tradeId];
+        delete filledTrades[tradeIndex];
 
         bytes32 disputeId = oracle.getRequestId(
             relayer,
@@ -438,7 +390,7 @@ contract BookSingleChain is Owned, ReentrancyGuard {
             tokenOut,
             amountSent
         );
-        emit TradeDisputed(relayer, tradeId, disputeId, amountSent, feePct);
+        emit TradeDisputed(relayer, tradeIndex, disputeId, amountSent, feePct);
         // Approve the oracle to spend the amountSent by the relayer.
         ERC20(tokenOut).safeApprove(address(oracle), amountSent);
         oracle.ask(relayer, msg.sender, tokenOut, amountSent);
@@ -450,19 +402,19 @@ contract BookSingleChain is Owned, ReentrancyGuard {
 
     function _verifyFeeUpdateSignature(
         address trader,
-        bytes32 tradeId,
+        uint256 tradeIndex,
         uint256 newFeePct,
         bytes calldata traderSignature
     ) internal view {
         if (newFeePct > maxFeePct) {
             revert BookSingleChain__FeePctTooHigh(newFeePct);
         }
-        if (filledAtBlock[tradeId] > 0) {
-            revert BookSingleChain__TradeAlreadyFilled(tradeId);
+        if (filledTrades[tradeIndex].blockHeight > 0) {
+            revert BookSingleChain__TradeAlreadyFilled(tradeIndex);
         }
 
         bytes32 expectedMessageHash = keccak256(
-            abi.encode(SIGNATURE_DELIMITER, tradeId, newFeePct)
+            abi.encode(SIGNATURE_DELIMITER, tradeIndex, newFeePct)
         );
 
         bytes32 ethSignedMessageHash = ECDSA.toEthSignedMessageHash(
@@ -485,12 +437,15 @@ contract BookSingleChain is Owned, ReentrancyGuard {
      */
     function _fillTrade(
         address tokenOut,
-        bytes32 tradeId,
+        uint256 tradeIndex,
         uint256 amountToSend
     ) internal {
-        filledAtBlock[tradeId] = block.number;
-        filledBy[tradeId] = msg.sender;
-        filledAmount[tradeId] = amountToSend;
+        FilledTrade memory trade = FilledTrade(
+            msg.sender,
+            amountToSend,
+            block.number
+        );
+        filledTrades[tradeIndex] = trade;
 
         ERC20(tokenOut).safeTransferFrom(
             msg.sender,
@@ -500,26 +455,10 @@ contract BookSingleChain is Owned, ReentrancyGuard {
     }
 
     /**
-     * @notice Computes the trade ID for the given trade by hashing the trade parameters.
-     * @param tokenIn The token to be sold.
-     * @param tokenOut The token to be bought.
-     * @param amountIn The amount of `tokenIn` to be sold.
-     * @param feePct The fee percentage. This is to be interpreted as a "distance" from the optimal execution price.
-     * @param to The address to receive the tokens bought.
-     * @param tradeIndex The number of trades preceding this one.
-     * @return The trade ID.
+     * @notice Called to check if a trade is filled.
      */
-    function _getTradeId(
-        address tokenIn,
-        address tokenOut,
-        uint256 amountIn,
-        uint256 feePct,
-        address to,
-        uint128 tradeIndex
-    ) internal pure returns (bytes32) {
-        return
-            keccak256(
-                abi.encode(tokenIn, tokenOut, amountIn, feePct, to, tradeIndex)
-            );
+    function _isTradeFilled(uint256 tradeIndex) internal view returns (bool) {
+        FilledTrade memory trade = filledTrades[tradeIndex];
+        return trade.blockHeight > 0;
     }
 }
