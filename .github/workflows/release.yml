@@ -1,0 +1,56 @@
+name: Push release to private registry
+
+on:
+  push:
+    # This runs the job when new tag is pushed OR a commit/PR is pushed to master
+    tags:
+      - "*"
+    branches:
+      - master
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo and submodules
+        uses: actions/checkout@v3
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Install deps
+        run: forge install
+
+      - name: Run tests
+        run: forge test -vvv
+  version-tag-match:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo and submodules
+        uses: actions/checkout@v3
+      - name: Parse cargo.toml and assert version tag matching
+        # Hacky way of parsing the version from Cargo.toml and comparing it to tag
+        run: |
+          if [ "$(cat ./bindings/rust/Cargo.toml | grep version | awk '{print $3}' | tr -d '"' )" == "${GITHUB_REF#refs/*/}" ];then exit 0; else exit 1; fi
+  publish:
+    needs: [test, version-tag-match]
+    # Ensure master is tagged
+    if: github.event.base_ref == 'refs/heads/master'
+    name: Build & Deploy to registry
+    env:
+      CARGO_REGISTRY_DEFAULT: fulmin-labs-registry
+      CARGO_REGISTRIES_FULMIN_LABS_REGISTRY_INDEX: ${{ secrets.CARGO_REGISTRY_INDEX_URL }}
+      CARGO_REGISTRIES_FULMIN_LABS_REGISTRY_TOKEN: ${{ secrets.CARGO_TOKEN }}
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo and submodules
+        uses: actions/checkout@v3
+      - name: Publish to cargo
+        working-directory: bindings/rust
+        run: cargo publish --registry fulmin-labs-registry
