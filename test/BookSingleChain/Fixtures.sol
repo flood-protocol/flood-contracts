@@ -6,45 +6,6 @@ import "../utils/TokenFixture.sol";
 import "../AllKnowingOracle/Fixtures.sol";
 import "src/BookSingleChain.sol";
 
-interface IBookSingleChainEvents {
-    event SafeBlockThresholdChanged(uint256 newSafeBlockThreshold);
-    event MaxFeePctChanged(uint128 newMaxFeePct);
-    event TokenWhitelisted(address indexed token, bool whitelisted);
-    event TradeRequested(
-        address indexed tokenIn,
-        address indexed tokenOut,
-        uint256 feePct,
-        uint256 amount,
-        address to,
-        uint256 indexed tradeIndex
-    );
-    event UpdatedFeeForTrade(
-        address indexed trader,
-        bytes32 indexed tradeId,
-        uint256 newFeePct
-    );
-    event TradeFilled(
-        address indexed relayer,
-        bytes32 indexed tradeId,
-        uint256 indexed filledAtBlock,
-        uint256 feePct,
-        uint256 amountOut
-    );
-    event TradeSettled(
-        address indexed relayer,
-        bytes32 indexed tradeId,
-        uint256 indexed filledAmount,
-        uint256 feePct
-    );
-    event TradeDisputed(
-        address indexed relayer,
-        bytes32 indexed tradeId,
-        bytes32 indexed disputeId,
-        uint256 filledAmount,
-        uint256 feePct
-    );
-}
-
 contract BaseBookFixture is IBookSingleChainEvents, OracleFixture {
     BookSingleChain internal book;
     uint256 internal testSafeBlockThreashold = 100;

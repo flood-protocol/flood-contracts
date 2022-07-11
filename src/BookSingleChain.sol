@@ -8,63 +8,7 @@ import "solmate/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "./AllKnowingOracle.sol";
 
-error BookSingleChain__InvalidToken(address token);
-error BookSingleChain__FeePctTooHigh(uint256 fee);
-error BookSingleChain__SameToken();
-error BookSingleChain__NewFeePctTooHigh();
-error BookSingleChain__UnsafeTokenToWhitelist(address token);
-error BookSingleChain__ZeroAmount();
-// the recipient of a transfer was the 0 address
-error BookSingleChain__SentToBlackHole();
-error BookSingleChain__TradeAlreadyFilled(bytes32 tradeId);
-
-// The trade was not filled or doesn't exist
-error BookSingleChain__TradeNotFilled(bytes32 tradeId);
-error BookSingleChain__InvalidSignature();
-error BookSingleChain__DisputePeriodNotOver(uint256 blocksLeft);
-error BookSingleChain__DisputePeriodOver();
-
-bytes32 constant SIGNATURE_DELIMITER = keccak256("LAGUNA-V1");
-
-struct FilledTrade {
-    address trader;
-    uint256 amountOut;
-    uint256 filledAtBlock;
-}
-
-/**
- * @title BookSingleChain
- * @notice A basic RFQ book implementation, where users request trades and off-chain relayers fill them.
- * To ensure relayers fill trades at "fair" price, there is a block range in which trades can be disputed and voided.
- * If a trade is not disputed within the dispute period, the relayer can call `refund` to obtain the other side of the trade it filled.
- * @notice This implementation gives immense power to the owner of the contract, and only allows one relayer / disputer. This is not intended for production use, but rather for a small scale test.
- */
-contract BookSingleChain is Owned, ReentrancyGuard {
-    using SafeTransferLib for ERC20;
-
-    // Number of trades done so far. Used to generate trade ids.
-    uint128 public numberOfTrades = 0;
-    // The amountIn of blocks in which a trade can be disputed.
-    uint256 public safeBlockThreshold;
-    // The maximum % off the optimal quote allowed. 1e18 is 100%.
-    uint128 public maxFeePct;
-    // A mapping with the tokens that are supported by this contract.
-    mapping(address => bool) public whitelistedTokens;
-
-    // Maps each trade id to the block it was filled at.
-    mapping(bytes32 => uint256) public filledAtBlock;
-    // A mapping from a trade id to the relayer filling it.
-    mapping(bytes32 => address) public filledBy;
-    // A mapping from a trade id to the amount of tokens received by the trader that requested the trade.
-    mapping(bytes32 => uint256) public filledAmount;
-
-    // Oracle used for dispute resolution
-    IOracle public immutable oracle;
-
-    /****************************************
-     *                EVENTS                *
-     ****************************************/
-
+interface IBookSingleChainEvents {
     event SafeBlockThresholdChanged(uint256 newSafeBlockThreshold);
     event MaxFeePctChanged(uint128 newMaxFeePct);
     event TokenWhitelisted(address indexed token, bool whitelisted);
@@ -101,6 +45,58 @@ contract BookSingleChain is Owned, ReentrancyGuard {
         uint256 filledAmount,
         uint256 feePct
     );
+}
+
+error BookSingleChain__InvalidToken(address token);
+error BookSingleChain__FeePctTooHigh(uint256 fee);
+error BookSingleChain__SameToken();
+error BookSingleChain__NewFeePctTooHigh();
+error BookSingleChain__UnsafeTokenToWhitelist(address token);
+error BookSingleChain__ZeroAmount();
+// the recipient of a transfer was the 0 address
+error BookSingleChain__SentToBlackHole();
+error BookSingleChain__TradeAlreadyFilled(bytes32 tradeId);
+
+// The trade was not filled or doesn't exist
+error BookSingleChain__TradeNotFilled(bytes32 tradeId);
+error BookSingleChain__InvalidSignature();
+error BookSingleChain__DisputePeriodNotOver(uint256 blocksLeft);
+error BookSingleChain__DisputePeriodOver();
+
+bytes32 constant SIGNATURE_DELIMITER = keccak256("LAGUNA-V1");
+
+/**
+ * @title BookSingleChain
+ * @notice A basic RFQ book implementation, where users request trades and off-chain relayers fill them.
+ * To ensure relayers fill trades at "fair" price, there is a block range in which trades can be disputed and voided.
+ * If a trade is not disputed within the dispute period, the relayer can call `refund` to obtain the other side of the trade it filled.
+ * @notice This implementation gives immense power to the owner of the contract, and only allows one relayer / disputer. This is not intended for production use, but rather for a small scale test.
+ */
+contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
+    using SafeTransferLib for ERC20;
+
+    // Number of trades done so far. Used to generate trade ids.
+    uint128 public numberOfTrades = 0;
+    // The amountIn of blocks in which a trade can be disputed.
+    uint256 public safeBlockThreshold;
+    // The maximum % off the optimal quote allowed. 1e18 is 100%.
+    uint128 public maxFeePct;
+    // A mapping with the tokens that are supported by this contract.
+    mapping(address => bool) public whitelistedTokens;
+
+    // Maps each trade id to the block it was filled at.
+    mapping(bytes32 => uint256) public filledAtBlock;
+    // A mapping from a trade id to the relayer filling it.
+    mapping(bytes32 => address) public filledBy;
+    // A mapping from a trade id to the amount of tokens received by the trader that requested the trade.
+    mapping(bytes32 => uint256) public filledAmount;
+
+    // Oracle used for dispute resolution
+    IOracle public immutable oracle;
+
+    /****************************************
+     *                EVENTS                *
+     ****************************************/
 
     /**
      * @notice Constructs the order book.
