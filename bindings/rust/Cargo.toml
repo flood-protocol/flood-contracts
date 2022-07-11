@@ -3,6 +3,7 @@ name = "cfmm-contracts"
 version = "0.0.2"
 edition = "2021"
 registry = "fulmin-labs-registry"
+publish = ["fulmin-labs-registry"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
