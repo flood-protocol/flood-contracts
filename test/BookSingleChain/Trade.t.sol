@@ -142,7 +142,7 @@ contract TradeTest is TradeFixture {
         );
 
         vm.expectEmit(true, true, false, true, address(book));
-        emit UpdatedFeeForTrade(alice, tradeId, newFeePct);
+        emit UpdatedFeeForTrade(alice, tradeIndex, newFeePct);
 
         book.updateFeeForTrade(
             testTokenIn,
@@ -292,7 +292,7 @@ contract TradeTest is TradeFixture {
         uint256 bobBalanceBefore = ERC20(testTokenOut).balanceOf(bob);
         vm.prank(bob);
         vm.expectEmit(true, true, true, true, address(book));
-        emit TradeFilled(bob, tradeId, block.number, testFeePct, amountOut);
+        emit TradeFilled(bob, tradeIndex, testFeePct, amountOut);
         book.fillTrade(
             testTokenIn,
             testTokenOut,
@@ -414,7 +414,7 @@ contract TradeTest is TradeFixture {
         vm.prank(bob);
         vm.expectEmit(true, true, true, true, address(book));
         // check the fee is updated
-        emit TradeFilled(bob, tradeId, block.number, newFeePct, amountOut);
+        emit TradeFilled(bob, tradeIndex, newFeePct, amountOut);
         book.fillTradeWithUpdatedFee(
             testTokenIn,
             testTokenOut,

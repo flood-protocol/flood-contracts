@@ -22,25 +22,24 @@ interface IBookSingleChainEvents {
     );
     event UpdatedFeeForTrade(
         address indexed trader,
-        bytes32 indexed tradeId,
+        uint256 indexed tradeIndex,
         uint256 newFeePct
     );
     event TradeFilled(
         address indexed relayer,
-        bytes32 indexed tradeId,
-        uint256 indexed filledAtBlock,
+        uint256 indexed tradeIndex,
         uint256 feePct,
         uint256 amountOut
     );
     event TradeSettled(
         address indexed relayer,
-        bytes32 indexed tradeId,
+        uint256 indexed tradeIndex,
         uint256 indexed filledAmount,
         uint256 feePct
     );
     event TradeDisputed(
         address indexed relayer,
-        bytes32 indexed tradeId,
+        uint256 indexed tradeIndex,
         bytes32 indexed disputeId,
         uint256 filledAmount,
         uint256 feePct
@@ -252,7 +251,7 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
 
         _verifyFeeUpdateSignature(trader, tradeId, newFeePct, traderSignature);
 
-        emit UpdatedFeeForTrade(trader, tradeId, newFeePct);
+        emit UpdatedFeeForTrade(trader, tradeIndex, newFeePct);
     }
 
     /**
@@ -294,13 +293,7 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
 
         _fillTrade(tokenOut, tradeId, amountToSend);
 
-        emit TradeFilled(
-            msg.sender,
-            tradeId,
-            block.number,
-            feePct,
-            amountToSend
-        );
+        emit TradeFilled(msg.sender, tradeIndex, feePct, amountToSend);
     }
 
     /**
@@ -343,13 +336,7 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
         _verifyFeeUpdateSignature(trader, tradeId, newFeePct, traderSignature);
         _fillTrade(tokenOut, tradeId, amountToSend);
         // Emit a TradeFilled event with the new fee percentage.
-        emit TradeFilled(
-            msg.sender,
-            tradeId,
-            block.number,
-            newFeePct,
-            amountToSend
-        );
+        emit TradeFilled(msg.sender, tradeIndex, newFeePct, amountToSend);
     }
 
     /**
@@ -397,7 +384,7 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
         ERC20(tokenOut).safeTransfer(recipient, amountToTrader);
         ERC20(tokenIn).safeTransfer(relayer, amountIn);
 
-        emit TradeSettled(relayer, tradeId, amountToTrader, feePct);
+        emit TradeSettled(relayer, tradeIndex, amountToTrader, feePct);
     }
 
     /**
@@ -452,7 +439,7 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
             tokenOut,
             amountSent
         );
-        emit TradeDisputed(relayer, tradeId, disputeId, amountSent, feePct);
+        emit TradeDisputed(relayer, tradeIndex, disputeId, amountSent, feePct);
         // Approve the oracle to spend the amountSent by the relayer.
         ERC20(tokenOut).safeApprove(address(oracle), amountSent);
         oracle.ask(relayer, msg.sender, tokenOut, amountSent);

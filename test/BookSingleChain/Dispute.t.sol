@@ -95,7 +95,7 @@ contract DisputeTest is TradeFixture {
         vm.expectEmit(true, true, true, true, address(book));
         emit TradeDisputed(
             relayer,
-            tradeId,
+            tradeIndex,
             reqId,
             testAmountToSend,
             testFeePct

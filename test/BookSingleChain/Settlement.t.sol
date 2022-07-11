@@ -90,7 +90,7 @@ contract SettlementTest is TradeFixture {
         skipBlocks(book.safeBlockThreshold());
 
         vm.expectEmit(true, true, true, true, address(book));
-        emit TradeSettled(relayer, tradeId, filledAmount, testFeePct);
+        emit TradeSettled(relayer, tradeIndex, filledAmount, testFeePct);
         book.settleTrade(
             testTokenIn,
             testTokenOut,
