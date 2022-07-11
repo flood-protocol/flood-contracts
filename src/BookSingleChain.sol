@@ -168,14 +168,14 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
      * @param tokenOut The token to be bought.
      * @param amountIn The amount of `tokenIn` to be sold.
      * @param feePct The fee percentage. This is to be interpreted as a "distance" from the optimal execution price.
-     * @param to The address to receive the tokens bought.
+     * @param recipient The address to receive the tokens bought.
      */
     function requestTrade(
         address tokenIn,
         address tokenOut,
         uint256 amountIn,
         uint256 feePct,
-        address to
+        address recipient
     ) external {
         if (!whitelistedTokens[tokenIn]) {
             revert BookSingleChain__InvalidToken(tokenIn);
@@ -192,7 +192,7 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
         if (amountIn == 0) {
             revert BookSingleChain__ZeroAmount();
         }
-        if (to == address(0)) {
+        if (recipient == address(0)) {
             revert BookSingleChain__SentToBlackHole();
         }
 
@@ -203,7 +203,7 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
             tokenOut,
             amountIn,
             feePct,
-            to,
+            recipient,
             numberOfTrades
         );
 
@@ -214,17 +214,35 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
      * @notice Updates the `feePct` for the trade with the `tradeId` ID. 
         It's possible to update the fee for a trade that does not exist, but it is safe to do so, as relayers trying to fill would get disputed as if they submitted an incorrect trade.
         However, it is never possible to update the fee for a trade on behalf of another trader without their signature.
+     * @param tokenIn The token to be sold.
+     * @param tokenOut The token to be bought.
+     * @param amountIn The amount of `tokenIn` to be sold.
+     * @param feePct The fee percentage. This is to be interpreted as a "distance" from the optimal execution price.
+     * @param recipient The address to receive the tokens bought.
+     * @param tradeIndex The index of the trade to update.
      * @param trader The address of the trader who initially requested the trade.
      * @param newFeePct The updated fee percentage.
-     * @param tradeId The ID of the trade to update.
      * @param traderSignature A signed message by the trader that first requested the trade.
      */
     function updateFeeForTrade(
+        address tokenIn,
+        address tokenOut,
+        uint256 amountIn,
+        uint256 feePct,
+        address recipient,
+        uint256 tradeIndex,
         address trader,
-        bytes32 tradeId,
         uint256 newFeePct,
         bytes calldata traderSignature
     ) external {
+        bytes32 tradeId = _getTradeId(
+            tokenIn,
+            tokenOut,
+            amountIn,
+            feePct,
+            recipient,
+            tradeIndex
+        );
         if (newFeePct > maxFeePct) {
             revert BookSingleChain__FeePctTooHigh(newFeePct);
         }
@@ -247,7 +265,7 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
      * @param tokenOut The token to be bought.
      * @param amountIn The amount of `tokenIn` to be sold.
      * @param feePct The fee percentage. This is to be interpreted as a "distance" from the optimal execution price.
-     * @param to The address to receive the tokens bought.
+     * @param recipient The address to receive the tokens bought.
      * @param tradeIndex The index of the trade to fill.
      * @param amountToSend The amount of `tokenOut` to send to the requestor.
      */
@@ -256,7 +274,7 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
         address tokenOut,
         uint256 amountIn,
         uint256 feePct,
-        address to,
+        address recipient,
         uint256 tradeIndex,
         uint256 amountToSend
     ) external {
@@ -266,7 +284,7 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
             tokenOut,
             amountIn,
             feePct,
-            to,
+            recipient,
             tradeIndex
         );
         // Check if the trade has already been filled, to prevent relayers losing tokens if two or more of them try to fill the same trade.
@@ -293,7 +311,7 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
      * @param tokenOut The token to be bought.
      * @param amountIn The amount of `tokenIn` to be sold.
      * @param feePct The fee percentage. This is to be interpreted as a "distance" from the optimal execution price.
-     * @param to The address to receive the tokens bought.
+     * @param recipient The address to receive the tokens bought.
      * @param tradeIndex The index of the trade to fill.
      * @param amountToSend The amount of `tokenOut` to send to the requestor.
      * @param trader The address of the trader who initially requested the trade.
@@ -305,7 +323,7 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
         address tokenOut,
         uint256 amountIn,
         uint256 feePct,
-        address to,
+        address recipient,
         uint256 tradeIndex,
         uint256 amountToSend,
         address trader,
@@ -317,7 +335,7 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
             tokenOut,
             amountIn,
             feePct,
-            to,
+            recipient,
             tradeIndex
         );
 
@@ -340,7 +358,7 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
     @param tokenOut The token that was bought.
     @param amountIn The amount of `tokenIn` that was sold.
     @param feePct The fee percentage. This is to be interpreted as a "distance" from the optimal execution price.
-    @param to The address to receive the tokens bought.
+    @param recipient The address to receive the tokens bought.
     @param tradeIndex The index of the trade to settle.
      */
     function settleTrade(
@@ -348,7 +366,7 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
         address tokenOut,
         uint256 amountIn,
         uint256 feePct,
-        address to,
+        address recipient,
         uint256 tradeIndex
     ) external {
         bytes32 tradeId = _getTradeId(
@@ -356,7 +374,7 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
             tokenOut,
             amountIn,
             feePct,
-            to,
+            recipient,
             tradeIndex
         );
         // Check if the trade has already been settled, is not filled or does not exist.
@@ -376,7 +394,7 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
         delete filledBy[tradeId];
         delete filledAmount[tradeId];
 
-        ERC20(tokenOut).safeTransfer(to, amountToTrader);
+        ERC20(tokenOut).safeTransfer(recipient, amountToTrader);
         ERC20(tokenIn).safeTransfer(relayer, amountIn);
 
         emit TradeSettled(relayer, tradeId, amountToTrader, feePct);
@@ -391,7 +409,7 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
      * @param tokenOut The token that was bought.
      * @param amountIn The amount of `tokenIn` that was sold.
      * @param feePct The fee percentage. This is to be interpreted as a "distance" from the optimal execution price.
-     * @param to The address to receive the tokens bought.
+     * @param recipient The address to receive the tokens bought.
      * @param tradeIndex The index of the trade to dispute.
      */
     function disputeTrade(
@@ -399,7 +417,7 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
         address tokenOut,
         uint256 amountIn,
         uint256 feePct,
-        address to,
+        address recipient,
         uint256 tradeIndex
     ) external nonReentrant {
         bytes32 tradeId = _getTradeId(
@@ -407,7 +425,7 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
             tokenOut,
             amountIn,
             feePct,
-            to,
+            recipient,
             tradeIndex
         );
         uint256 filledHeight = filledAtBlock[tradeId];

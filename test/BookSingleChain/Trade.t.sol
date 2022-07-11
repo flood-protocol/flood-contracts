@@ -28,10 +28,17 @@ contract TradeTest is TradeFixture {
             testTokenOut,
             amount,
             feePct,
-            testTo,
+            testRecipient,
             tradeIndex
         );
-        _requestTrade(testTokenIn, testTokenOut, amount, feePct, testTo, alice);
+        _requestTrade(
+            testTokenIn,
+            testTokenOut,
+            amount,
+            feePct,
+            testRecipient,
+            alice
+        );
 
         // Check that the balance of Alice of `tokenIn` is reduced by `amount`.
         assertEq(ERC20(testTokenIn).balanceOf(alice), balanceBefore - amount);
@@ -45,7 +52,7 @@ contract TradeTest is TradeFixture {
             testTokenOut,
             testAmount,
             testFeePct,
-            testTo
+            testRecipient
         );
     }
 
@@ -58,17 +65,29 @@ contract TradeTest is TradeFixture {
                 token
             )
         );
-        book.requestTrade(token, testTokenOut, testFeePct, testAmount, testTo);
+        book.requestTrade(
+            token,
+            testTokenOut,
+            testFeePct,
+            testAmount,
+            testRecipient
+        );
     }
 
     function testCannotTradeSameToken() public {
         vm.expectRevert(BookSingleChain__SameToken.selector);
-        book.requestTrade(USDC, USDC, testAmount, testFeePct, testTo);
+        book.requestTrade(USDC, USDC, testAmount, testFeePct, testRecipient);
     }
 
     function testCannotTradeZeroAmount() public {
         vm.expectRevert(BookSingleChain__ZeroAmount.selector);
-        book.requestTrade(testTokenIn, testTokenOut, 0, testFeePct, testTo);
+        book.requestTrade(
+            testTokenIn,
+            testTokenOut,
+            0,
+            testFeePct,
+            testRecipient
+        );
     }
 
     function testCannotTradeAboveMaxFee() public {
@@ -84,7 +103,7 @@ contract TradeTest is TradeFixture {
             testTokenOut,
             testAmount,
             maxFeePct,
-            testTo
+            testRecipient
         );
     }
 
@@ -110,7 +129,7 @@ contract TradeTest is TradeFixture {
                 testTokenOut,
                 testAmount,
                 testFeePct,
-                testTo,
+                testRecipient,
                 tradeIndex
             )
         );
@@ -125,7 +144,17 @@ contract TradeTest is TradeFixture {
         vm.expectEmit(true, true, false, true, address(book));
         emit UpdatedFeeForTrade(alice, tradeId, newFeePct);
 
-        book.updateFeeForTrade(alice, tradeId, newFeePct, aliceSignature);
+        book.updateFeeForTrade(
+            testTokenIn,
+            testTokenOut,
+            testAmount,
+            testFeePct,
+            testRecipient,
+            tradeIndex,
+            alice,
+            newFeePct,
+            aliceSignature
+        );
     }
 
     function testCannotUpdateFeeWithInvalidSignature() public {
@@ -137,7 +166,7 @@ contract TradeTest is TradeFixture {
                 testTokenOut,
                 testAmount,
                 testFeePct,
-                testTo,
+                testRecipient,
                 tradeIndex
             )
         );
@@ -146,7 +175,17 @@ contract TradeTest is TradeFixture {
         // Sign a fee update with Bob's private key.
         bytes memory bobSignature = _signFeeUpdate(BOB_PK, tradeId, newFeePct);
         vm.expectRevert(BookSingleChain__InvalidSignature.selector);
-        book.updateFeeForTrade(alice, tradeId, newFeePct, bobSignature);
+        book.updateFeeForTrade(
+            testTokenIn,
+            testTokenOut,
+            testAmount,
+            testFeePct,
+            testRecipient,
+            tradeIndex,
+            alice,
+            newFeePct,
+            bobSignature
+        );
     }
 
     function testCannotUpdateFeePastMax() public {
@@ -158,7 +197,7 @@ contract TradeTest is TradeFixture {
                 testTokenOut,
                 testAmount,
                 testFeePct,
-                testTo,
+                testRecipient,
                 tradeIndex
             )
         );
@@ -175,7 +214,17 @@ contract TradeTest is TradeFixture {
                 newFeePct
             )
         );
-        book.updateFeeForTrade(alice, tradeId, newFeePct, aliceSignature);
+        book.updateFeeForTrade(
+            testTokenIn,
+            testTokenOut,
+            testAmount,
+            testFeePct,
+            testRecipient,
+            tradeIndex,
+            alice,
+            newFeePct,
+            aliceSignature
+        );
     }
 
     function testCannotUpdateFeeForFilledTrade() public {
@@ -187,7 +236,7 @@ contract TradeTest is TradeFixture {
                 testTokenOut,
                 testAmount,
                 testFeePct,
-                testTo,
+                testRecipient,
                 tradeIndex
             )
         );
@@ -212,7 +261,17 @@ contract TradeTest is TradeFixture {
                 tradeId
             )
         );
-        book.updateFeeForTrade(alice, tradeId, newFeePct, aliceSignature);
+        book.updateFeeForTrade(
+            testTokenIn,
+            testTokenOut,
+            testAmount,
+            testFeePct,
+            testRecipient,
+            tradeIndex,
+            alice,
+            newFeePct,
+            aliceSignature
+        );
     }
 
     function testFillTrade(uint256 amountIn, uint256 amountOut) public {
@@ -225,7 +284,7 @@ contract TradeTest is TradeFixture {
             testTokenOut,
             amountIn,
             testFeePct,
-            testTo,
+            testRecipient,
             alice
         );
 
@@ -239,7 +298,7 @@ contract TradeTest is TradeFixture {
             testTokenOut,
             amountIn,
             testFeePct,
-            testTo,
+            testRecipient,
             tradeIndex,
             amountOut
         );
@@ -280,7 +339,7 @@ contract TradeTest is TradeFixture {
             testTokenOut,
             amountIn,
             testFeePct,
-            testTo,
+            testRecipient,
             alice
         );
         deal(testTokenOut, bob, amountOut);
@@ -290,7 +349,7 @@ contract TradeTest is TradeFixture {
             testTokenOut,
             amountIn,
             testFeePct,
-            testTo,
+            testRecipient,
             tradeIndex,
             amountOut
         );
@@ -305,7 +364,7 @@ contract TradeTest is TradeFixture {
             testTokenOut,
             amountIn,
             testFeePct,
-            testTo,
+            testRecipient,
             tradeIndex,
             amountOut
         );
@@ -320,7 +379,7 @@ contract TradeTest is TradeFixture {
             testTokenOut,
             testAmount,
             testFeePct,
-            testTo,
+            testRecipient,
             1,
             amountOut
         );
@@ -340,7 +399,7 @@ contract TradeTest is TradeFixture {
             testTokenOut,
             amountIn,
             testFeePct,
-            testTo,
+            testRecipient,
             alice
         );
 
@@ -361,7 +420,7 @@ contract TradeTest is TradeFixture {
             testTokenOut,
             amountIn,
             testFeePct,
-            testTo,
+            testRecipient,
             tradeIndex,
             amountOut,
             alice,
@@ -404,7 +463,7 @@ contract TradeTest is TradeFixture {
                 testTokenOut,
                 testAmount,
                 testFeePct,
-                testTo,
+                testRecipient,
                 tradeIndex
             )
         );
@@ -434,7 +493,7 @@ contract TradeTest is TradeFixture {
             testTokenOut,
             testAmount,
             testFeePct,
-            testTo,
+            testRecipient,
             tradeIndex,
             1,
             alice,
@@ -452,7 +511,7 @@ contract TradeTest is TradeFixture {
                 testTokenOut,
                 testAmount,
                 testFeePct,
-                testTo,
+                testRecipient,
                 tradeIndex
             )
         );
@@ -476,7 +535,7 @@ contract TradeTest is TradeFixture {
             testTokenOut,
             testAmount,
             testFeePct,
-            testTo,
+            testRecipient,
             tradeIndex,
             1,
             alice,
@@ -494,7 +553,7 @@ contract TradeTest is TradeFixture {
                 testTokenOut,
                 testAmount,
                 testFeePct,
-                testTo,
+                testRecipient,
                 tradeIndex
             )
         );
@@ -508,7 +567,7 @@ contract TradeTest is TradeFixture {
             testTokenOut,
             testAmount,
             testFeePct,
-            testTo,
+            testRecipient,
             tradeIndex,
             1,
             alice,

@@ -22,7 +22,7 @@ contract TradeFixture is BaseBookFixture {
     address internal testTokenOut = USDC;
     uint256 internal testFeePct = 0.01e18;
     uint256 internal testAmount = 1 ether;
-    address internal testTo = charlie;
+    address internal testRecipient = charlie;
 
     function setUp() public virtual override {
         BaseBookFixture.setUp();
@@ -50,15 +50,15 @@ contract TradeFixture is BaseBookFixture {
         address tokenOut,
         uint256 amount,
         uint256 feePct,
-        address to,
+        address recipient,
         address who
     ) internal returns (uint256, bytes32) {
         uint256 tradeIndex = book.numberOfTrades();
         bytes32 tradeId = keccak256(
-            abi.encode(tokenIn, tokenOut, amount, feePct, to, tradeIndex)
+            abi.encode(tokenIn, tokenOut, amount, feePct, recipient, tradeIndex)
         );
         vm.prank(who);
-        book.requestTrade(tokenIn, tokenOut, amount, feePct, to);
+        book.requestTrade(tokenIn, tokenOut, amount, feePct, recipient);
         return (tradeIndex, tradeId);
     }
 

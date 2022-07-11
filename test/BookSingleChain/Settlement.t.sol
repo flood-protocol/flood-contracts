@@ -19,7 +19,7 @@ contract SettlementTest is TradeFixture {
             testTokenOut,
             testAmount,
             testFeePct,
-            testTo,
+            testRecipient,
             alice
         );
         tradeIndex = _tradeIndex;
@@ -38,7 +38,7 @@ contract SettlementTest is TradeFixture {
             testTokenOut,
             testAmount,
             testFeePct,
-            testTo,
+            testRecipient,
             tradeIndex,
             amountToSend
         );
@@ -82,7 +82,9 @@ contract SettlementTest is TradeFixture {
         uint256 filledAmount = filledAmountInStorageBefore;
 
         uint256 relayerBalanceBefore = ERC20(testTokenIn).balanceOf(relayer);
-        uint256 recipientBalanceBefore = ERC20(testTokenOut).balanceOf(testTo);
+        uint256 recipientBalanceBefore = ERC20(testTokenOut).balanceOf(
+            testRecipient
+        );
 
         // move to the end of the dispute period
         skipBlocks(book.safeBlockThreshold());
@@ -94,7 +96,7 @@ contract SettlementTest is TradeFixture {
             testTokenOut,
             testAmount,
             testFeePct,
-            testTo,
+            testRecipient,
             tradeIndex
         );
 
@@ -140,7 +142,7 @@ contract SettlementTest is TradeFixture {
             "Bob (Relayer) should have received the amount sold by the trader"
         );
         assertEq(
-            ERC20(testTokenOut).balanceOf(testTo),
+            ERC20(testTokenOut).balanceOf(testRecipient),
             recipientBalanceBefore + amountToSend,
             "The recipient of the trade should have received the amount sent by the relayer"
         );
@@ -155,7 +157,7 @@ contract SettlementTest is TradeFixture {
             testTokenOut,
             testAmount,
             testFeePct,
-            testTo,
+            testRecipient,
             tradeIndex,
             amountToSend
         );
@@ -170,7 +172,7 @@ contract SettlementTest is TradeFixture {
             testTokenOut,
             testAmount,
             testFeePct,
-            testTo,
+            testRecipient,
             tradeIndex
         );
     }
@@ -187,7 +189,7 @@ contract SettlementTest is TradeFixture {
             testTokenOut,
             testAmount,
             testFeePct,
-            testTo,
+            testRecipient,
             tradeIndex
         );
     }

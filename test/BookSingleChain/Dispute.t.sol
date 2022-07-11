@@ -20,7 +20,7 @@ contract DisputeTest is TradeFixture {
             testTokenOut,
             testAmount,
             testFeePct,
-            testTo,
+            testRecipient,
             alice
         );
         tradeIndex = _tradeIndex;
@@ -33,7 +33,7 @@ contract DisputeTest is TradeFixture {
             testTokenOut,
             testAmount,
             testFeePct,
-            testTo,
+            testRecipient,
             tradeIndex,
             testAmountToSend
         );
@@ -105,7 +105,7 @@ contract DisputeTest is TradeFixture {
             testTokenOut,
             testAmount,
             testFeePct,
-            testTo,
+            testRecipient,
             tradeIndex
         );
 
@@ -205,7 +205,7 @@ contract DisputeTest is TradeFixture {
             testTokenOut,
             testAmount,
             testFeePct,
-            testTo,
+            testRecipient,
             tradeIndex
         );
     }
@@ -217,7 +217,7 @@ contract DisputeTest is TradeFixture {
                 testTokenOut,
                 testAmount + 1,
                 testFeePct,
-                testTo,
+                testRecipient,
                 tradeIndex
             )
         );
@@ -233,7 +233,7 @@ contract DisputeTest is TradeFixture {
             testTokenOut,
             testAmount + 1,
             testFeePct,
-            testTo,
+            testRecipient,
             tradeIndex
         );
     }
