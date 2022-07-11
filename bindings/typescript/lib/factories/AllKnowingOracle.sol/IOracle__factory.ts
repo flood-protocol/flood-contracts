@@ -34,13 +34,7 @@ const _abi = [
       },
     ],
     name: "ask",
-    outputs: [
-      {
-        internalType: "bytes32",
-        name: "",
-        type: "bytes32",
-      },
-    ],
+    outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },
@@ -66,6 +60,40 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "address",
+        name: "proposer",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "disputer",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "bondToken",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "stake",
+        type: "uint256",
+      },
+    ],
+    name: "getRequestId",
+    outputs: [
+      {
+        internalType: "bytes32",
+        name: "",
+        type: "bytes32",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         internalType: "bytes32",
         name: "id",
         type: "bytes32",
@@ -79,6 +107,25 @@ const _abi = [
     name: "settle",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "token",
+        type: "address",
+      },
+    ],
+    name: "whitelistedTokens",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
 ];

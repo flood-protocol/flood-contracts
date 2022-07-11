@@ -18,7 +18,7 @@ pub mod ioracle_mod {
     use std::sync::Arc;
     pub static IORACLE_ABI: ethers::contract::Lazy<ethers::core::abi::Abi> =
         ethers::contract::Lazy::new(|| {
-            serde_json :: from_str ("[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"proposer\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"disputer\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"bondToken\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"stake\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"ask\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"stake\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"bondForStake\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"proposer\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"disputer\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"bondToken\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"stake\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getRequestId\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"id\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"bool\",\"name\":\"answer\",\"type\":\"bool\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"settle\",\"outputs\":[]}]") . expect ("invalid abi")
+            serde_json :: from_str ("[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"proposer\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"disputer\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"bondToken\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"stake\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"ask\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"stake\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"bondForStake\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"proposer\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"disputer\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"bondToken\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"stake\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getRequestId\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"id\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"bool\",\"name\":\"answer\",\"type\":\"bool\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"settle\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"whitelistedTokens\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]}]") . expect ("invalid abi")
         });
     pub struct IOracle<M>(ethers::contract::Contract<M>);
     impl<M> Clone for IOracle<M> {
@@ -95,6 +95,15 @@ pub mod ioracle_mod {
                 .method_hash([252, 54, 28, 56], (id, answer))
                 .expect("method not found (this should never happen)")
         }
+        #[doc = "Calls the contract's `whitelistedTokens` (0xdaf9c210) function"]
+        pub fn whitelisted_tokens(
+            &self,
+            token: ethers::core::types::Address,
+        ) -> ethers::contract::builders::ContractCall<M, bool> {
+            self.0
+                .method_hash([218, 249, 194, 16], token)
+                .expect("method not found (this should never happen)")
+        }
     }
     impl<M: ethers::providers::Middleware> From<ethers::contract::Contract<M>> for IOracle<M> {
         fn from(contract: ethers::contract::Contract<M>) -> Self {
@@ -167,12 +176,27 @@ pub mod ioracle_mod {
         pub id: [u8; 32],
         pub answer: bool,
     }
+    #[doc = "Container type for all input parameters for the `whitelistedTokens`function with signature `whitelistedTokens(address)` and selector `[218, 249, 194, 16]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethcall(name = "whitelistedTokens", abi = "whitelistedTokens(address)")]
+    pub struct WhitelistedTokensCall {
+        pub token: ethers::core::types::Address,
+    }
     #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
     pub enum IOracleCalls {
         Ask(AskCall),
         BondForStake(BondForStakeCall),
         GetRequestId(GetRequestIdCall),
         Settle(SettleCall),
+        WhitelistedTokens(WhitelistedTokensCall),
     }
     impl ethers::core::abi::AbiDecode for IOracleCalls {
         fn decode(data: impl AsRef<[u8]>) -> Result<Self, ethers::core::abi::AbiError> {
@@ -193,6 +217,11 @@ pub mod ioracle_mod {
             {
                 return Ok(IOracleCalls::Settle(decoded));
             }
+            if let Ok(decoded) =
+                <WhitelistedTokensCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(IOracleCalls::WhitelistedTokens(decoded));
+            }
             Err(ethers::core::abi::Error::InvalidData.into())
         }
     }
@@ -203,6 +232,7 @@ pub mod ioracle_mod {
                 IOracleCalls::BondForStake(element) => element.encode(),
                 IOracleCalls::GetRequestId(element) => element.encode(),
                 IOracleCalls::Settle(element) => element.encode(),
+                IOracleCalls::WhitelistedTokens(element) => element.encode(),
             }
         }
     }
@@ -213,6 +243,7 @@ pub mod ioracle_mod {
                 IOracleCalls::BondForStake(element) => element.fmt(f),
                 IOracleCalls::GetRequestId(element) => element.fmt(f),
                 IOracleCalls::Settle(element) => element.fmt(f),
+                IOracleCalls::WhitelistedTokens(element) => element.fmt(f),
             }
         }
     }
@@ -234,6 +265,11 @@ pub mod ioracle_mod {
     impl ::std::convert::From<SettleCall> for IOracleCalls {
         fn from(var: SettleCall) -> Self {
             IOracleCalls::Settle(var)
+        }
+    }
+    impl ::std::convert::From<WhitelistedTokensCall> for IOracleCalls {
+        fn from(var: WhitelistedTokensCall) -> Self {
+            IOracleCalls::WhitelistedTokens(var)
         }
     }
 }

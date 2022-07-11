@@ -27,11 +27,18 @@ export interface IOracleInterface extends utils.Interface {
   functions: {
     "ask(address,address,address,uint256)": FunctionFragment;
     "bondForStake(uint256)": FunctionFragment;
+    "getRequestId(address,address,address,uint256)": FunctionFragment;
     "settle(bytes32,bool)": FunctionFragment;
+    "whitelistedTokens(address)": FunctionFragment;
   };
 
   getFunction(
-    nameOrSignatureOrTopic: "ask" | "bondForStake" | "settle"
+    nameOrSignatureOrTopic:
+      | "ask"
+      | "bondForStake"
+      | "getRequestId"
+      | "settle"
+      | "whitelistedTokens"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -48,8 +55,21 @@ export interface IOracleInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
+    functionFragment: "getRequestId",
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<string>,
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>
+    ]
+  ): string;
+  encodeFunctionData(
     functionFragment: "settle",
     values: [PromiseOrValue<BytesLike>, PromiseOrValue<boolean>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "whitelistedTokens",
+    values: [PromiseOrValue<string>]
   ): string;
 
   decodeFunctionResult(functionFragment: "ask", data: BytesLike): Result;
@@ -57,7 +77,15 @@ export interface IOracleInterface extends utils.Interface {
     functionFragment: "bondForStake",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "getRequestId",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "settle", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "whitelistedTokens",
+    data: BytesLike
+  ): Result;
 
   events: {};
 }
@@ -102,11 +130,24 @@ export interface IOracle extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
+    getRequestId(
+      proposer: PromiseOrValue<string>,
+      disputer: PromiseOrValue<string>,
+      bondToken: PromiseOrValue<string>,
+      stake: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
     settle(
       id: PromiseOrValue<BytesLike>,
       answer: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
+
+    whitelistedTokens(
+      token: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
   };
 
   ask(
@@ -122,11 +163,24 @@ export interface IOracle extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  getRequestId(
+    proposer: PromiseOrValue<string>,
+    disputer: PromiseOrValue<string>,
+    bondToken: PromiseOrValue<string>,
+    stake: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
   settle(
     id: PromiseOrValue<BytesLike>,
     answer: PromiseOrValue<boolean>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
+
+  whitelistedTokens(
+    token: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
 
   callStatic: {
     ask(
@@ -135,18 +189,31 @@ export interface IOracle extends BaseContract {
       bondToken: PromiseOrValue<string>,
       stake: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<string>;
+    ): Promise<void>;
 
     bondForStake(
       stake: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getRequestId(
+      proposer: PromiseOrValue<string>,
+      disputer: PromiseOrValue<string>,
+      bondToken: PromiseOrValue<string>,
+      stake: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
     settle(
       id: PromiseOrValue<BytesLike>,
       answer: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    whitelistedTokens(
+      token: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
   };
 
   filters: {};
@@ -165,10 +232,23 @@ export interface IOracle extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getRequestId(
+      proposer: PromiseOrValue<string>,
+      disputer: PromiseOrValue<string>,
+      bondToken: PromiseOrValue<string>,
+      stake: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     settle(
       id: PromiseOrValue<BytesLike>,
       answer: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    whitelistedTokens(
+      token: PromiseOrValue<string>,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
   };
 
@@ -186,10 +266,23 @@ export interface IOracle extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    getRequestId(
+      proposer: PromiseOrValue<string>,
+      disputer: PromiseOrValue<string>,
+      bondToken: PromiseOrValue<string>,
+      stake: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     settle(
       id: PromiseOrValue<BytesLike>,
       answer: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    whitelistedTokens(
+      token: PromiseOrValue<string>,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };
 }

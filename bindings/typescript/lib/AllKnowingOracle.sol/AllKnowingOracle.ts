@@ -32,6 +32,7 @@ export interface AllKnowingOracleInterface extends utils.Interface {
     "ask(address,address,address,uint256)": FunctionFragment;
     "bondForStake(uint256)": FunctionFragment;
     "disputeBondPct()": FunctionFragment;
+    "getRequestId(address,address,address,uint256)": FunctionFragment;
     "owner()": FunctionFragment;
     "requests(bytes32)": FunctionFragment;
     "setBondPct(uint256)": FunctionFragment;
@@ -48,6 +49,7 @@ export interface AllKnowingOracleInterface extends utils.Interface {
       | "ask"
       | "bondForStake"
       | "disputeBondPct"
+      | "getRequestId"
       | "owner"
       | "requests"
       | "setBondPct"
@@ -75,6 +77,15 @@ export interface AllKnowingOracleInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "disputeBondPct",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getRequestId",
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<string>,
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>
+    ]
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
@@ -117,6 +128,10 @@ export interface AllKnowingOracleInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "disputeBondPct",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getRequestId",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
@@ -268,6 +283,14 @@ export interface AllKnowingOracle extends BaseContract {
 
     disputeBondPct(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    getRequestId(
+      proposer: PromiseOrValue<string>,
+      disputer: PromiseOrValue<string>,
+      bondToken: PromiseOrValue<string>,
+      stake: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
     owner(overrides?: CallOverrides): Promise<[string]>;
 
     requests(
@@ -339,6 +362,14 @@ export interface AllKnowingOracle extends BaseContract {
 
   disputeBondPct(overrides?: CallOverrides): Promise<BigNumber>;
 
+  getRequestId(
+    proposer: PromiseOrValue<string>,
+    disputer: PromiseOrValue<string>,
+    bondToken: PromiseOrValue<string>,
+    stake: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
   owner(overrides?: CallOverrides): Promise<string>;
 
   requests(
@@ -401,7 +432,7 @@ export interface AllKnowingOracle extends BaseContract {
       bondToken: PromiseOrValue<string>,
       stake: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<string>;
+    ): Promise<void>;
 
     bondForStake(
       stake: PromiseOrValue<BigNumberish>,
@@ -409,6 +440,14 @@ export interface AllKnowingOracle extends BaseContract {
     ): Promise<BigNumber>;
 
     disputeBondPct(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getRequestId(
+      proposer: PromiseOrValue<string>,
+      disputer: PromiseOrValue<string>,
+      bondToken: PromiseOrValue<string>,
+      stake: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<string>;
 
     owner(overrides?: CallOverrides): Promise<string>;
 
@@ -540,6 +579,14 @@ export interface AllKnowingOracle extends BaseContract {
 
     disputeBondPct(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getRequestId(
+      proposer: PromiseOrValue<string>,
+      disputer: PromiseOrValue<string>,
+      bondToken: PromiseOrValue<string>,
+      stake: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
     requests(
@@ -601,6 +648,14 @@ export interface AllKnowingOracle extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     disputeBondPct(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getRequestId(
+      proposer: PromiseOrValue<string>,
+      disputer: PromiseOrValue<string>,
+      bondToken: PromiseOrValue<string>,
+      stake: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
