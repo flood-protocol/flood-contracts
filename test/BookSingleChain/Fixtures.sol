@@ -107,7 +107,7 @@ contract TradeFixture is BaseBookFixture {
         uint256 newFeePct
     ) internal returns (bytes memory) {
         bytes32 messageHash = keccak256(
-            abi.encode(SIGNATURE_DELIMITER, tradeId, newFeePct)
+            abi.encodePacked(SIGNATURE_DELIMITER, tradeId, newFeePct)
         );
         bytes32 ethSignedMessageHash = ECDSA.toEthSignedMessageHash(
             messageHash

@@ -462,7 +462,7 @@ contract BookSingleChain is Owned, ReentrancyGuard {
         }
 
         bytes32 expectedMessageHash = keccak256(
-            abi.encode(SIGNATURE_DELIMITER, tradeId, newFeePct)
+            abi.encodePacked(SIGNATURE_DELIMITER, tradeId, newFeePct)
         );
 
         bytes32 ethSignedMessageHash = ECDSA.toEthSignedMessageHash(
