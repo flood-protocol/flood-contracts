@@ -10,7 +10,7 @@ import "./AllKnowingOracle.sol";
 
 interface IBookSingleChainEvents {
     event SafeBlockThresholdChanged(uint256 newSafeBlockThreshold);
-    event MaxFeePctChanged(uint128 newMaxFeePct);
+    event MaxFeePctChanged(uint256 newMaxFeePct);
     event TokenWhitelisted(address indexed token, bool whitelisted);
     event TradeRequested(
         address indexed tokenIn,
@@ -76,11 +76,11 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
     using SafeTransferLib for ERC20;
 
     // Number of trades done so far. Used to generate trade ids.
-    uint128 public numberOfTrades = 0;
+    uint256 public numberOfTrades = 0;
     // The amountIn of blocks in which a trade can be disputed.
     uint256 public safeBlockThreshold;
     // The maximum % off the optimal quote allowed. 1e18 is 100%.
-    uint128 public maxFeePct;
+    uint256 public maxFeePct;
     // A mapping with the tokens that are supported by this contract.
     mapping(address => bool) public whitelistedTokens;
 
@@ -150,7 +150,7 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
      * @notice Changes the maximum fee percentage.
      * @param newMaxFeePct The new maximum fee percentage.
      */
-    function setMaxFeePct(uint128 newMaxFeePct) external onlyOwner {
+    function setMaxFeePct(uint256 newMaxFeePct) external onlyOwner {
         if (newMaxFeePct >= 1e18) {
             revert BookSingleChain__NewFeePctTooHigh();
         }
@@ -257,7 +257,7 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
         uint256 amountIn,
         uint256 feePct,
         address to,
-        uint128 tradeIndex,
+        uint256 tradeIndex,
         uint256 amountToSend
     ) external {
         // We don't need to check if the trade is valid, as the relayer is expected to do that off-chain.
@@ -306,7 +306,7 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
         uint256 amountIn,
         uint256 feePct,
         address to,
-        uint128 tradeIndex,
+        uint256 tradeIndex,
         uint256 amountToSend,
         address trader,
         uint256 newFeePct,
@@ -349,7 +349,7 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
         uint256 amountIn,
         uint256 feePct,
         address to,
-        uint128 tradeIndex
+        uint256 tradeIndex
     ) external {
         bytes32 tradeId = _getTradeId(
             tokenIn,
@@ -400,7 +400,7 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
         uint256 amountIn,
         uint256 feePct,
         address to,
-        uint128 tradeIndex
+        uint256 tradeIndex
     ) external nonReentrant {
         bytes32 tradeId = _getTradeId(
             tokenIn,
@@ -511,7 +511,7 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
         uint256 amountIn,
         uint256 feePct,
         address to,
-        uint128 tradeIndex
+        uint256 tradeIndex
     ) internal pure returns (bytes32) {
         return
             keccak256(

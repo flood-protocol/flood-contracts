@@ -130,7 +130,7 @@ contract TradeTest is TradeFixture {
 
     function testCannotUpdateFeeWithInvalidSignature() public {
         // Simulate a trade request. We assume that the request is valid and executed correctly.
-        uint128 tradeIndex = book.numberOfTrades() + 1;
+        uint256 tradeIndex = book.numberOfTrades() + 1;
         bytes32 tradeId = keccak256(
             abi.encode(
                 testTokenIn,
@@ -151,7 +151,7 @@ contract TradeTest is TradeFixture {
 
     function testCannotUpdateFeePastMax() public {
         // Simulate a trade request. We assume that the request is valid and executed correctly.
-        uint128 tradeIndex = book.numberOfTrades() + 1;
+        uint256 tradeIndex = book.numberOfTrades() + 1;
         bytes32 tradeId = keccak256(
             abi.encode(
                 testTokenIn,
@@ -220,7 +220,7 @@ contract TradeTest is TradeFixture {
 
         vm.prank(alice);
         deal(testTokenIn, alice, amountIn);
-        (uint128 tradeIndex, bytes32 tradeId) = _requestTrade(
+        (uint256 tradeIndex, bytes32 tradeId) = _requestTrade(
             testTokenIn,
             testTokenOut,
             amountIn,
@@ -275,7 +275,7 @@ contract TradeTest is TradeFixture {
     {
         vm.assume(amountIn > 0);
         deal(testTokenIn, alice, amountIn);
-        (uint128 tradeIndex, bytes32 tradeId) = _requestTrade(
+        (uint256 tradeIndex, bytes32 tradeId) = _requestTrade(
             testTokenIn,
             testTokenOut,
             amountIn,
@@ -335,7 +335,7 @@ contract TradeTest is TradeFixture {
         vm.assume(newFeePct < book.maxFeePct());
         vm.prank(alice);
         deal(testTokenIn, alice, amountIn);
-        (uint128 tradeIndex, bytes32 tradeId) = _requestTrade(
+        (uint256 tradeIndex, bytes32 tradeId) = _requestTrade(
             testTokenIn,
             testTokenOut,
             amountIn,
@@ -397,7 +397,7 @@ contract TradeTest is TradeFixture {
 
     function testCannotFillWithUpdateFeeForFilledTrade() public {
         // Simulate a trade request. We assume that the request is valid and executed correctly.
-        uint128 tradeIndex = book.numberOfTrades() + 1;
+        uint256 tradeIndex = book.numberOfTrades() + 1;
         bytes32 tradeId = keccak256(
             abi.encode(
                 testTokenIn,
@@ -445,7 +445,7 @@ contract TradeTest is TradeFixture {
 
     function testCannotFillWithUpdateFeePastMax() public {
         // Simulate a trade request. We assume that the request is valid and executed correctly.
-        uint128 tradeIndex = book.numberOfTrades() + 1;
+        uint256 tradeIndex = book.numberOfTrades() + 1;
         bytes32 tradeId = keccak256(
             abi.encode(
                 testTokenIn,
@@ -487,7 +487,7 @@ contract TradeTest is TradeFixture {
 
     function testCannotFillTradeWithUpdateFeeWithInvalidSignature() public {
         // Simulate a trade request. We assume that the request is valid and executed correctly.
-        uint128 tradeIndex = book.numberOfTrades() + 1;
+        uint256 tradeIndex = book.numberOfTrades() + 1;
         bytes32 tradeId = keccak256(
             abi.encode(
                 testTokenIn,

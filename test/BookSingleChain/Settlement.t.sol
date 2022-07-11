@@ -8,13 +8,13 @@ import "./Fixtures.sol";
 contract SettlementTest is TradeFixture {
     using stdStorage for StdStorage;
 
-    uint128 internal tradeIndex;
+    uint256 internal tradeIndex;
     bytes32 internal tradeId;
 
     function setUp() public override {
         super.setUp();
         deal(testTokenIn, alice, testAmount);
-        (uint128 _tradeIndex, bytes32 _tradeId) = _requestTrade(
+        (uint256 _tradeIndex, bytes32 _tradeId) = _requestTrade(
             testTokenIn,
             testTokenOut,
             testAmount,

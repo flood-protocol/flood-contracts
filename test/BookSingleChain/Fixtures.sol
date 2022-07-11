@@ -52,8 +52,8 @@ contract TradeFixture is BaseBookFixture {
         uint256 feePct,
         address to,
         address who
-    ) internal returns (uint128, bytes32) {
-        uint128 tradeIndex = book.numberOfTrades();
+    ) internal returns (uint256, bytes32) {
+        uint256 tradeIndex = book.numberOfTrades();
         bytes32 tradeId = keccak256(
             abi.encode(tokenIn, tokenOut, amount, feePct, to, tradeIndex)
         );
@@ -82,7 +82,7 @@ contract TradeFixture is BaseBookFixture {
         uint256 _amountIn,
         uint256 _feePct,
         address _to,
-        uint128 _tradeIndex,
+        uint256 _tradeIndex,
         uint256 _amountToSend
     ) internal {
         book.fillTrade(
