@@ -17,11 +17,9 @@ contract AdminTest is IAllKnowingOracleEvents, OracleFixture {
         emit TokenWhitelisted(token, enabled);
         oracle.whitelistToken(token, enabled);
 
-        bool storageEnabled = stdstore
-            .target(address(oracle))
-            .sig(oracle.whitelistedTokens.selector)
-            .with_key(token)
-            .read_bool();
+        bool storageEnabled = stdstore.target(address(oracle)).sig(
+            oracle.whitelistedTokens.selector
+        ).with_key(token).read_bool();
 
         assertEq(storageEnabled, enabled);
     }
@@ -37,11 +35,9 @@ contract AdminTest is IAllKnowingOracleEvents, OracleFixture {
         emit SettlerWhitelisted(settler, enabled);
         oracle.whitelistSettler(settler, enabled);
 
-        bool storageEnabled = stdstore
-            .target(address(oracle))
-            .sig(oracle.settlers.selector)
-            .with_key(settler)
-            .read_bool();
+        bool storageEnabled = stdstore.target(address(oracle)).sig(
+            oracle.settlers.selector
+        ).with_key(settler).read_bool();
 
         assertEq(storageEnabled, enabled);
     }

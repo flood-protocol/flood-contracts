@@ -15,26 +15,24 @@ contract AdminTest is BaseBookFixture {
         }
 
         // check that the whitelisted mapping starts as false
-        bool whitelistedBefore = stdstore
-            .target(address(book))
-            .sig(book.whitelistedTokens.selector)
-            .with_key(token)
-            .read_bool();
+        bool whitelistedBefore = stdstore.target(address(book)).sig(
+            book.whitelistedTokens.selector
+        ).with_key(token).read_bool();
         assertFalse(whitelistedBefore);
 
         vm.expectEmit(true, false, false, true, address(book));
         emit TokenWhitelisted(token, enabled);
         book.whitelistToken(token, enabled);
         // check that the whitelisted mapping has correctly been updated
-        bool realWhitelisted = stdstore
-            .target(address(book))
-            .sig(book.whitelistedTokens.selector)
-            .with_key(token)
-            .read_bool();
+        bool realWhitelisted = stdstore.target(address(book)).sig(
+            book.whitelistedTokens.selector
+        ).with_key(token).read_bool();
         assertEq(realWhitelisted, enabled, "Token should be whitelisted");
     }
 
-    function testCannotWhitelistAsNonOwner(address token, bool enabled) public {
+    function testCannotWhitelistAsNonOwner(address token, bool enabled)
+        public
+    {
         vm.expectRevert(bytes("UNAUTHORIZED"));
         vm.prank(alice);
         book.whitelistToken(token, enabled);
@@ -43,10 +41,7 @@ contract AdminTest is BaseBookFixture {
     function testCannotWhitelistUnsafeToken(address token) public {
         vm.assume(oracle.whitelistedTokens(token) == false);
         vm.expectRevert(
-            abi.encodeWithSelector(
-                BookSingleChain__UnsafeTokenToWhitelist.selector,
-                token
-            )
+            abi.encodeWithSelector(BookSingleChain__UnsafeTokenToWhitelist.selector, token)
         );
         book.whitelistToken(token, true);
     }
@@ -60,15 +55,10 @@ contract AdminTest is BaseBookFixture {
         vm.expectEmit(true, false, false, true, address(book));
         emit SafeBlockThresholdChanged(newThreshold);
         book.setSafeBlockThreshold(newThreshold);
-        uint256 storageThreshold = stdstore
-            .target(address(book))
-            .sig(book.safeBlockThreshold.selector)
-            .read_uint();
-        assertEq(
-            storageThreshold,
-            newThreshold,
-            "Threashold should be updated"
-        );
+        uint256 storageThreshold = stdstore.target(address(book)).sig(
+            book.safeBlockThreshold.selector
+        ).read_uint();
+        assertEq(storageThreshold, newThreshold, "Threashold should be updated");
     }
 
     function testMaxFeePctChange(uint128 newFee) public {
@@ -86,10 +76,7 @@ contract AdminTest is BaseBookFixture {
         emit MaxFeePctChanged(newFee);
         book.setMaxFeePct(newFee);
         uint128 storageFeePct = uint128(
-            stdstore
-                .target(address(book))
-                .sig(book.maxFeePct.selector)
-                .read_uint()
+            stdstore.target(address(book)).sig(book.maxFeePct.selector).read_uint()
         );
         assertEq(storageFeePct, newFee, "Max fee should be updated");
     }

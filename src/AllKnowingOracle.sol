@@ -33,7 +33,8 @@ interface IOracle {
         address disputer,
         address bondToken,
         uint256 stake
-    ) external;
+    )
+        external;
 
     function settle(bytes32 id, bool answer) external;
 
@@ -44,7 +45,10 @@ interface IOracle {
         address disputer,
         address bondToken,
         uint256 stake
-    ) external view returns (bytes32);
+    )
+        external
+        view
+        returns (bytes32);
 
     function whitelistedTokens(address token) external view returns (bool);
 }
@@ -64,9 +68,11 @@ contract AllKnowingOracle is IOracle, Owned {
     // Percentage of stake which must be bonded by disputer, in % points (1%)
     uint256 public disputeBondPct;
 
-    /****************************************
+    /**
+     ***************************************
      *                EVENTS                *
-     ****************************************/
+     ***************************************
+     */
 
     event TokenWhitelisted(address indexed token, bool enabled);
     event SettlerWhitelisted(address indexed settler, bool enabled);
@@ -99,9 +105,11 @@ contract AllKnowingOracle is IOracle, Owned {
         emit BondPctChanged(disputeBondPct);
     }
 
-    /**************************************
+    /**
+     *************************************
      *          ADMIN FUNCTIONS           *
-     **************************************/
+     *************************************
+     */
 
     /**
      @notice Whitelist a token for use in the contract.
@@ -121,9 +129,11 @@ contract AllKnowingOracle is IOracle, Owned {
         emit SettlerWhitelisted(settler, enabled);
     }
 
-    /**************************************
+    /**
+     *************************************
      *          EXTERNAL FUNCTIONS         *
-     **************************************/
+     *************************************
+     */
 
     /**
      * @notice Calculates the bond amount for a given stake.
@@ -149,7 +159,11 @@ contract AllKnowingOracle is IOracle, Owned {
         address disputer,
         address bondToken,
         uint256 stake
-    ) external view returns (bytes32) {
+    )
+        external
+        view
+        returns (bytes32)
+    {
         uint256 bond = _bondForStake(stake);
         return _getRequestId(proposer, disputer, bondToken, stake, bond);
     }
@@ -168,7 +182,9 @@ contract AllKnowingOracle is IOracle, Owned {
         address disputer,
         address bondToken,
         uint256 stake
-    ) external {
+    )
+        external
+    {
         // Check if the token is whitelisted
         if (!whitelistedTokens[bondToken]) {
             revert AllKnowingOracle__NotWhitelisted(bondToken);
@@ -185,13 +201,7 @@ contract AllKnowingOracle is IOracle, Owned {
 
         // Create the request
         Request memory request = Request(
-            proposer,
-            disputer,
-            bondToken,
-            stake,
-            bond,
-            false,
-            RequestState.Pending
+            proposer, disputer, bondToken, stake, bond, false, RequestState.Pending
         );
 
         // Store the request
@@ -218,13 +228,11 @@ contract AllKnowingOracle is IOracle, Owned {
         // If the answer is correct, the proposer wins the bond
         if (answer) {
             ERC20(request.bondToken).safeTransfer(
-                request.proposer,
-                request.bond + request.stake
+                request.proposer, request.bond + request.stake
             );
         } else {
             ERC20(request.bondToken).safeTransfer(
-                request.disputer,
-                request.bond + request.stake
+                request.disputer, request.bond + request.stake
             );
         }
         // Update the request state
@@ -235,9 +243,11 @@ contract AllKnowingOracle is IOracle, Owned {
         emit RequestSettled(id, answer);
     }
 
-    /**************************************
+    /**
+     *************************************
      *          INTERNAL FUNCTIONS         *
-     **************************************/
+     *************************************
+     */
 
     /**
      * @notice Calculates the bond amount for a given stake.
@@ -252,8 +262,11 @@ contract AllKnowingOracle is IOracle, Owned {
         address bondToken,
         uint256 stake,
         uint256 bond
-    ) internal pure returns (bytes32) {
-        return
-            keccak256(abi.encode(proposer, disputer, bondToken, stake, bond));
+    )
+        internal
+        pure
+        returns (bytes32)
+    {
+        return keccak256(abi.encode(proposer, disputer, bondToken, stake, bond));
     }
 }

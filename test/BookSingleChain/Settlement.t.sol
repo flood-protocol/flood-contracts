@@ -15,12 +15,7 @@ contract SettlementTest is TradeFixture {
         super.setUp();
         deal(testTokenIn, alice, testAmount);
         (uint256 _tradeIndex, bytes32 _tradeId) = _requestTrade(
-            testTokenIn,
-            testTokenOut,
-            testAmount,
-            testFeePct,
-            testRecipient,
-            alice
+            testTokenIn, testTokenOut, testAmount, testFeePct, testRecipient, alice
         );
         tradeIndex = _tradeIndex;
         tradeId = _tradeId;
@@ -44,22 +39,18 @@ contract SettlementTest is TradeFixture {
         );
 
         // lets check the trade was filled correctly and storage variables are set
-        uint256 filledAmountInStorageBefore = stdstore
-            .target(address(book))
-            .sig(book.filledAmount.selector)
-            .with_key(tradeId)
-            .read_uint();
+        uint256 filledAmountInStorageBefore = stdstore.target(address(book)).sig(
+            book.filledAmount.selector
+        ).with_key(tradeId).read_uint();
 
         assertEq(
             filledAmountInStorageBefore,
             amountToSend,
             "Filled amount should be equal to the amount sent"
         );
-        address filledByInStorageBefore = stdstore
-            .target(address(book))
-            .sig(book.filledBy.selector)
-            .with_key(tradeId)
-            .read_address();
+        address filledByInStorageBefore = stdstore.target(address(book)).sig(
+            book.filledBy.selector
+        ).with_key(tradeId).read_address();
 
         assertEq(
             filledByInStorageBefore,
@@ -67,11 +58,8 @@ contract SettlementTest is TradeFixture {
             "Filled by should be equal to the address of the relayer"
         );
 
-        uint256 filledAtBlockInStorageBefore = stdstore
-            .target(address(book))
-            .sig(book.filledAtBlock.selector)
-            .with_key(tradeId)
-            .read_uint();
+        uint256 filledAtBlockInStorageBefore = stdstore.target(address(book))
+            .sig(book.filledAtBlock.selector).with_key(tradeId).read_uint();
 
         assertEq(
             filledAtBlockInStorageBefore,
@@ -82,9 +70,8 @@ contract SettlementTest is TradeFixture {
         uint256 filledAmount = filledAmountInStorageBefore;
 
         uint256 relayerBalanceBefore = ERC20(testTokenIn).balanceOf(relayer);
-        uint256 recipientBalanceBefore = ERC20(testTokenOut).balanceOf(
-            testRecipient
-        );
+        uint256 recipientBalanceBefore =
+            ERC20(testTokenOut).balanceOf(testRecipient);
 
         // move to the end of the dispute period
         skipBlocks(book.safeBlockThreshold());
@@ -101,38 +88,26 @@ contract SettlementTest is TradeFixture {
         );
 
         // check that the storage variables have been reset
-        uint256 filledAmountInStorageAfter = stdstore
-            .target(address(book))
-            .sig(book.filledAmount.selector)
-            .with_key(tradeId)
-            .read_uint();
+        uint256 filledAmountInStorageAfter = stdstore.target(address(book)).sig(
+            book.filledAmount.selector
+        ).with_key(tradeId).read_uint();
 
         assertEq(
-            filledAmountInStorageAfter,
-            0,
-            "Filled amount should be equal to 0"
+            filledAmountInStorageAfter, 0, "Filled amount should be equal to 0"
         );
-        address filledByInStorageAfter = stdstore
-            .target(address(book))
-            .sig(book.filledBy.selector)
-            .with_key(tradeId)
-            .read_address();
+        address filledByInStorageAfter = stdstore.target(address(book)).sig(
+            book.filledBy.selector
+        ).with_key(tradeId).read_address();
 
         assertEq(
-            filledByInStorageAfter,
-            address(0),
-            "Filled by should be equal to 0"
+            filledByInStorageAfter, address(0), "Filled by should be equal to 0"
         );
-        uint256 filledAtBlockInStorageAfter = stdstore
-            .target(address(book))
-            .sig(book.filledAtBlock.selector)
-            .with_key(tradeId)
-            .read_uint();
+        uint256 filledAtBlockInStorageAfter = stdstore.target(address(book)).sig(
+            book.filledAtBlock.selector
+        ).with_key(tradeId).read_uint();
 
         assertEq(
-            filledAtBlockInStorageAfter,
-            0,
-            "Filled at block should be equal to 0"
+            filledAtBlockInStorageAfter, 0, "Filled at block should be equal to 0"
         );
 
         // check that the trade was settled correctly
@@ -149,7 +124,7 @@ contract SettlementTest is TradeFixture {
     }
 
     function testCannotSettleBeforeThreshold() public {
-        uint256 amountToSend = 2000_10e6;
+        uint256 amountToSend = 200010e6;
         deal(testTokenOut, bob, amountToSend);
         vm.prank(bob);
         _fillTrade(
@@ -163,8 +138,7 @@ contract SettlementTest is TradeFixture {
         );
         vm.expectRevert(
             abi.encodeWithSelector(
-                BookSingleChain__DisputePeriodNotOver.selector,
-                testSafeBlockThreashold
+                BookSingleChain__DisputePeriodNotOver.selector, testSafeBlockThreashold
             )
         );
         book.settleTrade(
@@ -179,10 +153,7 @@ contract SettlementTest is TradeFixture {
 
     function testCannotSettleIfNotFilled() public {
         vm.expectRevert(
-            abi.encodeWithSelector(
-                BookSingleChain__TradeNotFilled.selector,
-                tradeId
-            )
+            abi.encodeWithSelector(BookSingleChain__TradeNotFilled.selector, tradeId)
         );
         book.settleTrade(
             testTokenIn,

@@ -24,20 +24,10 @@ contract TradeTest is TradeFixture {
 
         vm.expectEmit(true, true, true, true, address(book));
         emit TradeRequested(
-            testTokenIn,
-            testTokenOut,
-            amount,
-            feePct,
-            testRecipient,
-            tradeIndex
-        );
+            testTokenIn, testTokenOut, amount, feePct, testRecipient, tradeIndex
+            );
         _requestTrade(
-            testTokenIn,
-            testTokenOut,
-            amount,
-            feePct,
-            testRecipient,
-            alice
+            testTokenIn, testTokenOut, amount, feePct, testRecipient, alice
         );
 
         // Check that the balance of Alice of `tokenIn` is reduced by `amount`.
@@ -48,11 +38,7 @@ contract TradeTest is TradeFixture {
         vm.expectRevert(bytes("TRANSFER_FROM_FAILED"));
         vm.prank(alice);
         book.requestTrade(
-            testTokenIn,
-            testTokenOut,
-            testAmount,
-            testFeePct,
-            testRecipient
+            testTokenIn, testTokenOut, testAmount, testFeePct, testRecipient
         );
     }
 
@@ -60,17 +46,10 @@ contract TradeTest is TradeFixture {
         // check that the random token is not whitelisted
         vm.assume(!book.whitelistedTokens(token));
         vm.expectRevert(
-            abi.encodeWithSelector(
-                BookSingleChain__InvalidToken.selector,
-                token
-            )
+            abi.encodeWithSelector(BookSingleChain__InvalidToken.selector, token)
         );
         book.requestTrade(
-            token,
-            testTokenOut,
-            testFeePct,
-            testAmount,
-            testRecipient
+            token, testTokenOut, testFeePct, testAmount, testRecipient
         );
     }
 
@@ -82,28 +61,17 @@ contract TradeTest is TradeFixture {
     function testCannotTradeZeroAmount() public {
         vm.expectRevert(BookSingleChain__ZeroAmount.selector);
         book.requestTrade(
-            testTokenIn,
-            testTokenOut,
-            0,
-            testFeePct,
-            testRecipient
+            testTokenIn, testTokenOut, 0, testFeePct, testRecipient
         );
     }
 
     function testCannotTradeAboveMaxFee() public {
         uint256 maxFeePct = book.maxFeePct() + 1;
         vm.expectRevert(
-            abi.encodeWithSelector(
-                BookSingleChain__FeePctTooHigh.selector,
-                maxFeePct
-            )
+            abi.encodeWithSelector(BookSingleChain__FeePctTooHigh.selector, maxFeePct)
         );
         book.requestTrade(
-            testTokenIn,
-            testTokenOut,
-            testAmount,
-            maxFeePct,
-            testRecipient
+            testTokenIn, testTokenOut, testAmount, maxFeePct, testRecipient
         );
     }
 
@@ -112,11 +80,7 @@ contract TradeTest is TradeFixture {
 
         vm.expectRevert(BookSingleChain__SentToBlackHole.selector);
         book.requestTrade(
-            testTokenIn,
-            testTokenOut,
-            testAmount,
-            testFeePct,
-            blackHole
+            testTokenIn, testTokenOut, testAmount, testFeePct, blackHole
         );
     }
 
@@ -135,11 +99,8 @@ contract TradeTest is TradeFixture {
         );
 
         uint256 newFeePct = testFeePct + 1;
-        bytes memory aliceSignature = _signFeeUpdate(
-            ALICE_PK,
-            tradeId,
-            newFeePct
-        );
+        bytes memory aliceSignature =
+            _signFeeUpdate(ALICE_PK, tradeId, newFeePct);
 
         vm.expectEmit(true, true, false, true, address(book));
         emit UpdatedFeeForTrade(alice, tradeIndex, newFeePct);
@@ -203,16 +164,10 @@ contract TradeTest is TradeFixture {
         );
 
         uint256 newFeePct = book.maxFeePct() + 1;
-        bytes memory aliceSignature = _signFeeUpdate(
-            ALICE_PK,
-            tradeId,
-            newFeePct
-        );
+        bytes memory aliceSignature =
+            _signFeeUpdate(ALICE_PK, tradeId, newFeePct);
         vm.expectRevert(
-            abi.encodeWithSelector(
-                BookSingleChain__FeePctTooHigh.selector,
-                newFeePct
-            )
+            abi.encodeWithSelector(BookSingleChain__FeePctTooHigh.selector, newFeePct)
         );
         book.updateFeeForTrade(
             testTokenIn,
@@ -242,24 +197,16 @@ contract TradeTest is TradeFixture {
         );
 
         // Artificially fill the trade at the past block.
-        stdstore
-            .target(address(book))
-            .sig(book.filledAtBlock.selector)
-            .with_key(tradeId)
-            .checked_write(block.number);
+        stdstore.target(address(book)).sig(book.filledAtBlock.selector).with_key(
+            tradeId
+        ).checked_write(block.number);
 
         uint256 newFeePct = testFeePct + 1;
 
-        bytes memory aliceSignature = _signFeeUpdate(
-            ALICE_PK,
-            tradeId,
-            newFeePct
-        );
+        bytes memory aliceSignature =
+            _signFeeUpdate(ALICE_PK, tradeId, newFeePct);
         vm.expectRevert(
-            abi.encodeWithSelector(
-                BookSingleChain__TradeAlreadyFilled.selector,
-                tradeId
-            )
+            abi.encodeWithSelector(BookSingleChain__TradeAlreadyFilled.selector, tradeId)
         );
         book.updateFeeForTrade(
             testTokenIn,
@@ -280,12 +227,7 @@ contract TradeTest is TradeFixture {
         vm.prank(alice);
         deal(testTokenIn, alice, amountIn);
         (uint256 tradeIndex, bytes32 tradeId) = _requestTrade(
-            testTokenIn,
-            testTokenOut,
-            amountIn,
-            testFeePct,
-            testRecipient,
-            alice
+            testTokenIn, testTokenOut, amountIn, testFeePct, testRecipient, alice
         );
 
         deal(testTokenOut, bob, amountOut);
@@ -304,28 +246,21 @@ contract TradeTest is TradeFixture {
         );
         // Check bob submitted amountOut tokens
         assertEq(
-            ERC20(testTokenOut).balanceOf(bob) + amountOut,
-            bobBalanceBefore
+            ERC20(testTokenOut).balanceOf(bob) + amountOut, bobBalanceBefore
         );
 
-        uint256 filledAtInStorage = stdstore
-            .target(address(book))
-            .sig(book.filledAtBlock.selector)
-            .with_key(tradeId)
-            .read_uint();
+        uint256 filledAtInStorage = stdstore.target(address(book)).sig(
+            book.filledAtBlock.selector
+        ).with_key(tradeId).read_uint();
         assertEq(filledAtInStorage, block.number);
 
-        address filledByInStorage = stdstore
-            .target(address(book))
-            .sig(book.filledBy.selector)
-            .with_key(tradeId)
-            .read_address();
+        address filledByInStorage = stdstore.target(address(book)).sig(
+            book.filledBy.selector
+        ).with_key(tradeId).read_address();
         assertEq(filledByInStorage, bob);
-        uint256 filledAmountInStorage = stdstore
-            .target(address(book))
-            .sig(book.filledAmount.selector)
-            .with_key(tradeId)
-            .read_uint();
+        uint256 filledAmountInStorage = stdstore.target(address(book)).sig(
+            book.filledAmount.selector
+        ).with_key(tradeId).read_uint();
         assertEq(filledAmountInStorage, amountOut);
     }
 
@@ -335,12 +270,7 @@ contract TradeTest is TradeFixture {
         vm.assume(amountIn > 0);
         deal(testTokenIn, alice, amountIn);
         (uint256 tradeIndex, bytes32 tradeId) = _requestTrade(
-            testTokenIn,
-            testTokenOut,
-            amountIn,
-            testFeePct,
-            testRecipient,
-            alice
+            testTokenIn, testTokenOut, amountIn, testFeePct, testRecipient, alice
         );
         deal(testTokenOut, bob, amountOut);
         vm.prank(bob);
@@ -354,10 +284,7 @@ contract TradeTest is TradeFixture {
             amountOut
         );
         vm.expectRevert(
-            abi.encodeWithSelector(
-                BookSingleChain__TradeAlreadyFilled.selector,
-                tradeId
-            )
+            abi.encodeWithSelector(BookSingleChain__TradeAlreadyFilled.selector, tradeId)
         );
         book.fillTrade(
             testTokenIn,
@@ -389,26 +316,20 @@ contract TradeTest is TradeFixture {
         uint256 amountIn,
         uint256 amountOut,
         uint256 newFeePct
-    ) public {
+    )
+        public
+    {
         vm.assume(amountIn > 0);
         vm.assume(newFeePct < book.maxFeePct());
         vm.prank(alice);
         deal(testTokenIn, alice, amountIn);
         (uint256 tradeIndex, bytes32 tradeId) = _requestTrade(
-            testTokenIn,
-            testTokenOut,
-            amountIn,
-            testFeePct,
-            testRecipient,
-            alice
+            testTokenIn, testTokenOut, amountIn, testFeePct, testRecipient, alice
         );
 
         // Sign a message from Alice updating the fee.
-        bytes memory aliceSignature = _signFeeUpdate(
-            ALICE_PK,
-            tradeId,
-            newFeePct
-        );
+        bytes memory aliceSignature =
+            _signFeeUpdate(ALICE_PK, tradeId, newFeePct);
         deal(testTokenOut, bob, amountOut);
         uint256 bobBalanceBefore = ERC20(testTokenOut).balanceOf(bob);
         vm.prank(bob);
@@ -429,28 +350,21 @@ contract TradeTest is TradeFixture {
         );
         // Check bob submitted amountOut tokens
         assertEq(
-            ERC20(testTokenOut).balanceOf(bob) + amountOut,
-            bobBalanceBefore
+            ERC20(testTokenOut).balanceOf(bob) + amountOut, bobBalanceBefore
         );
 
-        uint256 filledAtInStorage = stdstore
-            .target(address(book))
-            .sig(book.filledAtBlock.selector)
-            .with_key(tradeId)
-            .read_uint();
+        uint256 filledAtInStorage = stdstore.target(address(book)).sig(
+            book.filledAtBlock.selector
+        ).with_key(tradeId).read_uint();
         assertEq(filledAtInStorage, block.number);
 
-        address filledByInStorage = stdstore
-            .target(address(book))
-            .sig(book.filledBy.selector)
-            .with_key(tradeId)
-            .read_address();
+        address filledByInStorage = stdstore.target(address(book)).sig(
+            book.filledBy.selector
+        ).with_key(tradeId).read_address();
         assertEq(filledByInStorage, bob);
-        uint256 filledAmountInStorage = stdstore
-            .target(address(book))
-            .sig(book.filledAmount.selector)
-            .with_key(tradeId)
-            .read_uint();
+        uint256 filledAmountInStorage = stdstore.target(address(book)).sig(
+            book.filledAmount.selector
+        ).with_key(tradeId).read_uint();
         assertEq(filledAmountInStorage, amountOut);
     }
 
@@ -469,24 +383,16 @@ contract TradeTest is TradeFixture {
         );
 
         // Artificially fill the trade at the past block.
-        stdstore
-            .target(address(book))
-            .sig(book.filledAtBlock.selector)
-            .with_key(tradeId)
-            .checked_write(block.number);
+        stdstore.target(address(book)).sig(book.filledAtBlock.selector).with_key(
+            tradeId
+        ).checked_write(block.number);
 
         // Prepare a message to updates the fee.
         uint256 newFeePct = testFeePct + 1;
-        bytes memory aliceSignature = _signFeeUpdate(
-            ALICE_PK,
-            tradeId,
-            newFeePct
-        );
+        bytes memory aliceSignature =
+            _signFeeUpdate(ALICE_PK, tradeId, newFeePct);
         vm.expectRevert(
-            abi.encodeWithSelector(
-                BookSingleChain__TradeAlreadyFilled.selector,
-                tradeId
-            )
+            abi.encodeWithSelector(BookSingleChain__TradeAlreadyFilled.selector, tradeId)
         );
         book.fillTradeWithUpdatedFee(
             testTokenIn,
@@ -518,17 +424,11 @@ contract TradeTest is TradeFixture {
 
         uint256 newFeePct = book.maxFeePct() + 1;
 
-        bytes memory aliceSignature = _signFeeUpdate(
-            ALICE_PK,
-            tradeId,
-            newFeePct
-        );
+        bytes memory aliceSignature =
+            _signFeeUpdate(ALICE_PK, tradeId, newFeePct);
 
         vm.expectRevert(
-            abi.encodeWithSelector(
-                BookSingleChain__FeePctTooHigh.selector,
-                newFeePct
-            )
+            abi.encodeWithSelector(BookSingleChain__FeePctTooHigh.selector, newFeePct)
         );
         book.fillTradeWithUpdatedFee(
             testTokenIn,

@@ -16,12 +16,7 @@ contract DisputeTest is TradeFixture {
         super.setUp();
         deal(testTokenIn, alice, testAmount);
         (uint256 _tradeIndex, bytes32 _tradeId) = _requestTrade(
-            testTokenIn,
-            testTokenOut,
-            testAmount,
-            testFeePct,
-            testRecipient,
-            alice
+            testTokenIn, testTokenOut, testAmount, testFeePct, testRecipient, alice
         );
         tradeIndex = _tradeIndex;
         tradeId = _tradeId;
@@ -41,22 +36,18 @@ contract DisputeTest is TradeFixture {
 
     function testDispute() public {
         // Lets check the trade was filled correctly and storage variables are set
-        uint256 filledAmountInStorageBefore = stdstore
-            .target(address(book))
-            .sig(book.filledAmount.selector)
-            .with_key(tradeId)
-            .read_uint();
+        uint256 filledAmountInStorageBefore = stdstore.target(address(book)).sig(
+            book.filledAmount.selector
+        ).with_key(tradeId).read_uint();
 
         assertEq(
             filledAmountInStorageBefore,
             testAmountToSend,
             "Filled amount should be equal to the amount sent"
         );
-        address filledByInStorageBefore = stdstore
-            .target(address(book))
-            .sig(book.filledBy.selector)
-            .with_key(tradeId)
-            .read_address();
+        address filledByInStorageBefore = stdstore.target(address(book)).sig(
+            book.filledBy.selector
+        ).with_key(tradeId).read_address();
 
         assertEq(
             filledByInStorageBefore,
@@ -64,11 +55,9 @@ contract DisputeTest is TradeFixture {
             "Filled by should be equal to the relayer"
         );
 
-        uint256 filleAtBlockInStorageBefore = stdstore
-            .target(address(book))
-            .sig(book.filledAtBlock.selector)
-            .with_key(tradeId)
-            .read_uint();
+        uint256 filleAtBlockInStorageBefore = stdstore.target(address(book)).sig(
+            book.filledAtBlock.selector
+        ).with_key(tradeId).read_uint();
 
         assertEq(
             filleAtBlockInStorageBefore,
@@ -79,9 +68,7 @@ contract DisputeTest is TradeFixture {
         uint256 bond = oracle.bondForStake(testAmountToSend);
         deal(testTokenOut, disputer, bond);
 
-        uint256 bookBalanceBefore = ERC20(testTokenOut).balanceOf(
-            address(book)
-        );
+        uint256 bookBalanceBefore = ERC20(testTokenOut).balanceOf(address(book));
         uint256 disputerBalanceBefore = ERC20(testTokenOut).balanceOf(disputer);
 
         // check that the request was received by the oracle
@@ -94,12 +81,8 @@ contract DisputeTest is TradeFixture {
         vm.prank(disputer);
         vm.expectEmit(true, true, true, true, address(book));
         emit TradeDisputed(
-            relayer,
-            tradeIndex,
-            reqId,
-            testAmountToSend,
-            testFeePct
-        );
+            relayer, tradeIndex, reqId, testAmountToSend, testFeePct
+            );
         book.disputeTrade(
             testTokenIn,
             testTokenOut,
@@ -120,14 +103,10 @@ contract DisputeTest is TradeFixture {
         ) = oracle.requests(reqId);
 
         assertEq(
-            _reqProposer,
-            relayer,
-            "Proposer should be equal to the relayer"
+            _reqProposer, relayer, "Proposer should be equal to the relayer"
         );
         assertEq(
-            _reqDisputer,
-            disputer,
-            "Disputer should be equal to the disputer"
+            _reqDisputer, disputer, "Disputer should be equal to the disputer"
         );
         assertEq(
             _reqBondToken,
@@ -135,9 +114,7 @@ contract DisputeTest is TradeFixture {
             "Bond token should be equal to the test token out"
         );
         assertEq(
-            _stake,
-            testAmountToSend,
-            "Stake should be equal to the amount sent"
+            _stake, testAmountToSend, "Stake should be equal to the amount sent"
         );
         assertEq(_bond, bond, "Bond should be equal to the bond");
         assertEq(_answer, false, "Answer should be equal to false");
@@ -160,40 +137,26 @@ contract DisputeTest is TradeFixture {
         );
 
         // check that the storage variables have been unset
-        uint256 filledAmountInStorageAfter = stdstore
-            .target(address(book))
-            .sig(book.filledAmount.selector)
-            .with_key(tradeId)
-            .read_uint();
+        uint256 filledAmountInStorageAfter = stdstore.target(address(book)).sig(
+            book.filledAmount.selector
+        ).with_key(tradeId).read_uint();
+
+        assertEq(filledAmountInStorageAfter, 0, "Filled amount should be unset");
+
+        address filledByInStorageAfter = stdstore.target(address(book)).sig(
+            book.filledBy.selector
+        ).with_key(tradeId).read_address();
 
         assertEq(
-            filledAmountInStorageAfter,
-            0,
-            "Filled amount should be unset"
+            filledByInStorageAfter, address(0), "Filled by should be unset"
         );
 
-        address filledByInStorageAfter = stdstore
-            .target(address(book))
-            .sig(book.filledBy.selector)
-            .with_key(tradeId)
-            .read_address();
+        uint256 filleAtBlockInStorageAfter = stdstore.target(address(book)).sig(
+            book.filledAtBlock.selector
+        ).with_key(tradeId).read_uint();
 
         assertEq(
-            filledByInStorageAfter,
-            address(0),
-            "Filled by should be unset"
-        );
-
-        uint256 filleAtBlockInStorageAfter = stdstore
-            .target(address(book))
-            .sig(book.filledAtBlock.selector)
-            .with_key(tradeId)
-            .read_uint();
-
-        assertEq(
-            filleAtBlockInStorageAfter,
-            0,
-            "Filled at block should be unset"
+            filleAtBlockInStorageAfter, 0, "Filled at block should be unset"
         );
     }
 
@@ -223,8 +186,7 @@ contract DisputeTest is TradeFixture {
         );
         vm.expectRevert(
             abi.encodeWithSelector(
-                BookSingleChain__TradeNotFilled.selector,
-                nonExistentTradeId
+                BookSingleChain__TradeNotFilled.selector, nonExistentTradeId
             )
         );
         // dispute a trade which was never filled

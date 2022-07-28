@@ -52,7 +52,10 @@ contract TradeFixture is BaseBookFixture {
         uint256 feePct,
         address recipient,
         address who
-    ) internal returns (uint256, bytes32) {
+    )
+        internal
+        returns (uint256, bytes32)
+    {
         uint256 tradeIndex = book.numberOfTrades();
         bytes32 tradeId = keccak256(
             abi.encode(tokenIn, tokenOut, amount, feePct, recipient, tradeIndex)
@@ -62,17 +65,13 @@ contract TradeFixture is BaseBookFixture {
         return (tradeIndex, tradeId);
     }
 
-    function _signFeeUpdate(
-        uint256 pk,
-        bytes32 tradeId,
-        uint256 newFeePct
-    ) internal returns (bytes memory) {
-        bytes32 messageHash = keccak256(
-            abi.encodePacked(SIGNATURE_DELIMITER, tradeId, newFeePct)
-        );
-        bytes32 ethSignedMessageHash = ECDSA.toEthSignedMessageHash(
-            messageHash
-        );
+    function _signFeeUpdate(uint256 pk, bytes32 tradeId, uint256 newFeePct)
+        internal
+        returns (bytes memory)
+    {
+        bytes32 messageHash =
+            keccak256(abi.encodePacked(SIGNATURE_DELIMITER, tradeId, newFeePct));
+        bytes32 ethSignedMessageHash = ECDSA.toEthSignedMessageHash(messageHash);
         return sign(pk, ethSignedMessageHash);
     }
 
@@ -84,7 +83,9 @@ contract TradeFixture is BaseBookFixture {
         address _to,
         uint256 _tradeIndex,
         uint256 _amountToSend
-    ) internal {
+    )
+        internal
+    {
         book.fillTrade(
             _tokenIn,
             _tokenOut,

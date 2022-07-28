@@ -103,10 +103,7 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
         vm.assume(bondToken != USDC);
         vm.assume(bondToken != WETH);
         vm.expectRevert(
-            abi.encodeWithSelector(
-                AllKnowingOracle__NotWhitelisted.selector,
-                bondToken
-            )
+            abi.encodeWithSelector(AllKnowingOracle__NotWhitelisted.selector, bondToken)
         );
         vm.prank(alice);
         oracle.ask(alice, bob, bondToken, 100);
@@ -147,15 +144,14 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
         oracle.settle(id, answer);
 
         // Check the request is now settled
-        (, , , , , bool _answer, RequestState _state) = oracle.requests(id);
+        (,,,,, bool _answer, RequestState _state) = oracle.requests(id);
 
         assertEq(uint256(_state), uint256(RequestState.Settled));
         assertEq(_answer, answer);
         if (answer == true) {
             // The request was settled as true, so the bond + stake should be returned to the proposer
             assertEq(
-                ERC20(USDC).balanceOf(alice),
-                aliceBalanceBefore + stake + bond
+                ERC20(USDC).balanceOf(alice), aliceBalanceBefore + stake + bond
             );
             // no changes for the disputer.
             assertEq(ERC20(USDC).balanceOf(bob), bobBalanceBefore);
@@ -163,8 +159,7 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
             // The request was settled as false, so the bond + stake should go to the disputer
             assertEq(ERC20(USDC).balanceOf(alice), aliceBalanceBefore);
             assertEq(
-                ERC20(USDC).balanceOf(bob),
-                bobBalanceBefore + stake + bond
+                ERC20(USDC).balanceOf(bob), bobBalanceBefore + stake + bond
             );
         }
     }
@@ -188,10 +183,7 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
         oracle.settle(id, answer);
         vm.prank(oracle.owner());
         vm.expectRevert(
-            abi.encodeWithSelector(
-                AllKnowingOracle__AlreadySettled.selector,
-                id
-            )
+            abi.encodeWithSelector(AllKnowingOracle__AlreadySettled.selector, id)
         );
         oracle.settle(id, answer);
     }
