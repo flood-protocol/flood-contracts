@@ -1,6 +1,6 @@
-pub use script_mod::*;
+pub use script::*;
 #[allow(clippy::too_many_arguments, non_camel_case_types)]
-pub mod script_mod {
+pub mod script {
     #![allow(clippy::enum_variant_names)]
     #![allow(dead_code)]
     #![allow(clippy::type_complexity)]
@@ -18,7 +18,7 @@ pub mod script_mod {
     use std::sync::Arc;
     pub static SCRIPT_ABI: ethers::contract::Lazy<ethers::core::abi::Abi> =
         ethers::contract::Lazy::new(|| {
-            serde_json :: from_str ("[{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"vm\",\"outputs\":[{\"internalType\":\"contract Vm\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]}]") . expect ("invalid abi")
+            ethers :: core :: utils :: __serde_json :: from_str ("[{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"vm\",\"outputs\":[{\"internalType\":\"contract Vm\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]}]") . expect ("invalid abi")
         });
     pub struct Script<M>(ethers::contract::Contract<M>);
     impl<M> Clone for Script<M> {
@@ -63,7 +63,7 @@ pub mod script_mod {
             Self(contract)
         }
     }
-    #[doc = "Container type for all input parameters for the `vm`function with signature `vm()` and selector `[58, 118, 132, 99]`"]
+    #[doc = "Container type for all input parameters for the `vm` function with signature `vm()` and selector `[58, 118, 132, 99]`"]
     #[derive(
         Clone,
         Debug,
@@ -75,4 +75,15 @@ pub mod script_mod {
     )]
     #[ethcall(name = "vm", abi = "vm()")]
     pub struct VmCall;
+    #[doc = "Container type for all return fields from the `vm` function with signature `vm()` and selector `[58, 118, 132, 99]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthAbiType,
+        ethers :: contract :: EthAbiCodec,
+    )]
+    pub struct VmReturn(pub ethers::core::types::Address);
 }

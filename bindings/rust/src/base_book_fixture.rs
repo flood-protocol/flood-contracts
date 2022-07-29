@@ -1,6 +1,6 @@
-pub use basebookfixture_mod::*;
+pub use base_book_fixture::*;
 #[allow(clippy::too_many_arguments, non_camel_case_types)]
-pub mod basebookfixture_mod {
+pub mod base_book_fixture {
     #![allow(clippy::enum_variant_names)]
     #![allow(dead_code)]
     #![allow(clippy::type_complexity)]
@@ -18,7 +18,7 @@ pub mod basebookfixture_mod {
     use std::sync::Arc;
     pub static BASEBOOKFIXTURE_ABI: ethers::contract::Lazy<ethers::core::abi::Abi> =
         ethers::contract::Lazy::new(|| {
-            serde_json :: from_str ("[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"newMaxFeePct\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"MaxFeePctChanged\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"newSafeBlockThreshold\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"SafeBlockThresholdChanged\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"bool\",\"name\":\"whitelisted\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"TokenWhitelisted\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"relayer\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"bytes32\",\"name\":\"disputeId\",\"type\":\"bytes32\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"filledAmount\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"feePct\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"TradeDisputed\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"relayer\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"feePct\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"amountOut\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"TradeFilled\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenIn\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"address\",\"name\":\"tokenOut\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"amountIn\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"feePct\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"TradeRequested\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"relayer\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"filledAmount\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"feePct\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"TradeSettled\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"trader\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"newFeePct\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"UpdatedFeeForTrade\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"msg\",\"type\":\"string\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"WARNING_Deprecated\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"log\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"log_address\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"log_bytes\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"log_bytes32\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"int256\",\"name\":\"\",\"type\":\"int256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"log_int\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"address\",\"name\":\"val\",\"type\":\"address\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"log_named_address\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"bytes\",\"name\":\"val\",\"type\":\"bytes\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"log_named_bytes\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"bytes32\",\"name\":\"val\",\"type\":\"bytes32\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"log_named_bytes32\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"int256\",\"name\":\"val\",\"type\":\"int256\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"decimals\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"log_named_decimal_int\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"val\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"decimals\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"log_named_decimal_uint\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"int256\",\"name\":\"val\",\"type\":\"int256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"log_named_int\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"string\",\"name\":\"val\",\"type\":\"string\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"log_named_string\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"val\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"log_named_uint\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"log_string\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"log_uint\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"logs\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"IS_TEST\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"x\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"min\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"max\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"bound\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"result\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"give\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"deal\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"give\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"bool\",\"name\":\"adjust\",\"type\":\"bool\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"deal\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"give\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"deal\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"what\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"args\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"deployCode\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"addr\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"what\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"deployCode\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"addr\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"failed\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"who\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"hoax\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"who\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"origin\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"hoax\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"who\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"origin\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"give\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"hoax\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"who\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"give\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"hoax\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"time\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"rewind\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setUp\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"time\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"skip\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"who\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"give\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"startHoax\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"who\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"origin\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"give\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"startHoax\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"who\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"startHoax\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"who\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"origin\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"startHoax\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"give\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"tip\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"vm\",\"outputs\":[{\"internalType\":\"contract Vm\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]}]") . expect ("invalid abi")
+            ethers :: core :: utils :: __serde_json :: from_str ("[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"newMaxFeePct\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"MaxFeePctChanged\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"newSafeBlockThreshold\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"SafeBlockThresholdChanged\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"bool\",\"name\":\"whitelisted\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"TokenWhitelisted\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"relayer\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"bytes32\",\"name\":\"disputeId\",\"type\":\"bytes32\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"filledAmount\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"feePct\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"TradeDisputed\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"relayer\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"feePct\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"amountOut\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"TradeFilled\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenIn\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"address\",\"name\":\"tokenOut\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"amountIn\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"feePct\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"TradeRequested\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"relayer\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"filledAmount\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"feePct\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"TradeSettled\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"trader\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"newFeePct\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"UpdatedFeeForTrade\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"msg\",\"type\":\"string\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"WARNING_Deprecated\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"log\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"log_address\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"log_bytes\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"log_bytes32\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"int256\",\"name\":\"\",\"type\":\"int256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"log_int\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"address\",\"name\":\"val\",\"type\":\"address\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"log_named_address\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"bytes\",\"name\":\"val\",\"type\":\"bytes\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"log_named_bytes\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"bytes32\",\"name\":\"val\",\"type\":\"bytes32\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"log_named_bytes32\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"int256\",\"name\":\"val\",\"type\":\"int256\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"decimals\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"log_named_decimal_int\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"val\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"decimals\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"log_named_decimal_uint\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"int256\",\"name\":\"val\",\"type\":\"int256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"log_named_int\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"string\",\"name\":\"val\",\"type\":\"string\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"log_named_string\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"val\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"log_named_uint\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"log_string\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"log_uint\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"logs\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"IS_TEST\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"x\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"min\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"max\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"bound\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"result\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"give\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"deal\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"give\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"bool\",\"name\":\"adjust\",\"type\":\"bool\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"deal\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"give\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"deal\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"what\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"args\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"deployCode\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"addr\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"what\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"deployCode\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"addr\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"failed\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"who\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"hoax\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"who\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"origin\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"hoax\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"who\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"origin\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"give\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"hoax\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"who\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"give\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"hoax\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"time\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"rewind\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setUp\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"time\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"skip\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"who\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"give\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"startHoax\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"who\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"origin\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"give\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"startHoax\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"who\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"startHoax\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"who\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"origin\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"startHoax\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"give\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"tip\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"vm\",\"outputs\":[{\"internalType\":\"contract Vm\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]}]") . expect ("invalid abi")
         });
     #[doc = r" Bytecode of the #name contract"]
     pub static BASEBOOKFIXTURE_BYTECODE: ethers::contract::Lazy<ethers::core::types::Bytes> =
@@ -179,7 +179,7 @@ pub mod basebookfixture_mod {
                 .expect("method not found (this should never happen)")
         }
         #[doc = "Calls the contract's `hoax` (0x29a9e300) function"]
-        pub fn hoax_2(
+        pub fn hoax_1(
             &self,
             who: ethers::core::types::Address,
             origin: ethers::core::types::Address,
@@ -200,7 +200,7 @@ pub mod basebookfixture_mod {
                 .expect("method not found (this should never happen)")
         }
         #[doc = "Calls the contract's `hoax` (0xe9a79a7b) function"]
-        pub fn hoax_4(
+        pub fn hoax_2(
             &self,
             who: ethers::core::types::Address,
             give: ethers::core::types::U256,
@@ -244,7 +244,7 @@ pub mod basebookfixture_mod {
                 .expect("method not found (this should never happen)")
         }
         #[doc = "Calls the contract's `startHoax` (0x3bf82db1) function"]
-        pub fn start_hoax_2(
+        pub fn start_hoax_3(
             &self,
             who: ethers::core::types::Address,
             origin: ethers::core::types::Address,
@@ -264,7 +264,7 @@ pub mod basebookfixture_mod {
                 .expect("method not found (this should never happen)")
         }
         #[doc = "Calls the contract's `startHoax` (0xd06d8229) function"]
-        pub fn start_hoax_4(
+        pub fn start_hoax_2(
             &self,
             who: ethers::core::types::Address,
             origin: ethers::core::types::Address,
@@ -957,7 +957,7 @@ pub mod basebookfixture_mod {
             }
         }
     }
-    #[doc = "Container type for all input parameters for the `IS_TEST`function with signature `IS_TEST()` and selector `[250, 118, 38, 212]`"]
+    #[doc = "Container type for all input parameters for the `IS_TEST` function with signature `IS_TEST()` and selector `[250, 118, 38, 212]`"]
     #[derive(
         Clone,
         Debug,
@@ -969,7 +969,7 @@ pub mod basebookfixture_mod {
     )]
     #[ethcall(name = "IS_TEST", abi = "IS_TEST()")]
     pub struct IsTestCall;
-    #[doc = "Container type for all input parameters for the `bound`function with signature `bound(uint256,uint256,uint256)` and selector `[90, 108, 30, 237]`"]
+    #[doc = "Container type for all input parameters for the `bound` function with signature `bound(uint256,uint256,uint256)` and selector `[90, 108, 30, 237]`"]
     #[derive(
         Clone,
         Debug,
@@ -985,7 +985,7 @@ pub mod basebookfixture_mod {
         pub min: ethers::core::types::U256,
         pub max: ethers::core::types::U256,
     }
-    #[doc = "Container type for all input parameters for the `deal`function with signature `deal(address,address,uint256)` and selector `[107, 206, 152, 155]`"]
+    #[doc = "Container type for all input parameters for the `deal` function with signature `deal(address,address,uint256)` and selector `[107, 206, 152, 155]`"]
     #[derive(
         Clone,
         Debug,
@@ -1001,7 +1001,7 @@ pub mod basebookfixture_mod {
         pub to: ethers::core::types::Address,
         pub give: ethers::core::types::U256,
     }
-    #[doc = "Container type for all input parameters for the `deal`function with signature `deal(address,address,uint256,bool)` and selector `[151, 117, 74, 233]`"]
+    #[doc = "Container type for all input parameters for the `deal` function with signature `deal(address,address,uint256,bool)` and selector `[151, 117, 74, 233]`"]
     #[derive(
         Clone,
         Debug,
@@ -1018,7 +1018,7 @@ pub mod basebookfixture_mod {
         pub give: ethers::core::types::U256,
         pub adjust: bool,
     }
-    #[doc = "Container type for all input parameters for the `deal`function with signature `deal(address,uint256)` and selector `[200, 138, 94, 109]`"]
+    #[doc = "Container type for all input parameters for the `deal` function with signature `deal(address,uint256)` and selector `[200, 138, 94, 109]`"]
     #[derive(
         Clone,
         Debug,
@@ -1033,7 +1033,7 @@ pub mod basebookfixture_mod {
         pub to: ethers::core::types::Address,
         pub give: ethers::core::types::U256,
     }
-    #[doc = "Container type for all input parameters for the `deployCode`function with signature `deployCode(string,bytes)` and selector `[41, 206, 157, 222]`"]
+    #[doc = "Container type for all input parameters for the `deployCode` function with signature `deployCode(string,bytes)` and selector `[41, 206, 157, 222]`"]
     #[derive(
         Clone,
         Debug,
@@ -1048,7 +1048,7 @@ pub mod basebookfixture_mod {
         pub what: String,
         pub args: ethers::core::types::Bytes,
     }
-    #[doc = "Container type for all input parameters for the `deployCode`function with signature `deployCode(string)` and selector `[154, 131, 37, 160]`"]
+    #[doc = "Container type for all input parameters for the `deployCode` function with signature `deployCode(string)` and selector `[154, 131, 37, 160]`"]
     #[derive(
         Clone,
         Debug,
@@ -1062,7 +1062,7 @@ pub mod basebookfixture_mod {
     pub struct DeployCodeCall {
         pub what: String,
     }
-    #[doc = "Container type for all input parameters for the `failed`function with signature `failed()` and selector `[186, 65, 79, 166]`"]
+    #[doc = "Container type for all input parameters for the `failed` function with signature `failed()` and selector `[186, 65, 79, 166]`"]
     #[derive(
         Clone,
         Debug,
@@ -1074,7 +1074,7 @@ pub mod basebookfixture_mod {
     )]
     #[ethcall(name = "failed", abi = "failed()")]
     pub struct FailedCall;
-    #[doc = "Container type for all input parameters for the `hoax`function with signature `hoax(address)` and selector `[35, 50, 64, 238]`"]
+    #[doc = "Container type for all input parameters for the `hoax` function with signature `hoax(address)` and selector `[35, 50, 64, 238]`"]
     #[derive(
         Clone,
         Debug,
@@ -1088,7 +1088,7 @@ pub mod basebookfixture_mod {
     pub struct Hoax0Call {
         pub who: ethers::core::types::Address,
     }
-    #[doc = "Container type for all input parameters for the `hoax`function with signature `hoax(address,address)` and selector `[41, 169, 227, 0]`"]
+    #[doc = "Container type for all input parameters for the `hoax` function with signature `hoax(address,address)` and selector `[41, 169, 227, 0]`"]
     #[derive(
         Clone,
         Debug,
@@ -1099,11 +1099,11 @@ pub mod basebookfixture_mod {
         ethers :: contract :: EthDisplay,
     )]
     #[ethcall(name = "hoax", abi = "hoax(address,address)")]
-    pub struct Hoax2Call {
+    pub struct Hoax1Call {
         pub who: ethers::core::types::Address,
         pub origin: ethers::core::types::Address,
     }
-    #[doc = "Container type for all input parameters for the `hoax`function with signature `hoax(address,address,uint256)` and selector `[175, 155, 190, 95]`"]
+    #[doc = "Container type for all input parameters for the `hoax` function with signature `hoax(address,address,uint256)` and selector `[175, 155, 190, 95]`"]
     #[derive(
         Clone,
         Debug,
@@ -1119,7 +1119,7 @@ pub mod basebookfixture_mod {
         pub origin: ethers::core::types::Address,
         pub give: ethers::core::types::U256,
     }
-    #[doc = "Container type for all input parameters for the `hoax`function with signature `hoax(address,uint256)` and selector `[233, 167, 154, 123]`"]
+    #[doc = "Container type for all input parameters for the `hoax` function with signature `hoax(address,uint256)` and selector `[233, 167, 154, 123]`"]
     #[derive(
         Clone,
         Debug,
@@ -1130,11 +1130,11 @@ pub mod basebookfixture_mod {
         ethers :: contract :: EthDisplay,
     )]
     #[ethcall(name = "hoax", abi = "hoax(address,uint256)")]
-    pub struct Hoax4Call {
+    pub struct Hoax2Call {
         pub who: ethers::core::types::Address,
         pub give: ethers::core::types::U256,
     }
-    #[doc = "Container type for all input parameters for the `rewind`function with signature `rewind(uint256)` and selector `[45, 108, 23, 163]`"]
+    #[doc = "Container type for all input parameters for the `rewind` function with signature `rewind(uint256)` and selector `[45, 108, 23, 163]`"]
     #[derive(
         Clone,
         Debug,
@@ -1148,7 +1148,7 @@ pub mod basebookfixture_mod {
     pub struct RewindCall {
         pub time: ethers::core::types::U256,
     }
-    #[doc = "Container type for all input parameters for the `setUp`function with signature `setUp()` and selector `[10, 146, 84, 228]`"]
+    #[doc = "Container type for all input parameters for the `setUp` function with signature `setUp()` and selector `[10, 146, 84, 228]`"]
     #[derive(
         Clone,
         Debug,
@@ -1160,7 +1160,7 @@ pub mod basebookfixture_mod {
     )]
     #[ethcall(name = "setUp", abi = "setUp()")]
     pub struct SetUpCall;
-    #[doc = "Container type for all input parameters for the `skip`function with signature `skip(uint256)` and selector `[185, 192, 113, 180]`"]
+    #[doc = "Container type for all input parameters for the `skip` function with signature `skip(uint256)` and selector `[185, 192, 113, 180]`"]
     #[derive(
         Clone,
         Debug,
@@ -1174,7 +1174,7 @@ pub mod basebookfixture_mod {
     pub struct SkipCall {
         pub time: ethers::core::types::U256,
     }
-    #[doc = "Container type for all input parameters for the `startHoax`function with signature `startHoax(address,uint256)` and selector `[16, 133, 84, 242]`"]
+    #[doc = "Container type for all input parameters for the `startHoax` function with signature `startHoax(address,uint256)` and selector `[16, 133, 84, 242]`"]
     #[derive(
         Clone,
         Debug,
@@ -1189,7 +1189,7 @@ pub mod basebookfixture_mod {
         pub who: ethers::core::types::Address,
         pub give: ethers::core::types::U256,
     }
-    #[doc = "Container type for all input parameters for the `startHoax`function with signature `startHoax(address,address,uint256)` and selector `[59, 248, 45, 177]`"]
+    #[doc = "Container type for all input parameters for the `startHoax` function with signature `startHoax(address,address,uint256)` and selector `[59, 248, 45, 177]`"]
     #[derive(
         Clone,
         Debug,
@@ -1200,12 +1200,12 @@ pub mod basebookfixture_mod {
         ethers :: contract :: EthDisplay,
     )]
     #[ethcall(name = "startHoax", abi = "startHoax(address,address,uint256)")]
-    pub struct StartHoax2Call {
+    pub struct StartHoax3Call {
         pub who: ethers::core::types::Address,
         pub origin: ethers::core::types::Address,
         pub give: ethers::core::types::U256,
     }
-    #[doc = "Container type for all input parameters for the `startHoax`function with signature `startHoax(address)` and selector `[111, 89, 112, 117]`"]
+    #[doc = "Container type for all input parameters for the `startHoax` function with signature `startHoax(address)` and selector `[111, 89, 112, 117]`"]
     #[derive(
         Clone,
         Debug,
@@ -1219,7 +1219,7 @@ pub mod basebookfixture_mod {
     pub struct StartHoax0Call {
         pub who: ethers::core::types::Address,
     }
-    #[doc = "Container type for all input parameters for the `startHoax`function with signature `startHoax(address,address)` and selector `[208, 109, 130, 41]`"]
+    #[doc = "Container type for all input parameters for the `startHoax` function with signature `startHoax(address,address)` and selector `[208, 109, 130, 41]`"]
     #[derive(
         Clone,
         Debug,
@@ -1230,11 +1230,11 @@ pub mod basebookfixture_mod {
         ethers :: contract :: EthDisplay,
     )]
     #[ethcall(name = "startHoax", abi = "startHoax(address,address)")]
-    pub struct StartHoax4Call {
+    pub struct StartHoax2Call {
         pub who: ethers::core::types::Address,
         pub origin: ethers::core::types::Address,
     }
-    #[doc = "Container type for all input parameters for the `tip`function with signature `tip(address,address,uint256)` and selector `[216, 37, 85, 241]`"]
+    #[doc = "Container type for all input parameters for the `tip` function with signature `tip(address,address,uint256)` and selector `[216, 37, 85, 241]`"]
     #[derive(
         Clone,
         Debug,
@@ -1250,7 +1250,7 @@ pub mod basebookfixture_mod {
         pub to: ethers::core::types::Address,
         pub give: ethers::core::types::U256,
     }
-    #[doc = "Container type for all input parameters for the `vm`function with signature `vm()` and selector `[58, 118, 132, 99]`"]
+    #[doc = "Container type for all input parameters for the `vm` function with signature `vm()` and selector `[58, 118, 132, 99]`"]
     #[derive(
         Clone,
         Debug,
@@ -1273,16 +1273,16 @@ pub mod basebookfixture_mod {
         DeployCode(DeployCodeCall),
         Failed(FailedCall),
         Hoax0(Hoax0Call),
-        Hoax2(Hoax2Call),
+        Hoax1(Hoax1Call),
         Hoax3(Hoax3Call),
-        Hoax4(Hoax4Call),
+        Hoax2(Hoax2Call),
         Rewind(RewindCall),
         SetUp(SetUpCall),
         Skip(SkipCall),
         StartHoax1(StartHoax1Call),
-        StartHoax2(StartHoax2Call),
+        StartHoax3(StartHoax3Call),
         StartHoax0(StartHoax0Call),
-        StartHoax4(StartHoax4Call),
+        StartHoax2(StartHoax2Call),
         Tip(TipCall),
         Vm(VmCall),
     }
@@ -1327,17 +1327,17 @@ pub mod basebookfixture_mod {
             {
                 return Ok(BaseBookFixtureCalls::Hoax0(decoded));
             }
-            if let Ok(decoded) = <Hoax2Call as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            if let Ok(decoded) = <Hoax1Call as ethers::core::abi::AbiDecode>::decode(data.as_ref())
             {
-                return Ok(BaseBookFixtureCalls::Hoax2(decoded));
+                return Ok(BaseBookFixtureCalls::Hoax1(decoded));
             }
             if let Ok(decoded) = <Hoax3Call as ethers::core::abi::AbiDecode>::decode(data.as_ref())
             {
                 return Ok(BaseBookFixtureCalls::Hoax3(decoded));
             }
-            if let Ok(decoded) = <Hoax4Call as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            if let Ok(decoded) = <Hoax2Call as ethers::core::abi::AbiDecode>::decode(data.as_ref())
             {
-                return Ok(BaseBookFixtureCalls::Hoax4(decoded));
+                return Ok(BaseBookFixtureCalls::Hoax2(decoded));
             }
             if let Ok(decoded) = <RewindCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
             {
@@ -1356,9 +1356,9 @@ pub mod basebookfixture_mod {
                 return Ok(BaseBookFixtureCalls::StartHoax1(decoded));
             }
             if let Ok(decoded) =
-                <StartHoax2Call as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+                <StartHoax3Call as ethers::core::abi::AbiDecode>::decode(data.as_ref())
             {
-                return Ok(BaseBookFixtureCalls::StartHoax2(decoded));
+                return Ok(BaseBookFixtureCalls::StartHoax3(decoded));
             }
             if let Ok(decoded) =
                 <StartHoax0Call as ethers::core::abi::AbiDecode>::decode(data.as_ref())
@@ -1366,9 +1366,9 @@ pub mod basebookfixture_mod {
                 return Ok(BaseBookFixtureCalls::StartHoax0(decoded));
             }
             if let Ok(decoded) =
-                <StartHoax4Call as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+                <StartHoax2Call as ethers::core::abi::AbiDecode>::decode(data.as_ref())
             {
-                return Ok(BaseBookFixtureCalls::StartHoax4(decoded));
+                return Ok(BaseBookFixtureCalls::StartHoax2(decoded));
             }
             if let Ok(decoded) = <TipCall as ethers::core::abi::AbiDecode>::decode(data.as_ref()) {
                 return Ok(BaseBookFixtureCalls::Tip(decoded));
@@ -1391,16 +1391,16 @@ pub mod basebookfixture_mod {
                 BaseBookFixtureCalls::DeployCode(element) => element.encode(),
                 BaseBookFixtureCalls::Failed(element) => element.encode(),
                 BaseBookFixtureCalls::Hoax0(element) => element.encode(),
-                BaseBookFixtureCalls::Hoax2(element) => element.encode(),
+                BaseBookFixtureCalls::Hoax1(element) => element.encode(),
                 BaseBookFixtureCalls::Hoax3(element) => element.encode(),
-                BaseBookFixtureCalls::Hoax4(element) => element.encode(),
+                BaseBookFixtureCalls::Hoax2(element) => element.encode(),
                 BaseBookFixtureCalls::Rewind(element) => element.encode(),
                 BaseBookFixtureCalls::SetUp(element) => element.encode(),
                 BaseBookFixtureCalls::Skip(element) => element.encode(),
                 BaseBookFixtureCalls::StartHoax1(element) => element.encode(),
-                BaseBookFixtureCalls::StartHoax2(element) => element.encode(),
+                BaseBookFixtureCalls::StartHoax3(element) => element.encode(),
                 BaseBookFixtureCalls::StartHoax0(element) => element.encode(),
-                BaseBookFixtureCalls::StartHoax4(element) => element.encode(),
+                BaseBookFixtureCalls::StartHoax2(element) => element.encode(),
                 BaseBookFixtureCalls::Tip(element) => element.encode(),
                 BaseBookFixtureCalls::Vm(element) => element.encode(),
             }
@@ -1418,16 +1418,16 @@ pub mod basebookfixture_mod {
                 BaseBookFixtureCalls::DeployCode(element) => element.fmt(f),
                 BaseBookFixtureCalls::Failed(element) => element.fmt(f),
                 BaseBookFixtureCalls::Hoax0(element) => element.fmt(f),
-                BaseBookFixtureCalls::Hoax2(element) => element.fmt(f),
+                BaseBookFixtureCalls::Hoax1(element) => element.fmt(f),
                 BaseBookFixtureCalls::Hoax3(element) => element.fmt(f),
-                BaseBookFixtureCalls::Hoax4(element) => element.fmt(f),
+                BaseBookFixtureCalls::Hoax2(element) => element.fmt(f),
                 BaseBookFixtureCalls::Rewind(element) => element.fmt(f),
                 BaseBookFixtureCalls::SetUp(element) => element.fmt(f),
                 BaseBookFixtureCalls::Skip(element) => element.fmt(f),
                 BaseBookFixtureCalls::StartHoax1(element) => element.fmt(f),
-                BaseBookFixtureCalls::StartHoax2(element) => element.fmt(f),
+                BaseBookFixtureCalls::StartHoax3(element) => element.fmt(f),
                 BaseBookFixtureCalls::StartHoax0(element) => element.fmt(f),
-                BaseBookFixtureCalls::StartHoax4(element) => element.fmt(f),
+                BaseBookFixtureCalls::StartHoax2(element) => element.fmt(f),
                 BaseBookFixtureCalls::Tip(element) => element.fmt(f),
                 BaseBookFixtureCalls::Vm(element) => element.fmt(f),
             }
@@ -1478,9 +1478,9 @@ pub mod basebookfixture_mod {
             BaseBookFixtureCalls::Hoax0(var)
         }
     }
-    impl ::std::convert::From<Hoax2Call> for BaseBookFixtureCalls {
-        fn from(var: Hoax2Call) -> Self {
-            BaseBookFixtureCalls::Hoax2(var)
+    impl ::std::convert::From<Hoax1Call> for BaseBookFixtureCalls {
+        fn from(var: Hoax1Call) -> Self {
+            BaseBookFixtureCalls::Hoax1(var)
         }
     }
     impl ::std::convert::From<Hoax3Call> for BaseBookFixtureCalls {
@@ -1488,9 +1488,9 @@ pub mod basebookfixture_mod {
             BaseBookFixtureCalls::Hoax3(var)
         }
     }
-    impl ::std::convert::From<Hoax4Call> for BaseBookFixtureCalls {
-        fn from(var: Hoax4Call) -> Self {
-            BaseBookFixtureCalls::Hoax4(var)
+    impl ::std::convert::From<Hoax2Call> for BaseBookFixtureCalls {
+        fn from(var: Hoax2Call) -> Self {
+            BaseBookFixtureCalls::Hoax2(var)
         }
     }
     impl ::std::convert::From<RewindCall> for BaseBookFixtureCalls {
@@ -1513,9 +1513,9 @@ pub mod basebookfixture_mod {
             BaseBookFixtureCalls::StartHoax1(var)
         }
     }
-    impl ::std::convert::From<StartHoax2Call> for BaseBookFixtureCalls {
-        fn from(var: StartHoax2Call) -> Self {
-            BaseBookFixtureCalls::StartHoax2(var)
+    impl ::std::convert::From<StartHoax3Call> for BaseBookFixtureCalls {
+        fn from(var: StartHoax3Call) -> Self {
+            BaseBookFixtureCalls::StartHoax3(var)
         }
     }
     impl ::std::convert::From<StartHoax0Call> for BaseBookFixtureCalls {
@@ -1523,9 +1523,9 @@ pub mod basebookfixture_mod {
             BaseBookFixtureCalls::StartHoax0(var)
         }
     }
-    impl ::std::convert::From<StartHoax4Call> for BaseBookFixtureCalls {
-        fn from(var: StartHoax4Call) -> Self {
-            BaseBookFixtureCalls::StartHoax4(var)
+    impl ::std::convert::From<StartHoax2Call> for BaseBookFixtureCalls {
+        fn from(var: StartHoax2Call) -> Self {
+            BaseBookFixtureCalls::StartHoax2(var)
         }
     }
     impl ::std::convert::From<TipCall> for BaseBookFixtureCalls {
@@ -1538,4 +1538,76 @@ pub mod basebookfixture_mod {
             BaseBookFixtureCalls::Vm(var)
         }
     }
+    #[doc = "Container type for all return fields from the `IS_TEST` function with signature `IS_TEST()` and selector `[250, 118, 38, 212]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthAbiType,
+        ethers :: contract :: EthAbiCodec,
+    )]
+    pub struct IsTestReturn(pub bool);
+    #[doc = "Container type for all return fields from the `bound` function with signature `bound(uint256,uint256,uint256)` and selector `[90, 108, 30, 237]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthAbiType,
+        ethers :: contract :: EthAbiCodec,
+    )]
+    pub struct BoundReturn {
+        pub result: ethers::core::types::U256,
+    }
+    #[doc = "Container type for all return fields from the `deployCode` function with signature `deployCode(string,bytes)` and selector `[41, 206, 157, 222]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthAbiType,
+        ethers :: contract :: EthAbiCodec,
+    )]
+    pub struct DeployCodeWithArgsReturn {
+        pub addr: ethers::core::types::Address,
+    }
+    #[doc = "Container type for all return fields from the `deployCode` function with signature `deployCode(string)` and selector `[154, 131, 37, 160]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthAbiType,
+        ethers :: contract :: EthAbiCodec,
+    )]
+    pub struct DeployCodeReturn {
+        pub addr: ethers::core::types::Address,
+    }
+    #[doc = "Container type for all return fields from the `failed` function with signature `failed()` and selector `[186, 65, 79, 166]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthAbiType,
+        ethers :: contract :: EthAbiCodec,
+    )]
+    pub struct FailedReturn(pub bool);
+    #[doc = "Container type for all return fields from the `vm` function with signature `vm()` and selector `[58, 118, 132, 99]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthAbiType,
+        ethers :: contract :: EthAbiCodec,
+    )]
+    pub struct VmReturn(pub ethers::core::types::Address);
 }

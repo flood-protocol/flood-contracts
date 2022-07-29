@@ -1,6 +1,6 @@
-pub use deployscript_mod::*;
+pub use deploy_script::*;
 #[allow(clippy::too_many_arguments, non_camel_case_types)]
-pub mod deployscript_mod {
+pub mod deploy_script {
     #![allow(clippy::enum_variant_names)]
     #![allow(dead_code)]
     #![allow(clippy::type_complexity)]
@@ -18,7 +18,7 @@ pub mod deployscript_mod {
     use std::sync::Arc;
     pub static DEPLOYSCRIPT_ABI: ethers::contract::Lazy<ethers::core::abi::Abi> =
         ethers::contract::Lazy::new(|| {
-            serde_json :: from_str ("[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"run\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"vm\",\"outputs\":[{\"internalType\":\"contract Vm\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]}]") . expect ("invalid abi")
+            ethers :: core :: utils :: __serde_json :: from_str ("[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"run\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"vm\",\"outputs\":[{\"internalType\":\"contract Vm\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]}]") . expect ("invalid abi")
         });
     #[doc = r" Bytecode of the #name contract"]
     pub static DEPLOYSCRIPT_BYTECODE: ethers::contract::Lazy<ethers::core::types::Bytes> =
@@ -113,7 +113,7 @@ pub mod deployscript_mod {
             Self(contract)
         }
     }
-    #[doc = "Container type for all input parameters for the `run`function with signature `run()` and selector `[192, 64, 98, 38]`"]
+    #[doc = "Container type for all input parameters for the `run` function with signature `run()` and selector `[192, 64, 98, 38]`"]
     #[derive(
         Clone,
         Debug,
@@ -125,7 +125,7 @@ pub mod deployscript_mod {
     )]
     #[ethcall(name = "run", abi = "run()")]
     pub struct RunCall;
-    #[doc = "Container type for all input parameters for the `vm`function with signature `vm()` and selector `[58, 118, 132, 99]`"]
+    #[doc = "Container type for all input parameters for the `vm` function with signature `vm()` and selector `[58, 118, 132, 99]`"]
     #[derive(
         Clone,
         Debug,
@@ -179,4 +179,15 @@ pub mod deployscript_mod {
             DeployScriptCalls::Vm(var)
         }
     }
+    #[doc = "Container type for all return fields from the `vm` function with signature `vm()` and selector `[58, 118, 132, 99]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthAbiType,
+        ethers :: contract :: EthAbiCodec,
+    )]
+    pub struct VmReturn(pub ethers::core::types::Address);
 }
