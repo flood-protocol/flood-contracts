@@ -1,6 +1,6 @@
-pub use reentrancyguard_mod::*;
+pub use reentrancy_guard::*;
 #[allow(clippy::too_many_arguments, non_camel_case_types)]
-pub mod reentrancyguard_mod {
+pub mod reentrancy_guard {
     #![allow(clippy::enum_variant_names)]
     #![allow(dead_code)]
     #![allow(clippy::type_complexity)]
@@ -17,7 +17,9 @@ pub mod reentrancyguard_mod {
     #[doc = "ReentrancyGuard was auto-generated with ethers-rs Abigen. More information at: https://github.com/gakonst/ethers-rs"]
     use std::sync::Arc;
     pub static REENTRANCYGUARD_ABI: ethers::contract::Lazy<ethers::core::abi::Abi> =
-        ethers::contract::Lazy::new(|| serde_json::from_str("[]").expect("invalid abi"));
+        ethers::contract::Lazy::new(|| {
+            ethers::core::utils::__serde_json::from_str("[]").expect("invalid abi")
+        });
     pub struct ReentrancyGuard<M>(ethers::contract::Contract<M>);
     impl<M> Clone for ReentrancyGuard<M> {
         fn clone(&self) -> Self {
