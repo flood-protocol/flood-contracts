@@ -5,6 +5,17 @@ import "src/AllKnowingOracle.sol";
 import "./Fixtures.sol";
 import "forge-std/Test.sol";
 
+contract MockRequester is IOptimisticRequester {
+    bytes32 public id;
+    int256 public price = 0;
+
+    function onPriceSettled(bytes32 _id, Request memory _request) external {
+        id = _id;
+        int256 _price = abi.decode(_request.data, (int256));
+        price = _price;
+    }
+}
+
 contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
     using stdStorage for StdStorage;
 
@@ -12,156 +23,163 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
         super.setUp();
     }
 
-    function testBondForStake(uint256 s) public {
-        if (s >= type(uint256).max / 25) {
-            vm.expectRevert(stdError.arithmeticError);
-            oracle.bondForStake(s);
-            return;
-        }
-        uint256 b = (s * 25) / 100;
-        assertEq(oracle.bondForStake(s), b);
+    function testGetId(
+        address sender,
+        address proposer,
+        address disputer,
+        address currency,
+        uint256 bond
+    ) public {
+        bytes32 id = keccak256(
+            abi.encodePacked(sender, proposer, disputer, currency, bond)
+        );
+        assertEq(
+            oracle.getRequestId(sender, proposer, disputer, currency, bond),
+            id
+        );
     }
 
-    function testAsk(uint256 stake) public {
-        // above this, the oracle will reject the request as the math (stake * 25 / 100) in the contract will overflow
-        vm.assume(stake < type(uint256).max / 25);
-        uint256 bond = oracle.bondForStake(stake);
-        bytes32 id = keccak256(abi.encode(alice, bob, USDC, stake, bond));
-        bytes32 realId = oracle.getRequestId(alice, bob, USDC, stake);
-        assertEq(id, realId);
-        // Give alice & bob some tokens
-        deal(USDC, alice, stake);
+    function testAsk(uint256 bond) public {
+        // As Charlie is the requester, he will pay the bond for Alice.
+        deal(USDC, charlie, bond);
         deal(USDC, bob, bond);
-
-        uint256 aliceBalanceBefore = ERC20(USDC).balanceOf(alice);
+        uint256 charlieBalanceBefore = ERC20(USDC).balanceOf(charlie);
         uint256 bobBalanceBefore = ERC20(USDC).balanceOf(bob);
-        vm.prank(alice);
-        vm.expectEmit(true, true, true, true, address(oracle));
-        emit NewRequest(id, alice, bob, USDC, stake, bond);
-        oracle.ask(alice, bob, USDC, stake);
 
-        // Check that the request is in the oracle's list of pending requests
+        bytes32 id = oracle.getRequestId(charlie, alice, bob, USDC, bond);
+        vm.prank(charlie);
+        vm.expectEmit(true, true, true, true, address(oracle));
+        emit NewRequest(id, alice, bob, USDC, bond);
+        oracle.ask(alice, bob, USDC, bond, abi.encode(charlie));
+
+        assertEq(ERC20(USDC).balanceOf(charlie), charlieBalanceBefore - bond);
+        assertEq(ERC20(USDC).balanceOf(bob), bobBalanceBefore - bond);
+
+        // FIXME: For a bug in foundry, non packed less than 32bytes slots are not found, so we go through the public getter instead. Once fixed move this to reading from storage.
         (
-            address _proposer,
-            address _disputer,
-            address _bondToken,
-            uint256 _stake,
-            uint256 _bond,
-            bool _answer,
-            RequestState _state
+            address storageRequester,
+            address storageProposer,
+            address storageDisputer,
+            ERC20 storageCurrency,
+            uint256 storageBond,
+            RequestState storageState,
+            bool storageAnswer,
+            bytes memory storageData
         ) = oracle.requests(id);
 
-        assertEq(_proposer, alice);
-        assertEq(_disputer, bob);
-        assertEq(_bondToken, USDC);
-        assertEq(uint256(_state), uint256(RequestState.Pending));
-        assertEq(_answer, false);
-        assertEq(_bond, bond);
-        assertEq(_stake, stake);
-        assertEq(ERC20(USDC).balanceOf(alice), aliceBalanceBefore - stake);
-        assertEq(ERC20(USDC).balanceOf(bob), bobBalanceBefore - bond);
+        assertEq(storageRequester, charlie);
+        assertEq(storageProposer, alice);
+        assertEq(storageDisputer, bob);
+        assertEq(address(storageCurrency), USDC);
+        assertEq(storageBond, bond);
+        assertEq(uint256(storageState), uint256(RequestState.Pending));
+        assertEq(storageAnswer, false);
+        assertEq(storageData, abi.encode(charlie));
     }
 
-    function testAskForOtherProposer() public {
-        uint256 stake = 100;
-        uint256 bond = 25;
-        address proposer = charlie;
-        bytes32 id = keccak256(abi.encode(proposer, bob, USDC, stake, bond));
-        // Give alice & bob some tokens
-        deal(USDC, alice, stake);
-        deal(USDC, bob, bond);
+    function testCannotAskIfAlreadyExists(uint256 bond) public {
+        vm.assume(bond < type(uint256).max / 4);
+        deal(USDC, charlie, type(uint256).max);
+        deal(USDC, bob, type(uint256).max);
+        deal(USDC, address(this), type(uint256).max);
+        vm.prank(charlie);
+        oracle.ask(alice, bob, USDC, bond, abi.encode(charlie));
+        // Asking again from a different requester (in the next call msg.sender is the address of this contract) is ok
+        oracle.ask(alice, bob, USDC, bond, abi.encode(charlie));
 
-        uint256 aliceBalanceBefore = ERC20(USDC).balanceOf(alice);
-        vm.prank(alice);
-        vm.expectEmit(true, true, true, true, address(oracle));
-        emit NewRequest(id, proposer, bob, USDC, stake, bond);
-        oracle.ask(proposer, bob, USDC, 100);
-
-        // Check that the request is in the oracle's list of pending requests
-        (
-            address _proposer,
-            address _disputer,
-            address _bondToken,
-            uint256 _stake,
-            uint256 _bond,
-            bool _answer,
-            RequestState _state
-        ) = oracle.requests(id);
-
-        assertEq(_proposer, proposer);
-        assertEq(_disputer, bob);
-        assertEq(_bondToken, USDC);
-        assertEq(uint256(_state), uint256(RequestState.Pending));
-        assertEq(_answer, false);
-        assertEq(_bond, bond);
-        assertEq(_stake, stake);
-        // It should be Alice to have sponsored the request
-        assertEq(ERC20(USDC).balanceOf(alice), aliceBalanceBefore - stake);
+        bytes32 id = oracle.getRequestId(charlie, alice, bob, USDC, bond);
+        vm.prank(charlie);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                AllKnowingOracle__RequestAlreadyExists.selector,
+                id
+            )
+        );
+        oracle.ask(alice, bob, USDC, bond, abi.encode(charlie));
+        // Even the same question with no callback should fail
+        vm.prank(charlie);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                AllKnowingOracle__RequestAlreadyExists.selector,
+                id
+            )
+        );
+        oracle.ask(alice, bob, USDC, bond, "");
     }
 
     function testCannotAskWithNonWhitelistedToken(address bondToken) public {
         vm.assume(bondToken != USDC);
         vm.assume(bondToken != WETH);
         vm.expectRevert(
-            abi.encodeWithSelector(AllKnowingOracle__NotWhitelisted.selector, bondToken)
+            abi.encodeWithSelector(
+                AllKnowingOracle__TokenNotWhitelisted.selector,
+                bondToken
+            )
         );
-        vm.prank(alice);
-        oracle.ask(alice, bob, bondToken, 100);
+        vm.prank(charlie);
+        oracle.ask(alice, bob, bondToken, 100, "");
     }
 
     function testCannotAskWithInsufficientBalanceForBond() public {
-        vm.prank(alice);
+        vm.prank(charlie);
         vm.expectRevert("TRANSFER_FROM_FAILED");
-        oracle.ask(alice, bob, USDC, 100);
+        oracle.ask(alice, bob, USDC, 100, "");
     }
 
     function testCannotAskIfNoAllowance() public {
-        // Alice removes the allowance for USDC
-        vm.prank(alice);
+        // Bob removes the allowance for USDC
+        vm.prank(bob);
         ERC20(USDC).approve(address(oracle), 0);
         vm.expectRevert("TRANSFER_FROM_FAILED");
-        vm.prank(alice);
-        oracle.ask(alice, bob, USDC, 100);
+        vm.prank(charlie);
+        oracle.ask(alice, bob, USDC, 100, "");
     }
 
-    function testSettle(bool answer, uint256 stake) public {
-        // above this, the oracle will reject the request as the math (stake * 25 / 100) in the contract will overflow
-        vm.assume(stake < type(uint256).max / 25);
-        uint256 bond = oracle.bondForStake(stake);
-        bytes32 id = oracle.getRequestId(alice, bob, USDC, stake);
-
-        deal(USDC, alice, stake);
+    function testSettle(bool answer, uint256 bond) public {
+        vm.assume(bond < type(uint256).max / 2);
+        MockRequester requester = new MockRequester();
+        address requesterAddress = address(requester);
+        vm.prank(requesterAddress);
+        ERC20(USDC).approve(address(oracle), type(uint256).max);
+        deal(USDC, requesterAddress, bond);
         deal(USDC, bob, bond);
 
-        // lets ask the oracle about this request
-        vm.prank(alice);
-        oracle.ask(alice, bob, USDC, stake);
+        oracle.whitelistRequester(requesterAddress, true);
+        vm.prank(requesterAddress);
+        oracle.ask(alice, bob, USDC, bond, abi.encode(int256(-42)));
 
-        uint256 aliceBalanceBefore = ERC20(USDC).balanceOf(alice);
-        uint256 bobBalanceBefore = ERC20(USDC).balanceOf(bob);
-        // charlie settles the request
+        bytes32 id = oracle.getRequestId(
+            requesterAddress,
+            alice,
+            bob,
+            USDC,
+            bond
+        );
+        (
+            address storageRequester,
+            address storageProposer,
+            address storageDisputer,
+            ERC20 storageCurrency,
+            uint256 storageBond,
+            ,
+            ,
+            bytes memory storageData
+        ) = oracle.requests(id);
+
+        assertEq(storageRequester, requesterAddress);
+        assertEq(storageProposer, alice);
+        assertEq(storageDisputer, bob);
+        assertEq(address(storageCurrency), USDC);
+        assertEq(storageBond, bond);
+        assertEq(storageData, abi.encode(int256(-42)));
+
         vm.prank(charlie);
+        vm.expectEmit(true, true, true, true, address(oracle));
+        emit RequestSettled(id, answer);
         oracle.settle(id, answer);
 
-        // Check the request is now settled
-        (,,,,, bool _answer, RequestState _state) = oracle.requests(id);
-
-        assertEq(uint256(_state), uint256(RequestState.Settled));
-        assertEq(_answer, answer);
-        if (answer == true) {
-            // The request was settled as true, so the bond + stake should be returned to the proposer
-            assertEq(
-                ERC20(USDC).balanceOf(alice), aliceBalanceBefore + stake + bond
-            );
-            // no changes for the disputer.
-            assertEq(ERC20(USDC).balanceOf(bob), bobBalanceBefore);
-        } else {
-            // The request was settled as false, so the bond + stake should go to the disputer
-            assertEq(ERC20(USDC).balanceOf(alice), aliceBalanceBefore);
-            assertEq(
-                ERC20(USDC).balanceOf(bob), bobBalanceBefore + stake + bond
-            );
-        }
+        assertEq(requester.price(), int256(-42));
+        assertEq(requester.id(), id);
     }
 
     function testCannotSettleAsIfNotSettler() public {
@@ -170,20 +188,28 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
         oracle.settle(bytes32(0), true);
     }
 
-    function testCannotSettleIfAlreadySettled() public {
-        bool answer = true;
-        uint256 stake = 100;
-        uint256 bond = oracle.bondForStake(stake);
-        bytes32 id = oracle.getRequestId(alice, bob, USDC, stake);
-        deal(USDC, alice, stake);
+    function testCannotSettleIfAlreadySettled(bool answer) public {
+        uint256 bond = 100;
+
+        deal(USDC, charlie, bond);
         deal(USDC, bob, bond);
-        vm.prank(alice);
-        oracle.ask(alice, bob, USDC, stake);
-        vm.prank(oracle.owner());
+
+        vm.prank(charlie);
+        oracle.ask(alice, bob, USDC, bond, "");
+
+        bytes32 id = oracle.getRequestId(charlie, alice, bob, USDC, bond);
+
+        vm.prank(charlie);
+        vm.expectEmit(true, true, true, true, address(oracle));
+        emit RequestSettled(id, answer);
         oracle.settle(id, answer);
-        vm.prank(oracle.owner());
+
+        vm.prank(charlie);
         vm.expectRevert(
-            abi.encodeWithSelector(AllKnowingOracle__AlreadySettled.selector, id)
+            abi.encodeWithSelector(
+                AllKnowingOracle__AlreadySettled.selector,
+                id
+            )
         );
         oracle.settle(id, answer);
     }

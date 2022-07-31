@@ -7,8 +7,9 @@ import "solmate/utils/SafeTransferLib.sol";
 
 error AllKnowingOracle__AlreadySettled(bytes32 id);
 error AllKnowingOracle__NonSettler();
+error AllKnowingOracle__NonRequester();
 error AllKnowingOracle__RequestAlreadyExists(bytes32 id);
-error AllKnowingOracle__NotWhitelisted(address token);
+error AllKnowingOracle__TokenNotWhitelisted(address token);
 error AllKnowingOracle__BondTooSmall();
 
 enum RequestState {
@@ -18,39 +19,37 @@ enum RequestState {
 }
 
 struct Request {
-    address proposer;
-    address disputer;
-    address bondToken;
-    uint256 stake;
-    uint256 bond;
-    bool answer;
-    RequestState state;
+    address requester; // who requested an answer.
+    address proposer; // Address of the proposer.
+    address disputer; // Address of the disputer.
+    ERC20 currency; // ERC20 token used to pay rewards and fees.
+    uint256 bond; // Bond that the proposer and disputer must pay.
+    RequestState state; // State of the request.
+    bool answer; // Answer to the request.
+    bytes data; // Data associated with the request.
 }
 
-interface IOracle {
-    function ask(
-        address proposer,
-        address disputer,
-        address bondToken,
-        uint256 stake
-    )
-        external;
+interface IOptimisticRequester {
+    function onPriceSettled(bytes32 id, Request calldata request) external;
+}
 
-    function settle(bytes32 id, bool answer) external;
-
-    function bondForStake(uint256 stake) external view returns (uint256);
-
-    function getRequestId(
-        address proposer,
-        address disputer,
-        address bondToken,
-        uint256 stake
-    )
-        external
-        view
-        returns (bytes32);
-
-    function whitelistedTokens(address token) external view returns (bool);
+/**
+ ***************************************
+ *                EVENTS                *
+ ***************************************
+ */
+interface IAllKnowingOracleEvents {
+    event TokenWhitelisted(address indexed token, bool enabled);
+    event SettlerWhitelisted(address indexed settler, bool enabled);
+    event RequesterWhitelisted(address indexed requester, bool enabled);
+    event NewRequest(
+        bytes32 indexed id,
+        address indexed proposer,
+        address indexed disputer,
+        address currency,
+        uint256 bond
+    );
+    event RequestSettled(bytes32 indexed id, bool answer);
 }
 
 /**
@@ -59,33 +58,13 @@ interface IOracle {
  * In implementation, only the owner of the contract can settle a request.
  * @dev This should be deployed before `BookSingleChain`
  */
-contract AllKnowingOracle is IOracle, Owned {
+contract AllKnowingOracle is IAllKnowingOracleEvents, Owned {
     using SafeTransferLib for ERC20;
 
     mapping(bytes32 => Request) public requests;
     mapping(address => bool) public whitelistedTokens;
     mapping(address => bool) public settlers;
-    // Percentage of stake which must be bonded by disputer, in % points (1%)
-    uint256 public disputeBondPct;
-
-    /**
-     ***************************************
-     *                EVENTS                *
-     ***************************************
-     */
-
-    event TokenWhitelisted(address indexed token, bool enabled);
-    event SettlerWhitelisted(address indexed settler, bool enabled);
-    event NewRequest(
-        bytes32 indexed id,
-        address indexed proposer,
-        address indexed disputer,
-        address bondToken,
-        uint256 stake,
-        uint256 bond
-    );
-    event BondPctChanged(uint256 newPct);
-    event RequestSettled(bytes32 indexed id, bool answer);
+    mapping(address => bool) public requesters;
 
     modifier onlySettler() {
         if (!settlers[msg.sender]) {
@@ -93,16 +72,15 @@ contract AllKnowingOracle is IOracle, Owned {
         }
         _;
     }
-
-    constructor() Owned(msg.sender) {
-        disputeBondPct = 25;
-        settlers[msg.sender] = true;
-        emit BondPctChanged(disputeBondPct);
+    modifier onlyRequester() {
+        if (!requesters[msg.sender]) {
+            revert AllKnowingOracle__NonRequester();
+        }
+        _;
     }
 
-    function setBondPct(uint256 newPct) external onlyOwner {
-        disputeBondPct = newPct;
-        emit BondPctChanged(disputeBondPct);
+    constructor() Owned(msg.sender) {
+        settlers[msg.sender] = true;
     }
 
     /**
@@ -113,7 +91,7 @@ contract AllKnowingOracle is IOracle, Owned {
 
     /**
      @notice Whitelist a token for use in the contract.
-     @param token Token to whitelist
+     @param token Token to whitelist as currency
      @param enabled Whether to enable or disable the token
     */
     function whitelistToken(address token, bool enabled) external onlyOwner {
@@ -129,6 +107,14 @@ contract AllKnowingOracle is IOracle, Owned {
         emit SettlerWhitelisted(settler, enabled);
     }
 
+    function whitelistRequester(address requester, bool enabled)
+        external
+        onlyOwner
+    {
+        requesters[requester] = enabled;
+        emit RequesterWhitelisted(requester, enabled);
+    }
+
     /**
      *************************************
      *          EXTERNAL FUNCTIONS         *
@@ -136,82 +122,75 @@ contract AllKnowingOracle is IOracle, Owned {
      */
 
     /**
-     * @notice Calculates the bond amount for a given stake.
-     * @param stake Stake to calculate the bond amount for
-     * @return The bond amount for the given stake
-     */
-    function bondForStake(uint256 stake) external view returns (uint256) {
-        return _bondForStake(stake);
-    }
-
-    /**
      * @notice Compute the ID for a request.
      * @dev The bond is transferred from `msg.sender` rather than from `proposer` to allow contracts to sponsor proposals.
      * For example, in `BookSingleChain`, the relayer has already sent funds to the contract, so they are pulled from the contract directly and the relayer is set as proposer.
+     * @param sender value of `msg.sender` when the request is created
      * @param proposer Address of the proposer
      * @param disputer Address of the disputer
-     * @param bondToken Token to use for the bond
-     * @param stake Stake to use for the dispute
+     * @param currency Token to use for the bond
+     * @param bond Value of the bond
      * @return ID of the request
      */
     function getRequestId(
+        address sender,
         address proposer,
         address disputer,
-        address bondToken,
-        uint256 stake
-    )
-        external
-        view
-        returns (bytes32)
-    {
-        uint256 bond = _bondForStake(stake);
-        return _getRequestId(proposer, disputer, bondToken, stake, bond);
+        address currency,
+        uint256 bond
+    ) external pure returns (bytes32) {
+        return _getRequestId(sender, proposer, disputer, currency, bond);
     }
 
     /**
-     * @notice Ask the oracle for an answer to a dispute.
-     * @dev The bond is transferred from `msg.sender` rather than from `proposer` to allow contracts to sponsor proposals.
+     * @notice Requests and proposes a price to the oracle. Disputers should set their allowance at each dispute to safely pay the bond.
+     * @dev The bond proposer bond is transferred from `msg.sender` rather than from `proposer` to allow contracts to sponsor proposals.
      * For example, in `BookSingleChain`, the relayer has already sent funds to the contract, so they are pulled from the contract directly and the relayer is set as proposer.
      * @param proposer Address of the proposer
      * @param disputer Address of the disputer
-     * @param bondToken Token to use for the bond
-     * @param stake Stake to use for the dispute
+     * @param currency Token to use for the bond
+     * @param bond Bond value which must be posted to dispute
      */
     function ask(
         address proposer,
         address disputer,
-        address bondToken,
-        uint256 stake
-    )
-        external
-    {
-        // Check if the token is whitelisted
-        if (!whitelistedTokens[bondToken]) {
-            revert AllKnowingOracle__NotWhitelisted(bondToken);
+        address currency,
+        uint256 bond,
+        bytes calldata data
+    ) external onlyRequester {
+        if (!whitelistedTokens[currency]) {
+            revert AllKnowingOracle__TokenNotWhitelisted(currency);
         }
-        // Calculate the amount to bond to secure this request
-        uint256 bond = _bondForStake(stake);
-        // Generate a unique id
-        bytes32 id = _getRequestId(proposer, disputer, bondToken, stake, bond);
 
-        // Check if the request already exists
-        if (requests[id].state == RequestState.Pending) {
+        bytes32 id = _getRequestId(
+            msg.sender,
+            proposer,
+            disputer,
+            currency,
+            bond
+        );
+        if (requests[id].state != RequestState.Uninitialized) {
             revert AllKnowingOracle__RequestAlreadyExists(id);
         }
+        Request memory request = Request({
+            requester: msg.sender,
+            proposer: proposer,
+            disputer: disputer,
+            currency: ERC20(currency),
+            bond: bond,
+            state: RequestState.Pending,
+            answer: false,
+            data: data
+        });
 
-        // Create the request
-        Request memory request = Request(
-            proposer, disputer, bondToken, stake, bond, false, RequestState.Pending
-        );
-
-        // Store the request
         requests[id] = request;
 
-        // transfer tokens from disputer and proposer
-        ERC20(bondToken).safeTransferFrom(disputer, address(this), bond);
-        ERC20(bondToken).safeTransferFrom(msg.sender, address(this), stake);
+        emit NewRequest(id, proposer, disputer, currency, bond);
 
-        emit NewRequest(id, proposer, disputer, bondToken, stake, bond);
+        ERC20(currency).safeTransferFrom(msg.sender, address(this), bond);
+        // Note: This is unsafe for the disputer as a requester could list someone as disputer and give the right answer, making the disputer lose the bond.
+        // However, as this method is permissioned and requesters are assumed to be trustworthy, this is "safe".
+        ERC20(currency).safeTransferFrom(disputer, address(this), bond);
     }
 
     /**
@@ -220,27 +199,27 @@ contract AllKnowingOracle is IOracle, Owned {
      * @param answer Whether the proposer won the dispute. `true` means the proposer won, `false` means the disputer won.
      */
     function settle(bytes32 id, bool answer) external onlySettler {
-        Request memory request = requests[id];
+        Request storage request = requests[id];
         // revert if the request is already settled
         if (request.state == RequestState.Settled) {
             revert AllKnowingOracle__AlreadySettled(id);
         }
-        // If the answer is correct, the proposer wins the bond
+        // Whoever wins gets the bond back plus the other party bond.
+        uint256 payout = 2 * request.bond;
         if (answer) {
-            ERC20(request.bondToken).safeTransfer(
-                request.proposer, request.bond + request.stake
-            );
+            request.currency.safeTransfer(request.proposer, payout);
         } else {
-            ERC20(request.bondToken).safeTransfer(
-                request.disputer, request.bond + request.stake
-            );
+            request.currency.safeTransfer(request.disputer, payout);
         }
         // Update the request state
         request.state = RequestState.Settled;
         request.answer = answer;
-        requests[id] = request;
 
         emit RequestSettled(id, answer);
+        // Callback into the proposer if its a contract
+        if (request.requester.code.length != 0) {
+            IOptimisticRequester(request.requester).onPriceSettled(id, request);
+        }
     }
 
     /**
@@ -249,24 +228,16 @@ contract AllKnowingOracle is IOracle, Owned {
      *************************************
      */
 
-    /**
-     * @notice Calculates the bond amount for a given stake.
-     */
-    function _bondForStake(uint256 stake) internal view returns (uint256) {
-        return (stake * disputeBondPct) / 100;
-    }
-
     function _getRequestId(
+        address requester,
         address proposer,
         address disputer,
-        address bondToken,
-        uint256 stake,
+        address currency,
         uint256 bond
-    )
-        internal
-        pure
-        returns (bytes32)
-    {
-        return keccak256(abi.encode(proposer, disputer, bondToken, stake, bond));
+    ) internal pure returns (bytes32) {
+        return
+            keccak256(
+                abi.encodePacked(requester, proposer, disputer, currency, bond)
+            );
     }
 }
