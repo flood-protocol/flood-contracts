@@ -66,16 +66,14 @@ contract TradeFixture is BaseBookFixture {
         address who
     ) internal returns (uint256, bytes32) {
         uint256 tradeIndex = book.numberOfTrades();
-        bytes32 tradeId = keccak256(
-            abi.encodePacked(
-                tokenIn,
-                tokenOut,
-                amountIn,
-                amountOutMin,
-                feePct,
-                recipient,
-                tradeIndex
-            )
+        bytes32 tradeId = _getTradeId(
+            tokenIn,
+            tokenOut,
+            amountIn,
+            amountOutMin,
+            feePct,
+            recipient,
+            tradeIndex
         );
         vm.prank(who);
         book.requestTrade(
@@ -101,6 +99,29 @@ contract TradeFixture is BaseBookFixture {
             messageHash
         );
         return sign(pk, ethSignedMessageHash);
+    }
+
+    function _getTradeId(
+        address _tokenIn,
+        address _tokenOut,
+        uint256 _amountIn,
+        uint256 _amountOutMin,
+        uint256 _feePct,
+        address _recipient,
+        uint256 _tradeIndex
+    ) internal pure returns (bytes32) {
+        return
+            keccak256(
+                abi.encodePacked(
+                    _tokenIn,
+                    _tokenOut,
+                    _amountIn,
+                    _amountOutMin,
+                    _feePct,
+                    _recipient,
+                    _tradeIndex
+                )
+            );
     }
 
     function _fillTrade(
@@ -145,6 +166,68 @@ contract TradeFixture is BaseBookFixture {
                 .sig(book.filledAtBlock.selector)
                 .with_key(_tradeId)
                 .read_int()
+        );
+    }
+}
+
+contract DisputeFixture is TradeFixture {
+    uint256 internal tradeIndex;
+    bytes32 internal tradeId;
+    address internal relayer = bob;
+    address internal disputer = charlie;
+    uint256 internal testAmountToSend = 2000 * 1e6;
+
+    function setUp() public virtual override {
+        super.setUp();
+        oracle.whitelistRequester(address(book), true);
+        deal(testTokenIn, alice, testAmountIn);
+
+        (tradeIndex, tradeId) = _requestTrade(
+            testTokenIn,
+            testTokenOut,
+            testAmountIn,
+            testAmountOutMin,
+            testFeePct,
+            testRecipient,
+            alice
+        );
+
+        deal(testTokenOut, relayer, testAmountToSend);
+        vm.prank(relayer);
+        _fillTrade(
+            testTokenIn,
+            testTokenOut,
+            testAmountIn,
+            testAmountOutMin,
+            testFeePct,
+            testRecipient,
+            tradeIndex,
+            testAmountToSend
+        );
+        _checkFill(tradeId, relayer, int256(block.number));
+
+        vm.prank(disputer);
+        ERC20(testTokenIn).approve(address(oracle), type(uint256).max);
+    }
+
+    function _disputeTrade(
+        address _tokenIn,
+        address _tokenOut,
+        uint256 _amountIn,
+        uint256 _amountOutMin,
+        uint256 _feePct,
+        address _recipient,
+        uint256 _tradeIndex
+    ) internal {
+        vm.prank(disputer);
+        book.disputeTrade(
+            _tokenIn,
+            _tokenOut,
+            _amountIn,
+            _amountOutMin,
+            _feePct,
+            _recipient,
+            _tradeIndex
         );
     }
 }

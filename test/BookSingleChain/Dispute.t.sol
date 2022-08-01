@@ -3,46 +3,11 @@ pragma solidity ^0.8.15;
 
 import "./Fixtures.sol";
 
-contract DisputeTest is TradeFixture {
+contract DisputeTest is DisputeFixture {
     using stdStorage for StdStorage;
-
-    uint256 internal tradeIndex;
-    bytes32 internal tradeId;
-    address internal relayer = bob;
-    address internal disputer = charlie;
-    uint256 internal testAmountToSend = 2000 * 1e6;
 
     function setUp() public override {
         super.setUp();
-        oracle.whitelistRequester(address(book), true);
-        deal(testTokenIn, alice, testAmountIn);
-
-        (tradeIndex, tradeId) = _requestTrade(
-            testTokenIn,
-            testTokenOut,
-            testAmountIn,
-            testAmountOutMin,
-            testFeePct,
-            testRecipient,
-            alice
-        );
-
-        deal(testTokenOut, relayer, testAmountToSend);
-        vm.prank(relayer);
-        _fillTrade(
-            testTokenIn,
-            testTokenOut,
-            testAmountIn,
-            testAmountOutMin,
-            testFeePct,
-            testRecipient,
-            tradeIndex,
-            testAmountToSend
-        );
-        _checkFill(tradeId, relayer, int256(block.number));
-
-        vm.prank(disputer);
-        ERC20(testTokenIn).approve(address(oracle), type(uint256).max);
     }
 
     function testDispute() public {
@@ -68,10 +33,9 @@ contract DisputeTest is TradeFixture {
             )
         );
 
-        vm.prank(disputer);
         vm.expectEmit(true, true, true, true, address(book));
         emit TradeDisputed(relayer, tradeIndex, reqId);
-        book.disputeTrade(
+        _disputeTrade(
             testTokenIn,
             testTokenOut,
             testAmountIn,
@@ -165,8 +129,7 @@ contract DisputeTest is TradeFixture {
             )
         );
 
-        vm.prank(disputer);
-        book.disputeTrade(
+        _disputeTrade(
             testTokenIn,
             testTokenOut,
             testAmountIn,
@@ -281,7 +244,7 @@ contract DisputeTest is TradeFixture {
     function testCannotDisputeIfPeriodIsOver() public {
         skipBlocks(testSafeBlockThreashold + 1);
         vm.expectRevert(BookSingleChain__DisputePeriodOver.selector);
-        book.disputeTrade(
+        _disputeTrade(
             testTokenIn,
             testTokenOut,
             testAmountIn,
