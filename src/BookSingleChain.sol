@@ -11,9 +11,7 @@ import "./AllKnowingOracle.sol";
 interface IBookSingleChainEvents {
     event SafeBlockThresholdSet(uint256 newSafeBlockThreshold);
     event FeeCombinationSet(
-        uint256 disputeBondPct,
-        uint256 tradeRebatePct,
-        uint256 relayerRefundPct
+        uint256 disputeBondPct, uint256 tradeRebatePct, uint256 relayerRefundPct
     );
     event TokenWhitelisted(address indexed token, bool whitelisted);
     event TradeRequested(
@@ -26,9 +24,7 @@ interface IBookSingleChainEvents {
         uint256 indexed tradeIndex
     );
     event UpdatedFeeForTrade(
-        address indexed trader,
-        uint256 indexed tradeIndex,
-        uint256 newFeePct
+        address indexed trader, uint256 indexed tradeIndex, uint256 newFeePct
     );
     event TradeFilled(
         address indexed relayer,
@@ -71,11 +67,7 @@ error BookSingleChain__MaliciousCaller(address caller);
 bytes32 constant SIGNATURE_DELIMITER = keccak256("FLOOD-V1");
 uint256 constant MAX_FEE_PCT = 0.25 * 1e18;
 
-contract BookSingleChain is
-    IOptimisticRequester,
-    IBookSingleChainEvents,
-    Owned
-{
+contract BookSingleChain is IOptimisticRequester, IBookSingleChainEvents, Owned {
     using SafeTransferLib for ERC20;
 
     uint256 public immutable safeBlockThreshold;
@@ -98,7 +90,9 @@ contract BookSingleChain is
         uint256 _disputeBondPct,
         uint256 _tradeRebatePct,
         uint256 _relayerRefundPct
-    ) Owned(msg.sender) {
+    )
+        Owned(msg.sender)
+    {
         oracle = AllKnowingOracle(_oracle);
         safeBlockThreshold = _safeBlockThreshold;
         emit SafeBlockThresholdSet(safeBlockThreshold);
@@ -111,10 +105,8 @@ contract BookSingleChain is
         relayerRefundPct = _relayerRefundPct;
 
         emit FeeCombinationSet(
-            _disputeBondPct,
-            _tradeRebatePct,
-            _relayerRefundPct
-        );
+            _disputeBondPct, _tradeRebatePct, _relayerRefundPct
+            );
     }
 
     /**
@@ -150,7 +142,9 @@ contract BookSingleChain is
         uint256 minAmountOut,
         uint256 feePct,
         address recipient
-    ) external {
+    )
+        external
+    {
         if (!whitelistedTokens[tokenIn]) {
             revert BookSingleChain__InvalidToken(tokenIn);
         }
@@ -178,7 +172,7 @@ contract BookSingleChain is
             feePct,
             recipient,
             numberOfTrades
-        );
+            );
 
         numberOfTrades++;
 
@@ -211,7 +205,9 @@ contract BookSingleChain is
         address trader,
         uint256 newFeePct,
         bytes calldata traderSignature
-    ) external {
+    )
+        external
+    {
         bytes32 tradeId = _getTradeId(
             tokenIn,
             tokenOut,
@@ -245,7 +241,9 @@ contract BookSingleChain is
         address recipient,
         uint256 tradeIndex,
         uint256 amountToSend
-    ) external {
+    )
+        external
+    {
         bytes32 tradeId = _getTradeId(
             tokenIn,
             tokenOut,
@@ -297,7 +295,9 @@ contract BookSingleChain is
         address trader,
         uint256 newFeePct,
         bytes calldata traderSignature
-    ) external {
+    )
+        external
+    {
         bytes32 tradeId = _getTradeId(
             tokenIn,
             tokenOut,
@@ -343,7 +343,9 @@ contract BookSingleChain is
         uint256 feePct,
         address recipient,
         uint256 tradeIndex
-    ) external {
+    )
+        external
+    {
         bytes32 tradeId = _getTradeId(
             tokenIn,
             tokenOut,
@@ -358,12 +360,11 @@ contract BookSingleChain is
             revert BookSingleChain__TradeNotInFilledState(tradeId);
         }
         // safe cast as for the check above we know that filledAtBlock[tradeId] > 0.
-        if (
-            block.number - uint256(filledAtBlock[tradeId]) < safeBlockThreshold
-        ) {
+        if (block.number - uint256(filledAtBlock[tradeId]) < safeBlockThreshold)
+        {
             // Always > 0 for the check above
-            uint256 blocksLeft = safeBlockThreshold -
-                (block.number - uint256(filledAtBlock[tradeId]));
+            uint256 blocksLeft = safeBlockThreshold
+                - (block.number - uint256(filledAtBlock[tradeId]));
             revert BookSingleChain__DisputePeriodNotOver(blocksLeft);
         }
 
@@ -401,7 +402,9 @@ contract BookSingleChain is
         uint256 feePct,
         address recipient,
         uint256 tradeIndex
-    ) external {
+    )
+        external
+    {
         bytes32 tradeId = _getTradeId(
             tokenIn,
             tokenOut,
@@ -442,11 +445,7 @@ contract BookSingleChain is
         ERC20(tokenIn).safeApprove(address(oracle), 0);
 
         bytes32 disputeId = oracle.getRequestId(
-            address(this),
-            relayer,
-            msg.sender,
-            tokenIn,
-            bondAmount
+            address(this), relayer, msg.sender, tokenIn, bondAmount
         );
 
         emit TradeDisputed(relayer, tradeIndex, disputeId);
@@ -456,10 +455,8 @@ contract BookSingleChain is
         if (msg.sender != address(oracle)) {
             revert BookSingleChain__MaliciousCaller(msg.sender);
         }
-        (uint256 amountIn, address recipient, uint256 tradeIndex) = abi.decode(
-            request.data,
-            (uint256, address, uint256)
-        );
+        (uint256 amountIn, address recipient, uint256 tradeIndex) =
+            abi.decode(request.data, (uint256, address, uint256));
         // If answer is true, it means the relayer was truthful, so he gets the tradeRebatePct of the trade as no rebate is necessary.
         uint256 rebate = (amountIn * tradeRebatePct) / 100;
         if (request.answer) {
@@ -469,23 +466,25 @@ contract BookSingleChain is
         }
 
         emit TradeDisputeSettled(
-            request.proposer,
-            tradeIndex,
-            id,
-            request.answer
-        );
+            request.proposer, tradeIndex, id, request.answer
+            );
     }
 
-    /**************************************
+    /**
+     *************************************
      *         INTERNAL FUNCTIONS         *
-     **************************************/
+     *************************************
+     */
 
     function _verifyFeeUpdateSignature(
         address trader,
         bytes32 tradeId,
         uint256 newFeePct,
         bytes calldata traderSignature
-    ) internal view {
+    )
+        internal
+        view
+    {
         if (newFeePct > MAX_FEE_PCT) {
             revert BookSingleChain__FeePctTooHigh(newFeePct);
         }
@@ -496,17 +495,13 @@ contract BookSingleChain is
             revert BookSingleChain__TradeAlreadyFilled(tradeId);
         }
 
-        bytes32 expectedMessageHash = keccak256(
-            abi.encodePacked(SIGNATURE_DELIMITER, tradeId, newFeePct)
-        );
+        bytes32 expectedMessageHash =
+            keccak256(abi.encodePacked(SIGNATURE_DELIMITER, tradeId, newFeePct));
 
-        bytes32 ethSignedMessageHash = ECDSA.toEthSignedMessageHash(
-            expectedMessageHash
-        );
-        address maybeTrader = ECDSA.recover(
-            ethSignedMessageHash,
-            traderSignature
-        );
+        bytes32 ethSignedMessageHash =
+            ECDSA.toEthSignedMessageHash(expectedMessageHash);
+        address maybeTrader =
+            ECDSA.recover(ethSignedMessageHash, traderSignature);
         if (maybeTrader != trader) {
             revert BookSingleChain__InvalidSignature();
         }
@@ -529,7 +524,9 @@ contract BookSingleChain is
         bytes32 tradeId,
         uint256 amountToSend,
         address relayer
-    ) internal {
+    )
+        internal
+    {
         if (filledAtBlock[tradeId] < 0) {
             revert BookSingleChain__TradeNotInFilledState(tradeId);
         }
@@ -570,18 +567,15 @@ contract BookSingleChain is
         uint256 feePct,
         address recipient,
         uint256 tradeIndex
-    ) internal pure returns (bytes32) {
-        return
-            keccak256(
-                abi.encodePacked(
-                    tokenIn,
-                    tokenOut,
-                    amountIn,
-                    minAmountOut,
-                    feePct,
-                    recipient,
-                    tradeIndex
-                )
-            );
+    )
+        internal
+        pure
+        returns (bytes32)
+    {
+        return keccak256(
+            abi.encodePacked(
+                tokenIn, tokenOut, amountIn, minAmountOut, feePct, recipient, tradeIndex
+            )
+        );
     }
 }

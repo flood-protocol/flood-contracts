@@ -29,13 +29,13 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
         address disputer,
         address currency,
         uint256 bond
-    ) public {
-        bytes32 id = keccak256(
-            abi.encodePacked(sender, proposer, disputer, currency, bond)
-        );
+    )
+        public
+    {
+        bytes32 id =
+            keccak256(abi.encodePacked(sender, proposer, disputer, currency, bond));
         assertEq(
-            oracle.getRequestId(sender, proposer, disputer, currency, bond),
-            id
+            oracle.getRequestId(sender, proposer, disputer, currency, bond), id
         );
     }
 
@@ -90,19 +90,13 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
         bytes32 id = oracle.getRequestId(charlie, alice, bob, USDC, bond);
         vm.prank(charlie);
         vm.expectRevert(
-            abi.encodeWithSelector(
-                AllKnowingOracle__RequestAlreadyExists.selector,
-                id
-            )
+            abi.encodeWithSelector(AllKnowingOracle__RequestAlreadyExists.selector, id)
         );
         oracle.ask(alice, bob, USDC, bond, abi.encode(charlie));
         // Even the same question with no callback should fail
         vm.prank(charlie);
         vm.expectRevert(
-            abi.encodeWithSelector(
-                AllKnowingOracle__RequestAlreadyExists.selector,
-                id
-            )
+            abi.encodeWithSelector(AllKnowingOracle__RequestAlreadyExists.selector, id)
         );
         oracle.ask(alice, bob, USDC, bond, "");
     }
@@ -112,8 +106,7 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
         vm.assume(bondToken != WETH);
         vm.expectRevert(
             abi.encodeWithSelector(
-                AllKnowingOracle__TokenNotWhitelisted.selector,
-                bondToken
+                AllKnowingOracle__TokenNotWhitelisted.selector, bondToken
             )
         );
         vm.prank(charlie);
@@ -148,13 +141,8 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
         vm.prank(requesterAddress);
         oracle.ask(alice, bob, USDC, bond, abi.encode(int256(-42)));
 
-        bytes32 id = oracle.getRequestId(
-            requesterAddress,
-            alice,
-            bob,
-            USDC,
-            bond
-        );
+        bytes32 id =
+            oracle.getRequestId(requesterAddress, alice, bob, USDC, bond);
         (
             address storageRequester,
             address storageProposer,
@@ -206,10 +194,7 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
 
         vm.prank(charlie);
         vm.expectRevert(
-            abi.encodeWithSelector(
-                AllKnowingOracle__AlreadySettled.selector,
-                id
-            )
+            abi.encodeWithSelector(AllKnowingOracle__AlreadySettled.selector, id)
         );
         oracle.settle(id, answer);
     }

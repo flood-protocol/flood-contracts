@@ -16,21 +16,13 @@ contract DisputeTest is DisputeFixture {
 
         uint256 bookBalanceBefore = ERC20(testTokenIn).balanceOf(address(book));
         uint256 disputerBalanceBefore = ERC20(testTokenIn).balanceOf(disputer);
-        int256 filledAtBeforeDispute = stdstore
-            .target(address(book))
-            .sig(book.filledAtBlock.selector)
-            .with_key(tradeId)
-            .read_int();
+        int256 filledAtBeforeDispute = stdstore.target(address(book)).sig(
+            book.filledAtBlock.selector
+        ).with_key(tradeId).read_int();
 
         // check that the request was received by the oracle
         bytes32 reqId = keccak256(
-            abi.encodePacked(
-                address(book),
-                relayer,
-                disputer,
-                testTokenIn,
-                bond
-            )
+            abi.encodePacked(address(book), relayer, disputer, testTokenIn, bond)
         );
 
         vm.expectEmit(true, true, true, true, address(book));
@@ -45,11 +37,9 @@ contract DisputeTest is DisputeFixture {
             tradeIndex
         );
 
-        int256 filledAtAfterDispute = stdstore
-            .target(address(book))
-            .sig(book.filledAtBlock.selector)
-            .with_key(tradeId)
-            .read_int();
+        int256 filledAtAfterDispute = stdstore.target(address(book)).sig(
+            book.filledAtBlock.selector
+        ).with_key(tradeId).read_int();
 
         assertEq(filledAtAfterDispute, -filledAtBeforeDispute);
 
@@ -67,9 +57,7 @@ contract DisputeTest is DisputeFixture {
         assertEq(_reqRequester, address(book), "Requester should be book");
         assertEq(_reqProposer, relayer, "Proposer should equal relayer");
         assertEq(
-            _reqDisputer,
-            disputer,
-            "Request Disputer should equal disputer"
+            _reqDisputer, disputer, "Request Disputer should equal disputer"
         );
         assertEq(
             address(_reqCurrency),
@@ -106,27 +94,17 @@ contract DisputeTest is DisputeFixture {
         uint256 bond = (testDisputeBondPct * testAmountIn) / 100;
         deal(testTokenIn, disputer, bond);
 
-        uint256 bookBalanceBeforeDispute = ERC20(testTokenIn).balanceOf(
-            address(book)
-        );
-        uint256 disputerBalanceBeforeDispute = ERC20(testTokenIn).balanceOf(
-            disputer
-        );
-        uint256 relayerBalanceBeforeDispute = ERC20(testTokenIn).balanceOf(
-            relayer
-        );
-        uint256 recipientBalanceBeforeDispute = ERC20(testTokenIn).balanceOf(
-            testRecipient
-        );
+        uint256 bookBalanceBeforeDispute =
+            ERC20(testTokenIn).balanceOf(address(book));
+        uint256 disputerBalanceBeforeDispute =
+            ERC20(testTokenIn).balanceOf(disputer);
+        uint256 relayerBalanceBeforeDispute =
+            ERC20(testTokenIn).balanceOf(relayer);
+        uint256 recipientBalanceBeforeDispute =
+            ERC20(testTokenIn).balanceOf(testRecipient);
 
         bytes32 reqId = keccak256(
-            abi.encodePacked(
-                address(book),
-                relayer,
-                disputer,
-                testTokenIn,
-                bond
-            )
+            abi.encodePacked(address(book), relayer, disputer, testTokenIn, bond)
         );
 
         _disputeTrade(
@@ -163,8 +141,7 @@ contract DisputeTest is DisputeFixture {
                 ERC20(testTokenIn).balanceOf(testRecipient),
                 recipientBalanceBeforeDispute,
                 "Recipient should have received no tokens"
-            );
-            // Disputer was right
+            ); // Disputer was right
         } else {
             assertEq(
                 ERC20(testTokenIn).balanceOf(disputer),
@@ -198,10 +175,7 @@ contract DisputeTest is DisputeFixture {
         });
         vm.prank(caller);
         vm.expectRevert(
-            abi.encodeWithSelector(
-                BookSingleChain__MaliciousCaller.selector,
-                caller
-            )
+            abi.encodeWithSelector(BookSingleChain__MaliciousCaller.selector, caller)
         );
         book.onPriceSettled(keccak256("id"), fakeRequest);
     }
@@ -225,10 +199,7 @@ contract DisputeTest is DisputeFixture {
         vm.prank(nextDisputer);
         ERC20(testTokenIn).approve(address(oracle), type(uint256).max);
         vm.expectRevert(
-            abi.encodeWithSelector(
-                BookSingleChain__TradeNotInFilledState.selector,
-                tradeId
-            )
+            abi.encodeWithSelector(BookSingleChain__TradeNotInFilledState.selector, tradeId)
         );
         book.disputeTrade(
             testTokenIn,
@@ -270,8 +241,7 @@ contract DisputeTest is DisputeFixture {
 
         vm.expectRevert(
             abi.encodeWithSelector(
-                BookSingleChain__TradeNotInFilledState.selector,
-                nonExistentTradeId
+                BookSingleChain__TradeNotInFilledState.selector, nonExistentTradeId
             )
         );
         // dispute a trade which was never filled
