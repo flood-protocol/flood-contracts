@@ -56,7 +56,8 @@ contract SettlementTest is DisputeFixture {
         );
 
         // check that the trade was settled correctly
-        uint256 relayerPenalty = (testAmountIn * testRelayerPenaltyPct) / 100;
+        uint256 relayerPenalty = (testAmountIn * (100 - testRelayerRefundPct)) /
+            100;
 
         assertEq(
             ERC20(testTokenIn).balanceOf(relayer),

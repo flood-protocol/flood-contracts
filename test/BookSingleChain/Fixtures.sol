@@ -11,7 +11,7 @@ contract BaseBookFixture is IBookSingleChainEvents, OracleFixture {
     uint256 internal testSafeBlockThreashold = 100;
     uint256 testDisputeBondPct = 20;
     uint256 testTradeRebatePct = 20;
-    uint256 testRelayerPenaltyPct = 60;
+    uint256 testRelayerRefundPct = 60;
 
     function setUp() public virtual override {
         super.setUp();
@@ -20,7 +20,7 @@ contract BaseBookFixture is IBookSingleChainEvents, OracleFixture {
             testSafeBlockThreashold,
             testDisputeBondPct,
             testTradeRebatePct,
-            testRelayerPenaltyPct
+            testRelayerRefundPct
         );
         vm.label(address(book), "Book");
     }

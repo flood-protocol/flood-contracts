@@ -13,7 +13,7 @@ interface IBookSingleChainEvents {
     event FeeCombinationSet(
         uint256 disputeBondPct,
         uint256 tradeRebatePct,
-        uint256 relayerPenaltyPct
+        uint256 relayerRefundPct
     );
     event TokenWhitelisted(address indexed token, bool whitelisted);
     event TradeRequested(
@@ -69,6 +69,7 @@ error BookSingleChain__DisputePeriodOver();
 error BookSingleChain__MaliciousCaller(address caller);
 
 bytes32 constant SIGNATURE_DELIMITER = keccak256("FLOOD-V1");
+uint256 constant MAX_FEE_PCT = 0.25 * 1e18;
 
 contract BookSingleChain is
     IOptimisticRequester,
@@ -77,11 +78,10 @@ contract BookSingleChain is
 {
     using SafeTransferLib for ERC20;
 
-    uint256 constant MAX_FEE_PCT = 0.25 * 1e18;
     uint256 public immutable safeBlockThreshold;
     uint256 public immutable disputeBondPct;
     uint256 public immutable tradeRebatePct;
-    uint256 public immutable relayerPenaltyPct;
+    uint256 public immutable relayerRefundPct;
 
     AllKnowingOracle public immutable oracle;
 
@@ -97,23 +97,23 @@ contract BookSingleChain is
         uint256 _safeBlockThreshold,
         uint256 _disputeBondPct,
         uint256 _tradeRebatePct,
-        uint256 _relayerPenaltyPct
+        uint256 _relayerRefundPct
     ) Owned(msg.sender) {
         oracle = AllKnowingOracle(_oracle);
         safeBlockThreshold = _safeBlockThreshold;
         emit SafeBlockThresholdSet(safeBlockThreshold);
 
-        if (_disputeBondPct + _tradeRebatePct + _relayerPenaltyPct != 100) {
+        if (_disputeBondPct + _tradeRebatePct + _relayerRefundPct != 100) {
             revert BookSingleChain__InvalidFeeCombination();
         }
         disputeBondPct = _disputeBondPct;
         tradeRebatePct = _tradeRebatePct;
-        relayerPenaltyPct = _relayerPenaltyPct;
+        relayerRefundPct = _relayerRefundPct;
 
         emit FeeCombinationSet(
             _disputeBondPct,
             _tradeRebatePct,
-            _relayerPenaltyPct
+            _relayerRefundPct
         );
     }
 
@@ -321,7 +321,7 @@ contract BookSingleChain is
             tradeIndex,
             tradeId,
             amountToSend,
-            trader
+            msg.sender
         );
     }
 
@@ -373,7 +373,7 @@ contract BookSingleChain is
         delete filledBy[tradeId];
 
         // Since the trade is valid, the relayer can now receive all the tokens.
-        uint256 amountInToRelayer = (amountIn * (relayerPenaltyPct)) / 100;
+        uint256 amountInToRelayer = (amountIn * (100 - relayerRefundPct)) / 100;
 
         ERC20(tokenIn).safeTransfer(relayer, amountInToRelayer);
 
@@ -546,8 +546,7 @@ contract BookSingleChain is
         // Send the tokens to the recipient.
         ERC20(tokenOut).safeTransferFrom(relayer, recipient, amountToSend);
         // Send some of the tokens to the relayer.
-        uint256 amountInToRelayer = (amountIn * (100 - relayerPenaltyPct)) /
-            100;
+        uint256 amountInToRelayer = (amountIn * relayerRefundPct) / 100;
 
         ERC20(tokenIn).safeTransfer(relayer, amountInToRelayer);
     }
