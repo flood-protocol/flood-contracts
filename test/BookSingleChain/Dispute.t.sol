@@ -3,207 +3,223 @@ pragma solidity ^0.8.15;
 
 import "./Fixtures.sol";
 
-contract DisputeTest is TradeFixture {
+contract DisputeTest is DisputeFixture {
     using stdStorage for StdStorage;
-
-    uint256 internal tradeIndex;
-    bytes32 internal tradeId;
-    address internal relayer = bob;
-    address internal disputer = charlie;
-    uint256 internal testAmountToSend = 2000 * 1e6;
 
     function setUp() public override {
         super.setUp();
-        deal(testTokenIn, alice, testAmount);
-        (uint256 _tradeIndex, bytes32 _tradeId) = _requestTrade(
-            testTokenIn,
-            testTokenOut,
-            testAmount,
-            testFeePct,
-            testRecipient,
-            alice
-        );
-        tradeIndex = _tradeIndex;
-        tradeId = _tradeId;
-
-        deal(testTokenOut, relayer, testAmountToSend);
-        vm.prank(relayer);
-        _fillTrade(
-            testTokenIn,
-            testTokenOut,
-            testAmount,
-            testFeePct,
-            testRecipient,
-            tradeIndex,
-            testAmountToSend
-        );
     }
 
     function testDispute() public {
-        // Lets check the trade was filled correctly and storage variables are set
-        uint256 filledAmountInStorageBefore = stdstore
-            .target(address(book))
-            .sig(book.filledAmount.selector)
-            .with_key(tradeId)
-            .read_uint();
+        uint256 bond = (testDisputeBondPct * testAmountIn) / 100;
+        deal(testTokenIn, disputer, bond);
 
-        assertEq(
-            filledAmountInStorageBefore,
-            testAmountToSend,
-            "Filled amount should be equal to the amount sent"
-        );
-        address filledByInStorageBefore = stdstore
-            .target(address(book))
-            .sig(book.filledBy.selector)
-            .with_key(tradeId)
-            .read_address();
-
-        assertEq(
-            filledByInStorageBefore,
-            relayer,
-            "Filled by should be equal to the relayer"
-        );
-
-        uint256 filleAtBlockInStorageBefore = stdstore
-            .target(address(book))
-            .sig(book.filledAtBlock.selector)
-            .with_key(tradeId)
-            .read_uint();
-
-        assertEq(
-            filleAtBlockInStorageBefore,
-            block.number,
-            "Filled at block should be equal to the current block number"
-        );
-
-        uint256 bond = oracle.bondForStake(testAmountToSend);
-        deal(testTokenOut, disputer, bond);
-
-        uint256 bookBalanceBefore = ERC20(testTokenOut).balanceOf(
-            address(book)
-        );
-        uint256 disputerBalanceBefore = ERC20(testTokenOut).balanceOf(disputer);
+        uint256 bookBalanceBefore = ERC20(testTokenIn).balanceOf(address(book));
+        uint256 disputerBalanceBefore = ERC20(testTokenIn).balanceOf(disputer);
+        int256 filledAtBeforeDispute = stdstore.target(address(book)).sig(
+            book.filledAtBlock.selector
+        ).with_key(tradeId).read_int();
 
         // check that the request was received by the oracle
         bytes32 reqId = keccak256(
-            abi.encode(relayer, disputer, testTokenOut, testAmountToSend, bond)
+            abi.encodePacked(address(book), relayer, disputer, testTokenIn, bond)
         );
 
-        vm.prank(disputer);
-        ERC20(testTokenOut).approve(address(oracle), type(uint256).max);
-        vm.prank(disputer);
         vm.expectEmit(true, true, true, true, address(book));
-        emit TradeDisputed(
-            relayer,
-            tradeIndex,
-            reqId,
-            testAmountToSend,
-            testFeePct
-        );
-        book.disputeTrade(
+        emit TradeDisputed(relayer, tradeIndex, reqId);
+        _disputeTrade(
             testTokenIn,
             testTokenOut,
-            testAmount,
+            testAmountIn,
+            testAmountOutMin,
             testFeePct,
             testRecipient,
             tradeIndex
         );
 
+        int256 filledAtAfterDispute = stdstore.target(address(book)).sig(
+            book.filledAtBlock.selector
+        ).with_key(tradeId).read_int();
+
+        assertEq(filledAtAfterDispute, -filledAtBeforeDispute);
+
         (
+            address _reqRequester,
             address _reqProposer,
             address _reqDisputer,
-            address _reqBondToken,
-            uint256 _stake,
-            uint256 _bond,
-            bool _answer,
-            RequestState _state
+            ERC20 _reqCurrency,
+            uint256 _reqBond,
+            RequestState _reqState,
+            bool _reqAnswer,
+            bytes memory _reqData
         ) = oracle.requests(reqId);
 
+        assertEq(_reqRequester, address(book), "Requester should be book");
+        assertEq(_reqProposer, relayer, "Proposer should equal relayer");
         assertEq(
-            _reqProposer,
-            relayer,
-            "Proposer should be equal to the relayer"
+            _reqDisputer, disputer, "Request Disputer should equal disputer"
         );
         assertEq(
-            _reqDisputer,
-            disputer,
-            "Disputer should be equal to the disputer"
+            address(_reqCurrency),
+            testTokenIn,
+            "Request currency should equal tokenIn"
         );
+        assertEq(_reqBond, bond, "request bond should equal bond");
+        assertEq(_reqAnswer, false, "Answer should be false");
         assertEq(
-            _reqBondToken,
-            testTokenOut,
-            "Bond token should be equal to the test token out"
-        );
-        assertEq(
-            _stake,
-            testAmountToSend,
-            "Stake should be equal to the amount sent"
-        );
-        assertEq(_bond, bond, "Bond should be equal to the bond");
-        assertEq(_answer, false, "Answer should be equal to false");
-        assertEq(
-            uint256(_state),
+            uint256(_reqState),
             uint256(RequestState.Pending),
-            "State should be equal to Pending"
+            "State should be Pending"
+        );
+        assertEq(
+            _reqData,
+            abi.encode(testAmountIn, testRecipient, tradeIndex),
+            "Request Data should equal request data"
         );
 
         // Check that the tokens have been pulled from the book and the disputer
         assertEq(
-            ERC20(testTokenOut).balanceOf(address(book)),
-            bookBalanceBefore - testAmountToSend,
-            "Book should have sponsored the proposal"
+            ERC20(testTokenIn).balanceOf(address(book)),
+            bookBalanceBefore - bond,
+            "Book should have sponsored the proposer bond"
         );
         assertEq(
-            ERC20(testTokenOut).balanceOf(disputer),
+            ERC20(testTokenIn).balanceOf(disputer),
             disputerBalanceBefore - bond,
             "Disputer should have posted the bond"
         );
+    }
 
-        // check that the storage variables have been unset
-        uint256 filledAmountInStorageAfter = stdstore
-            .target(address(book))
-            .sig(book.filledAmount.selector)
-            .with_key(tradeId)
-            .read_uint();
+    function testOnPriceSettledCallback(bool answer) public {
+        uint256 bond = (testDisputeBondPct * testAmountIn) / 100;
+        deal(testTokenIn, disputer, bond);
 
-        assertEq(
-            filledAmountInStorageAfter,
-            0,
-            "Filled amount should be unset"
+        uint256 bookBalanceBeforeDispute =
+            ERC20(testTokenIn).balanceOf(address(book));
+        uint256 disputerBalanceBeforeDispute =
+            ERC20(testTokenIn).balanceOf(disputer);
+        uint256 relayerBalanceBeforeDispute =
+            ERC20(testTokenIn).balanceOf(relayer);
+        uint256 recipientBalanceBeforeDispute =
+            ERC20(testTokenIn).balanceOf(testRecipient);
+
+        bytes32 reqId = keccak256(
+            abi.encodePacked(address(book), relayer, disputer, testTokenIn, bond)
         );
 
-        address filledByInStorageAfter = stdstore
-            .target(address(book))
-            .sig(book.filledBy.selector)
-            .with_key(tradeId)
-            .read_address();
-
-        assertEq(
-            filledByInStorageAfter,
-            address(0),
-            "Filled by should be unset"
+        _disputeTrade(
+            testTokenIn,
+            testTokenOut,
+            testAmountIn,
+            testAmountOutMin,
+            testFeePct,
+            testRecipient,
+            tradeIndex
         );
 
-        uint256 filleAtBlockInStorageAfter = stdstore
-            .target(address(book))
-            .sig(book.filledAtBlock.selector)
-            .with_key(tradeId)
-            .read_uint();
+        oracle.settle(reqId, answer);
 
+        uint256 rebate = (testTradeRebatePct * testAmountIn) / 100;
         assertEq(
-            filleAtBlockInStorageAfter,
-            0,
-            "Filled at block should be unset"
+            ERC20(testTokenIn).balanceOf(address(book)),
+            bookBalanceBeforeDispute - bond - rebate,
+            "Book should no tokenIn balance left"
+        );
+        // Dispute was wrong
+        if (answer) {
+            assertEq(
+                ERC20(testTokenIn).balanceOf(disputer),
+                disputerBalanceBeforeDispute - bond,
+                "Disputer should have lost the bond"
+            );
+            assertEq(
+                ERC20(testTokenIn).balanceOf(relayer),
+                relayerBalanceBeforeDispute + rebate + 2 * bond,
+                "Relayer should have received the rebate, his bond back and the disputer bond."
+            );
+            assertEq(
+                ERC20(testTokenIn).balanceOf(testRecipient),
+                recipientBalanceBeforeDispute,
+                "Recipient should have received no tokens"
+            ); // Disputer was right
+        } else {
+            assertEq(
+                ERC20(testTokenIn).balanceOf(disputer),
+                disputerBalanceBeforeDispute + bond,
+                "Disputer should have received its bond + the relayer bond"
+            );
+            assertEq(
+                ERC20(testTokenIn).balanceOf(relayer),
+                relayerBalanceBeforeDispute,
+                "Relayer should have received tokens"
+            );
+            assertEq(
+                ERC20(testTokenIn).balanceOf(testRecipient),
+                recipientBalanceBeforeDispute + rebate,
+                "Recipient should have received the rebate"
+            );
+        }
+    }
+
+    function testCannotCallOnPriceSettledIfNotOracle(address caller) public {
+        vm.assume(caller != address(oracle));
+        Request memory fakeRequest = Request({
+            requester: address(book),
+            proposer: relayer,
+            disputer: disputer,
+            currency: ERC20(USDC),
+            bond: 100,
+            state: RequestState.Settled,
+            answer: true,
+            data: abi.encode(testAmountIn, testRecipient, tradeIndex)
+        });
+        vm.prank(caller);
+        vm.expectRevert(
+            abi.encodeWithSelector(BookSingleChain__MaliciousCaller.selector, caller)
+        );
+        book.onPriceSettled(keccak256("id"), fakeRequest);
+    }
+
+    function testCannotDisputeTwice() public {
+        uint256 bond = (testDisputeBondPct * testAmountIn) / 100;
+
+        deal(testTokenIn, disputer, bond);
+        vm.prank(disputer);
+        book.disputeTrade(
+            testTokenIn,
+            testTokenOut,
+            testAmountIn,
+            testAmountOutMin,
+            testFeePct,
+            testRecipient,
+            tradeIndex
+        );
+        address nextDisputer = generateUser("nextDisputer");
+        deal(testTokenIn, nextDisputer, bond);
+        vm.prank(nextDisputer);
+        ERC20(testTokenIn).approve(address(oracle), type(uint256).max);
+        vm.expectRevert(
+            abi.encodeWithSelector(BookSingleChain__TradeNotInFilledState.selector, tradeId)
+        );
+        book.disputeTrade(
+            testTokenIn,
+            testTokenOut,
+            testAmountIn,
+            testAmountOutMin,
+            testFeePct,
+            testRecipient,
+            tradeIndex
         );
     }
 
     function testCannotDisputeIfPeriodIsOver() public {
         skipBlocks(testSafeBlockThreashold + 1);
         vm.expectRevert(BookSingleChain__DisputePeriodOver.selector);
-        book.disputeTrade(
+        _disputeTrade(
             testTokenIn,
             testTokenOut,
-            testAmount,
+            testAmountIn,
+            testAmountOutMin,
             testFeePct,
             testRecipient,
             tradeIndex
@@ -212,26 +228,28 @@ contract DisputeTest is TradeFixture {
 
     function testCannotDisputeIfNotFilled() public {
         bytes32 nonExistentTradeId = keccak256(
-            abi.encode(
+            abi.encodePacked(
                 testTokenIn,
                 testTokenOut,
-                testAmount + 1,
+                testAmountIn + 1,
+                testAmountOutMin,
                 testFeePct,
                 testRecipient,
                 tradeIndex
             )
         );
+
         vm.expectRevert(
             abi.encodeWithSelector(
-                BookSingleChain__TradeNotFilled.selector,
-                nonExistentTradeId
+                BookSingleChain__TradeNotInFilledState.selector, nonExistentTradeId
             )
         );
         // dispute a trade which was never filled
         book.disputeTrade(
             testTokenIn,
             testTokenOut,
-            testAmount + 1,
+            testAmountIn + 1,
+            testAmountOutMin,
             testFeePct,
             testRecipient,
             tradeIndex

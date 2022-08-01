@@ -5,172 +5,72 @@ import "src/BookSingleChain.sol";
 import "forge-std/Test.sol";
 import "./Fixtures.sol";
 
-contract SettlementTest is TradeFixture {
+contract SettlementTest is DisputeFixture {
     using stdStorage for StdStorage;
-
-    uint256 internal tradeIndex;
-    bytes32 internal tradeId;
 
     function setUp() public override {
         super.setUp();
-        deal(testTokenIn, alice, testAmount);
-        (uint256 _tradeIndex, bytes32 _tradeId) = _requestTrade(
-            testTokenIn,
-            testTokenOut,
-            testAmount,
-            testFeePct,
-            testRecipient,
-            alice
-        );
-        tradeIndex = _tradeIndex;
-        tradeId = _tradeId;
     }
 
     function testSettlement() public {
-        // Alice requests the trade, bob accepts it
-        address relayer = bob;
-
-        uint256 amountToSend = 2000 * 1e6;
-        deal(testTokenOut, bob, amountToSend);
-        vm.prank(relayer);
-        _fillTrade(
-            testTokenIn,
-            testTokenOut,
-            testAmount,
-            testFeePct,
-            testRecipient,
-            tradeIndex,
-            amountToSend
-        );
-
-        // lets check the trade was filled correctly and storage variables are set
-        uint256 filledAmountInStorageBefore = stdstore
-            .target(address(book))
-            .sig(book.filledAmount.selector)
-            .with_key(tradeId)
-            .read_uint();
-
-        assertEq(
-            filledAmountInStorageBefore,
-            amountToSend,
-            "Filled amount should be equal to the amount sent"
-        );
-        address filledByInStorageBefore = stdstore
-            .target(address(book))
-            .sig(book.filledBy.selector)
-            .with_key(tradeId)
-            .read_address();
-
-        assertEq(
-            filledByInStorageBefore,
-            bob,
-            "Filled by should be equal to the address of the relayer"
-        );
-
-        uint256 filledAtBlockInStorageBefore = stdstore
-            .target(address(book))
-            .sig(book.filledAtBlock.selector)
-            .with_key(tradeId)
-            .read_uint();
-
-        assertEq(
-            filledAtBlockInStorageBefore,
-            block.number,
-            "Filled at block should be equal to the current block number"
-        );
-
-        uint256 filledAmount = filledAmountInStorageBefore;
-
-        uint256 relayerBalanceBefore = ERC20(testTokenIn).balanceOf(relayer);
-        uint256 recipientBalanceBefore = ERC20(testTokenOut).balanceOf(
-            testRecipient
-        );
-
+        uint256 relayerBalanceBeforeSettle =
+            ERC20(testTokenIn).balanceOf(relayer);
         // move to the end of the dispute period
         skipBlocks(book.safeBlockThreshold());
 
         vm.expectEmit(true, true, true, true, address(book));
-        emit TradeSettled(relayer, tradeIndex, filledAmount, testFeePct);
+        emit TradeSettled(relayer, tradeIndex);
         book.settleTrade(
             testTokenIn,
             testTokenOut,
-            testAmount,
+            testAmountIn,
+            testAmountOutMin,
             testFeePct,
             testRecipient,
             tradeIndex
         );
 
         // check that the storage variables have been reset
-        uint256 filledAmountInStorageAfter = stdstore
-            .target(address(book))
-            .sig(book.filledAmount.selector)
-            .with_key(tradeId)
-            .read_uint();
+        address filledByInStorageAfter = stdstore.target(address(book)).sig(
+            book.filledBy.selector
+        ).with_key(tradeId).read_address();
 
         assertEq(
-            filledAmountInStorageAfter,
-            0,
-            "Filled amount should be equal to 0"
+            filledByInStorageAfter, address(0), "Filled by should be equal to 0"
         );
-        address filledByInStorageAfter = stdstore
-            .target(address(book))
-            .sig(book.filledBy.selector)
-            .with_key(tradeId)
-            .read_address();
+        uint256 filledAtBlockInStorageAfter = stdstore.target(address(book)).sig(
+            book.filledAtBlock.selector
+        ).with_key(tradeId).read_uint();
 
         assertEq(
-            filledByInStorageAfter,
-            address(0),
-            "Filled by should be equal to 0"
-        );
-        uint256 filledAtBlockInStorageAfter = stdstore
-            .target(address(book))
-            .sig(book.filledAtBlock.selector)
-            .with_key(tradeId)
-            .read_uint();
-
-        assertEq(
-            filledAtBlockInStorageAfter,
-            0,
-            "Filled at block should be equal to 0"
+            filledAtBlockInStorageAfter, 0, "Filled at block should be equal to 0"
         );
 
         // check that the trade was settled correctly
+        uint256 relayerPenalty =
+            (testAmountIn * (100 - testRelayerRefundPct)) / 100;
+
         assertEq(
             ERC20(testTokenIn).balanceOf(relayer),
-            relayerBalanceBefore + testAmount,
-            "Bob (Relayer) should have received the amount sold by the trader"
+            relayerBalanceBeforeSettle + relayerPenalty,
+            "The relayer should have received the amount sold by the trader"
         );
         assertEq(
-            ERC20(testTokenOut).balanceOf(testRecipient),
-            recipientBalanceBefore + amountToSend,
-            "The recipient of the trade should have received the amount sent by the relayer"
+            ERC20(testTokenOut).balanceOf(address(book)), 0, "Book should be empty"
         );
     }
 
     function testCannotSettleBeforeThreshold() public {
-        uint256 amountToSend = 2000_10e6;
-        deal(testTokenOut, bob, amountToSend);
-        vm.prank(bob);
-        _fillTrade(
-            testTokenIn,
-            testTokenOut,
-            testAmount,
-            testFeePct,
-            testRecipient,
-            tradeIndex,
-            amountToSend
-        );
         vm.expectRevert(
             abi.encodeWithSelector(
-                BookSingleChain__DisputePeriodNotOver.selector,
-                testSafeBlockThreashold
+                BookSingleChain__DisputePeriodNotOver.selector, testSafeBlockThreashold
             )
         );
         book.settleTrade(
             testTokenIn,
             testTokenOut,
-            testAmount,
+            testAmountIn,
+            testAmountOutMin,
             testFeePct,
             testRecipient,
             tradeIndex
@@ -180,14 +80,60 @@ contract SettlementTest is TradeFixture {
     function testCannotSettleIfNotFilled() public {
         vm.expectRevert(
             abi.encodeWithSelector(
-                BookSingleChain__TradeNotFilled.selector,
-                tradeId
+                BookSingleChain__TradeNotInFilledState.selector,
+                _getTradeId(
+                    testTokenIn,
+                    testTokenOut,
+                    testAmountIn + 1,
+                    testAmountOutMin,
+                    testFeePct,
+                    testRecipient,
+                    tradeIndex + 1
+                )
             )
         );
         book.settleTrade(
             testTokenIn,
             testTokenOut,
-            testAmount,
+            testAmountIn + 1,
+            testAmountOutMin,
+            testFeePct,
+            testRecipient,
+            tradeIndex + 1
+        );
+    }
+
+    function testCannotSettleIfDisputed() public {
+        uint256 bond = (testDisputeBondPct * testAmountIn) / 100;
+        deal(testTokenIn, disputer, bond);
+        _disputeTrade(
+            testTokenIn,
+            testTokenOut,
+            testAmountIn,
+            testAmountOutMin,
+            testFeePct,
+            testRecipient,
+            tradeIndex
+        );
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                BookSingleChain__TradeNotInFilledState.selector,
+                _getTradeId(
+                    testTokenIn,
+                    testTokenOut,
+                    testAmountIn,
+                    testAmountOutMin,
+                    testFeePct,
+                    testRecipient,
+                    tradeIndex
+                )
+            )
+        );
+        book.settleTrade(
+            testTokenIn,
+            testTokenOut,
+            testAmountIn,
+            testAmountOutMin,
             testFeePct,
             testRecipient,
             tradeIndex

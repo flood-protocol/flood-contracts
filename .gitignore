@@ -4,4 +4,5 @@ out/
 **/target
 *.env
 .env
+lib
 broadcast

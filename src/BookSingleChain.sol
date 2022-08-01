@@ -9,21 +9,22 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "./AllKnowingOracle.sol";
 
 interface IBookSingleChainEvents {
-    event SafeBlockThresholdChanged(uint256 newSafeBlockThreshold);
-    event MaxFeePctChanged(uint256 newMaxFeePct);
+    event SafeBlockThresholdSet(uint256 newSafeBlockThreshold);
+    event FeeCombinationSet(
+        uint256 disputeBondPct, uint256 tradeRebatePct, uint256 relayerRefundPct
+    );
     event TokenWhitelisted(address indexed token, bool whitelisted);
     event TradeRequested(
         address indexed tokenIn,
         address indexed tokenOut,
         uint256 amountIn,
+        uint256 minAmountOut,
         uint256 feePct,
         address to,
         uint256 indexed tradeIndex
     );
     event UpdatedFeeForTrade(
-        address indexed trader,
-        uint256 indexed tradeIndex,
-        uint256 newFeePct
+        address indexed trader, uint256 indexed tradeIndex, uint256 newFeePct
     );
     event TradeFilled(
         address indexed relayer,
@@ -31,18 +32,17 @@ interface IBookSingleChainEvents {
         uint256 feePct,
         uint256 amountOut
     );
-    event TradeSettled(
-        address indexed relayer,
-        uint256 indexed tradeIndex,
-        uint256 indexed filledAmount,
-        uint256 feePct
-    );
+    event TradeSettled(address indexed relayer, uint256 indexed tradeIndex);
     event TradeDisputed(
         address indexed relayer,
         uint256 indexed tradeIndex,
+        bytes32 indexed disputeId
+    );
+    event TradeDisputeSettled(
+        address indexed relayer,
+        uint256 indexed tradeIndex,
         bytes32 indexed disputeId,
-        uint256 filledAmount,
-        uint256 feePct
+        bool answer
     );
 }
 
@@ -54,78 +54,59 @@ error BookSingleChain__UnsafeTokenToWhitelist(address token);
 error BookSingleChain__ZeroAmount();
 // the recipient of a transfer was the 0 address
 error BookSingleChain__SentToBlackHole();
+error BookSingleChain__InvalidFeeCombination();
+// The trade is not filled yet, doesn't exist or was disputed
+error BookSingleChain__TradeNotInFilledState(bytes32 tradeId);
 error BookSingleChain__TradeAlreadyFilled(bytes32 tradeId);
-
-// The trade was not filled or doesn't exist
-error BookSingleChain__TradeNotFilled(bytes32 tradeId);
+error BookSingleChain__AmountOutTooLow();
 error BookSingleChain__InvalidSignature();
 error BookSingleChain__DisputePeriodNotOver(uint256 blocksLeft);
 error BookSingleChain__DisputePeriodOver();
+error BookSingleChain__MaliciousCaller(address caller);
 
-bytes32 constant SIGNATURE_DELIMITER = keccak256("LAGUNA-V1");
+bytes32 constant SIGNATURE_DELIMITER = keccak256("FLOOD-V1");
+uint256 constant MAX_FEE_PCT = 0.25 * 1e18;
 
-/**
- * @title BookSingleChain
- * @notice A basic RFQ book implementation, where users request trades and off-chain relayers fill them.
- * To ensure relayers fill trades at "fair" price, there is a block range in which trades can be disputed and voided.
- * If a trade is not disputed within the dispute period, the relayer can call `refund` to obtain the other side of the trade it filled.
- * @notice This implementation gives immense power to the owner of the contract, and only allows one relayer / disputer. This is not intended for production use, but rather for a small scale test.
- */
-contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
+contract BookSingleChain is IOptimisticRequester, IBookSingleChainEvents, Owned {
     using SafeTransferLib for ERC20;
 
-    // Number of trades done so far. Used to generate trade ids.
-    uint256 public numberOfTrades = 0;
-    // The amountIn of blocks in which a trade can be disputed.
-    uint256 public safeBlockThreshold;
-    // The maximum % off the optimal quote allowed. 1e18 is 100%.
-    uint256 public maxFeePct;
-    // A mapping with the tokens that are supported by this contract.
-    mapping(address => bool) public whitelistedTokens;
+    uint256 public immutable safeBlockThreshold;
+    uint256 public immutable disputeBondPct;
+    uint256 public immutable tradeRebatePct;
+    uint256 public immutable relayerRefundPct;
 
+    AllKnowingOracle public immutable oracle;
+
+    uint256 public numberOfTrades = 0;
+    mapping(address => bool) public whitelistedTokens;
     // Maps each trade id to the block it was filled at.
-    mapping(bytes32 => uint256) public filledAtBlock;
+    mapping(bytes32 => int256) public filledAtBlock;
     // A mapping from a trade id to the relayer filling it.
     mapping(bytes32 => address) public filledBy;
-    // A mapping from a trade id to the amount of tokens received by the trader that requested the trade.
-    mapping(bytes32 => uint256) public filledAmount;
 
-    // Oracle used for dispute resolution
-    IOracle public immutable oracle;
-
-    /****************************************
-     *                EVENTS                *
-     ****************************************/
-
-    /**
-     * @notice Constructs the order book.
-     * @param _safeBlockThreshold The number of blocks in which a trade can be disputed.
-     * @param _oracleAddress The address of the oracle used for dispute resolution.
-     */
-    constructor(uint256 _safeBlockThreshold, address _oracleAddress)
+    constructor(
+        address _oracle,
+        uint256 _safeBlockThreshold,
+        uint256 _disputeBondPct,
+        uint256 _tradeRebatePct,
+        uint256 _relayerRefundPct
+    )
         Owned(msg.sender)
     {
-        oracle = IOracle(_oracleAddress);
+        oracle = AllKnowingOracle(_oracle);
         safeBlockThreshold = _safeBlockThreshold;
-        emit SafeBlockThresholdChanged(safeBlockThreshold);
-        maxFeePct = 0.25 * 1e18;
-        emit MaxFeePctChanged(maxFeePct);
-    }
+        emit SafeBlockThresholdSet(safeBlockThreshold);
 
-    /**************************************
-     *          ADMIN FUNCTIONS           *
-     **************************************/
+        if (_disputeBondPct + _tradeRebatePct + _relayerRefundPct != 100) {
+            revert BookSingleChain__InvalidFeeCombination();
+        }
+        disputeBondPct = _disputeBondPct;
+        tradeRebatePct = _tradeRebatePct;
+        relayerRefundPct = _relayerRefundPct;
 
-    /**
-     * @notice Changes the safe block threshold.
-     * @param newSafeBlockThreshold The new safe block threshold.
-     */
-    function setSafeBlockThreshold(uint256 newSafeBlockThreshold)
-        external
-        onlyOwner
-    {
-        safeBlockThreshold = newSafeBlockThreshold;
-        emit SafeBlockThresholdChanged(safeBlockThreshold);
+        emit FeeCombinationSet(
+            _disputeBondPct, _tradeRebatePct, _relayerRefundPct
+            );
     }
 
     /**
@@ -146,26 +127,11 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
     }
 
     /**
-     * @notice Changes the maximum fee percentage.
-     * @param newMaxFeePct The new maximum fee percentage.
-     */
-    function setMaxFeePct(uint256 newMaxFeePct) external onlyOwner {
-        if (newMaxFeePct >= 1e18) {
-            revert BookSingleChain__NewFeePctTooHigh();
-        }
-        maxFeePct = newMaxFeePct;
-        emit MaxFeePctChanged(maxFeePct);
-    }
-
-    /**************************************
-     *         TRADING FUNCTIONS        *
-     **************************************/
-
-    /**
      * @notice Requests to trade `amountIn` of `tokenIn` for `tokenOut` with `feePct` fee off the optimal quote at execution time. Users deposit `tokenIn` to the contract.
      * @param tokenIn The token to be sold.
      * @param tokenOut The token to be bought.
      * @param amountIn The amount of `tokenIn` to be sold.
+     * @param minAmountOut The minimum amount of `tokenOut` to be bought. This should be set offchain based on `feeCombination.tradeRebatePct`, for example, if `feeCombination.tradeRebatePct` is 20%, then `minAmountOut` could be 90% of optimal at the time of request.
      * @param feePct The fee percentage. This is to be interpreted as a "distance" from the optimal execution price.
      * @param recipient The address to receive the tokens bought.
      */
@@ -173,9 +139,12 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
         address tokenIn,
         address tokenOut,
         uint256 amountIn,
+        uint256 minAmountOut,
         uint256 feePct,
         address recipient
-    ) external {
+    )
+        external
+    {
         if (!whitelistedTokens[tokenIn]) {
             revert BookSingleChain__InvalidToken(tokenIn);
         }
@@ -185,28 +154,29 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
         if (tokenIn == tokenOut) {
             revert BookSingleChain__SameToken();
         }
-        if (feePct > maxFeePct) {
+        if (feePct > MAX_FEE_PCT) {
             revert BookSingleChain__FeePctTooHigh(feePct);
         }
-        if (amountIn == 0) {
+        if (amountIn == 0 || minAmountOut == 0) {
             revert BookSingleChain__ZeroAmount();
         }
         if (recipient == address(0)) {
             revert BookSingleChain__SentToBlackHole();
         }
 
-        ERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
-
         emit TradeRequested(
             tokenIn,
             tokenOut,
             amountIn,
+            minAmountOut,
             feePct,
             recipient,
             numberOfTrades
-        );
+            );
 
         numberOfTrades++;
+
+        ERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
     }
 
     /**
@@ -216,6 +186,7 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
      * @param tokenIn The token to be sold.
      * @param tokenOut The token to be bought.
      * @param amountIn The amount of `tokenIn` to be sold.
+     * @param minAmountOut The minimum amount of `tokenOut` to be bought.
      * @param feePct The fee percentage. This is to be interpreted as a "distance" from the optimal execution price.
      * @param recipient The address to receive the tokens bought.
      * @param tradeIndex The index of the trade to update.
@@ -227,23 +198,30 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
         address tokenIn,
         address tokenOut,
         uint256 amountIn,
+        uint256 minAmountOut,
         uint256 feePct,
         address recipient,
         uint256 tradeIndex,
         address trader,
         uint256 newFeePct,
         bytes calldata traderSignature
-    ) external {
+    )
+        external
+    {
         bytes32 tradeId = _getTradeId(
             tokenIn,
             tokenOut,
             amountIn,
+            minAmountOut,
             feePct,
             recipient,
             tradeIndex
         );
-        if (newFeePct > maxFeePct) {
+        if (newFeePct > MAX_FEE_PCT) {
             revert BookSingleChain__FeePctTooHigh(newFeePct);
+        }
+        if (filledAtBlock[tradeId] < 0) {
+            revert BookSingleChain__TradeNotInFilledState(tradeId);
         }
         if (filledAtBlock[tradeId] > 0) {
             revert BookSingleChain__TradeAlreadyFilled(tradeId);
@@ -254,46 +232,39 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
         emit UpdatedFeeForTrade(trader, tradeIndex, newFeePct);
     }
 
-    /**
-     * @notice Called by relayers to fill a trade posted by users. A relayer takes on the other side of the trade by giving tokenOut to the requestor of the trade.
-     * A relayer is expect to uniquely identify the trade by sending the contract unique information about it.
-     * Each trade submission is validate off-chain and can be disputed up to `safeBlockThreshold` blocks after it was submitted.
-     * If the trade is found to be invalid, the relayer loses its tokens and won't get the other side of the trade.
-     * After `safeBlockThreshold` blocks, the trade is considered valid and the relayer can request the other side of the trade by calling `settleTrade`.
-     * @param tokenIn The token to be sold.
-     * @param tokenOut The token to be bought.
-     * @param amountIn The amount of `tokenIn` to be sold.
-     * @param feePct The fee percentage. This is to be interpreted as a "distance" from the optimal execution price.
-     * @param recipient The address to receive the tokens bought.
-     * @param tradeIndex The index of the trade to fill.
-     * @param amountToSend The amount of `tokenOut` to send to the requestor.
-     */
     function fillTrade(
         address tokenIn,
         address tokenOut,
         uint256 amountIn,
+        uint256 minAmountOut,
         uint256 feePct,
         address recipient,
         uint256 tradeIndex,
         uint256 amountToSend
-    ) external {
-        // We don't need to check if the trade is valid, as the relayer is expected to do that off-chain.
+    )
+        external
+    {
         bytes32 tradeId = _getTradeId(
             tokenIn,
             tokenOut,
             amountIn,
+            minAmountOut,
             feePct,
             recipient,
             tradeIndex
         );
-        // Check if the trade has already been filled, to prevent relayers losing tokens if two or more of them try to fill the same trade.
-        if (filledAtBlock[tradeId] > 0) {
-            revert BookSingleChain__TradeAlreadyFilled(tradeId);
-        }
-
-        _fillTrade(tokenOut, tradeId, amountToSend);
-
-        emit TradeFilled(msg.sender, tradeIndex, feePct, amountToSend);
+        _fillTrade(
+            tokenIn,
+            tokenOut,
+            amountIn,
+            minAmountOut,
+            feePct,
+            recipient,
+            tradeIndex,
+            tradeId,
+            amountToSend,
+            msg.sender
+        );
     }
 
     /**
@@ -303,6 +274,7 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
      * @param tokenIn The token to be sold.
      * @param tokenOut The token to be bought.
      * @param amountIn The amount of `tokenIn` to be sold.
+     * @param minAmountOut The minimum amount of `tokenOut` to be bought.
      * @param feePct The fee percentage. This is to be interpreted as a "distance" from the optimal execution price.
      * @param recipient The address to receive the tokens bought.
      * @param tradeIndex The index of the trade to fill.
@@ -315,6 +287,7 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
         address tokenIn,
         address tokenOut,
         uint256 amountIn,
+        uint256 minAmountOut,
         uint256 feePct,
         address recipient,
         uint256 tradeIndex,
@@ -322,11 +295,14 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
         address trader,
         uint256 newFeePct,
         bytes calldata traderSignature
-    ) external {
+    )
+        external
+    {
         bytes32 tradeId = _getTradeId(
             tokenIn,
             tokenOut,
             amountIn,
+            minAmountOut,
             feePct,
             recipient,
             tradeIndex
@@ -334,57 +310,75 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
 
         // We delegate checking if the trade is already filled to `_verifyFeeUpdateSignature`
         _verifyFeeUpdateSignature(trader, tradeId, newFeePct, traderSignature);
-        _fillTrade(tokenOut, tradeId, amountToSend);
-        // Emit a TradeFilled event with the new fee percentage.
-        emit TradeFilled(msg.sender, tradeIndex, newFeePct, amountToSend);
+        _fillTrade(
+            tokenIn,
+            tokenOut,
+            amountIn,
+            minAmountOut,
+            // Emit a TradeFilled event with the new fee percentage.
+            newFeePct,
+            recipient,
+            tradeIndex,
+            tradeId,
+            amountToSend,
+            msg.sender
+        );
     }
 
     /**
-    @notice It settles a trade by delivering tokens to both the relayer and the trader. Can only be called after `safeBlockThreshold` blocks have passed since the trade was submitted.
+    @notice It settles a trade by delivering the remaining tokens to the relayer. Can only be called after `safeBlockThreshold` blocks have passed since the trade was submitted.
     @param tokenIn The token that was sold.
     @param tokenOut The token that was bought.
     @param amountIn The amount of `tokenIn` that was sold.
+    @param minAmountOut The minimum amount of `tokenOut` that was bought.
     @param feePct The fee percentage. This is to be interpreted as a "distance" from the optimal execution price.
     @param recipient The address to receive the tokens bought.
     @param tradeIndex The index of the trade to settle.
-     */
+    */
     function settleTrade(
         address tokenIn,
         address tokenOut,
         uint256 amountIn,
+        uint256 minAmountOut,
         uint256 feePct,
         address recipient,
         uint256 tradeIndex
-    ) external {
+    )
+        external
+    {
         bytes32 tradeId = _getTradeId(
             tokenIn,
             tokenOut,
             amountIn,
+            minAmountOut,
             feePct,
             recipient,
             tradeIndex
         );
         // Check if the trade has already been settled, is not filled or does not exist.
-        if (filledAtBlock[tradeId] == 0) {
-            revert BookSingleChain__TradeNotFilled(tradeId);
+        if (filledAtBlock[tradeId] <= 0) {
+            revert BookSingleChain__TradeNotInFilledState(tradeId);
         }
-        if (block.number - filledAtBlock[tradeId] < safeBlockThreshold) {
+        // safe cast as for the check above we know that filledAtBlock[tradeId] > 0.
+        if (block.number - uint256(filledAtBlock[tradeId]) < safeBlockThreshold)
+        {
             // Always > 0 for the check above
-            uint256 blocksLeft = safeBlockThreshold -
-                (block.number - filledAtBlock[tradeId]);
+            uint256 blocksLeft = safeBlockThreshold
+                - (block.number - uint256(filledAtBlock[tradeId]));
             revert BookSingleChain__DisputePeriodNotOver(blocksLeft);
         }
-        uint256 amountToTrader = filledAmount[tradeId];
+
         address relayer = filledBy[tradeId];
 
         delete filledAtBlock[tradeId];
         delete filledBy[tradeId];
-        delete filledAmount[tradeId];
 
-        ERC20(tokenOut).safeTransfer(recipient, amountToTrader);
-        ERC20(tokenIn).safeTransfer(relayer, amountIn);
+        // Since the trade is valid, the relayer can now receive all the tokens.
+        uint256 amountInToRelayer = (amountIn * (100 - relayerRefundPct)) / 100;
 
-        emit TradeSettled(relayer, tradeIndex, amountToTrader, feePct);
+        ERC20(tokenIn).safeTransfer(relayer, amountInToRelayer);
+
+        emit TradeSettled(relayer, tradeIndex);
     }
 
     /**
@@ -395,6 +389,7 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
      * @param tokenIn The token that was sold.
      * @param tokenOut The token that was bought.
      * @param amountIn The amount of `tokenIn` that was sold.
+     * @param minAmountOut The minimum amount of `tokenOut` that was bought.
      * @param feePct The fee percentage. This is to be interpreted as a "distance" from the optimal execution price.
      * @param recipient The address to receive the tokens bought.
      * @param tradeIndex The index of the trade to dispute.
@@ -403,76 +398,110 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
         address tokenIn,
         address tokenOut,
         uint256 amountIn,
+        uint256 minAmountOut,
         uint256 feePct,
         address recipient,
         uint256 tradeIndex
-    ) external nonReentrant {
+    )
+        external
+    {
         bytes32 tradeId = _getTradeId(
             tokenIn,
             tokenOut,
             amountIn,
+            minAmountOut,
             feePct,
             recipient,
             tradeIndex
         );
-        uint256 filledHeight = filledAtBlock[tradeId];
+        // nest to avoid stack too deep, yes this is still a thing in 2022
+        {
+            int256 filledHeight = filledAtBlock[tradeId];
 
-        // Check that the trade has been filled.
-        if (filledHeight == 0) {
-            revert BookSingleChain__TradeNotFilled(tradeId);
-        }
-        // Check that the dispute period has not yet ended.
-        if (block.number - filledHeight >= safeBlockThreshold) {
-            revert BookSingleChain__DisputePeriodOver();
+            // Check that the trade exist and has not been disputed already.
+            if (filledHeight <= 0) {
+                revert BookSingleChain__TradeNotInFilledState(tradeId);
+            }
+            // Check that the dispute period has not yet ended. Cast is safe for the check above.
+            if (block.number - uint256(filledHeight) >= safeBlockThreshold) {
+                revert BookSingleChain__DisputePeriodOver();
+            }
+            // Change sign of the filledAtBlock to indicate that the trade is disputed.
+            filledAtBlock[tradeId] = -filledHeight;
         }
 
-        uint256 amountSent = filledAmount[tradeId];
         address relayer = filledBy[tradeId];
-        // Mark the trade as unfilled to allow relayers to fill it again.
-        delete filledAtBlock[tradeId];
-        delete filledBy[tradeId];
-        delete filledAmount[tradeId];
 
-        bytes32 disputeId = oracle.getRequestId(
+        uint256 bondAmount = (amountIn * (disputeBondPct)) / 100;
+
+        ERC20(tokenIn).safeApprove(address(oracle), bondAmount);
+        oracle.ask(
             relayer,
             msg.sender,
-            tokenOut,
-            amountSent
+            tokenIn,
+            (amountIn * (disputeBondPct)) / 100,
+            abi.encode(amountIn, recipient, tradeIndex)
         );
-        emit TradeDisputed(relayer, tradeIndex, disputeId, amountSent, feePct);
-        // Approve the oracle to spend the amountSent by the relayer.
-        ERC20(tokenOut).safeApprove(address(oracle), amountSent);
-        oracle.ask(relayer, msg.sender, tokenOut, amountSent);
+        ERC20(tokenIn).safeApprove(address(oracle), 0);
+
+        bytes32 disputeId = oracle.getRequestId(
+            address(this), relayer, msg.sender, tokenIn, bondAmount
+        );
+
+        emit TradeDisputed(relayer, tradeIndex, disputeId);
     }
 
-    /**************************************
+    function onPriceSettled(bytes32 id, Request calldata request) external {
+        if (msg.sender != address(oracle)) {
+            revert BookSingleChain__MaliciousCaller(msg.sender);
+        }
+        (uint256 amountIn, address recipient, uint256 tradeIndex) =
+            abi.decode(request.data, (uint256, address, uint256));
+        // If answer is true, it means the relayer was truthful, so he gets the tradeRebatePct of the trade as no rebate is necessary.
+        uint256 rebate = (amountIn * tradeRebatePct) / 100;
+        if (request.answer) {
+            request.currency.safeTransfer(request.proposer, rebate);
+        } else {
+            request.currency.safeTransfer(recipient, rebate);
+        }
+
+        emit TradeDisputeSettled(
+            request.proposer, tradeIndex, id, request.answer
+            );
+    }
+
+    /**
+     *************************************
      *         INTERNAL FUNCTIONS         *
-     **************************************/
+     *************************************
+     */
 
     function _verifyFeeUpdateSignature(
         address trader,
         bytes32 tradeId,
         uint256 newFeePct,
         bytes calldata traderSignature
-    ) internal view {
-        if (newFeePct > maxFeePct) {
+    )
+        internal
+        view
+    {
+        if (newFeePct > MAX_FEE_PCT) {
             revert BookSingleChain__FeePctTooHigh(newFeePct);
+        }
+        if (filledAtBlock[tradeId] < 0) {
+            revert BookSingleChain__TradeNotInFilledState(tradeId);
         }
         if (filledAtBlock[tradeId] > 0) {
             revert BookSingleChain__TradeAlreadyFilled(tradeId);
         }
 
-        bytes32 expectedMessageHash = keccak256(
-            abi.encodePacked(SIGNATURE_DELIMITER, tradeId, newFeePct)
-        );
+        bytes32 expectedMessageHash =
+            keccak256(abi.encodePacked(SIGNATURE_DELIMITER, tradeId, newFeePct));
 
-        bytes32 ethSignedMessageHash = ECDSA.toEthSignedMessageHash(
-            expectedMessageHash
-        );
-        address maybeTrader = ECDSA.recover(
-            ethSignedMessageHash,
-            traderSignature
-        );
+        bytes32 ethSignedMessageHash =
+            ECDSA.toEthSignedMessageHash(expectedMessageHash);
+        address maybeTrader =
+            ECDSA.recover(ethSignedMessageHash, traderSignature);
         if (maybeTrader != trader) {
             revert BookSingleChain__InvalidSignature();
         }
@@ -485,19 +514,38 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
      * Failing to do so will result in a dispute and the relayer losing tokens.
      */
     function _fillTrade(
+        address tokenIn,
         address tokenOut,
+        uint256 amountIn,
+        uint256 minAmountOut,
+        uint256 feePct,
+        address recipient,
+        uint256 tradeIndex,
         bytes32 tradeId,
-        uint256 amountToSend
-    ) internal {
-        filledAtBlock[tradeId] = block.number;
-        filledBy[tradeId] = msg.sender;
-        filledAmount[tradeId] = amountToSend;
+        uint256 amountToSend,
+        address relayer
+    )
+        internal
+    {
+        if (filledAtBlock[tradeId] < 0) {
+            revert BookSingleChain__TradeNotInFilledState(tradeId);
+        }
+        if (filledAtBlock[tradeId] > 0) {
+            revert BookSingleChain__TradeAlreadyFilled(tradeId);
+        }
+        if (amountToSend < minAmountOut) {
+            revert BookSingleChain__AmountOutTooLow();
+        }
+        filledAtBlock[tradeId] = int256(block.number);
+        filledBy[tradeId] = relayer;
 
-        ERC20(tokenOut).safeTransferFrom(
-            msg.sender,
-            address(this),
-            amountToSend
-        );
+        emit TradeFilled(relayer, tradeIndex, feePct, amountToSend);
+        // Send the tokens to the recipient.
+        ERC20(tokenOut).safeTransferFrom(relayer, recipient, amountToSend);
+        // Send some of the tokens to the relayer.
+        uint256 amountInToRelayer = (amountIn * relayerRefundPct) / 100;
+
+        ERC20(tokenIn).safeTransfer(relayer, amountInToRelayer);
     }
 
     /**
@@ -505,8 +553,9 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
      * @param tokenIn The token to be sold.
      * @param tokenOut The token to be bought.
      * @param amountIn The amount of `tokenIn` to be sold.
+     * @param minAmountOut The minimum amount of `tokenOut` to be bought.
      * @param feePct The fee percentage. This is to be interpreted as a "distance" from the optimal execution price.
-     * @param to The address to receive the tokens bought.
+     * @param recipient The address to receive the tokens bought.
      * @param tradeIndex The number of trades preceding this one.
      * @return The trade ID.
      */
@@ -514,13 +563,19 @@ contract BookSingleChain is IBookSingleChainEvents, Owned, ReentrancyGuard {
         address tokenIn,
         address tokenOut,
         uint256 amountIn,
+        uint256 minAmountOut,
         uint256 feePct,
-        address to,
+        address recipient,
         uint256 tradeIndex
-    ) internal pure returns (bytes32) {
-        return
-            keccak256(
-                abi.encode(tokenIn, tokenOut, amountIn, feePct, to, tradeIndex)
-            );
+    )
+        internal
+        pure
+        returns (bytes32)
+    {
+        return keccak256(
+            abi.encodePacked(
+                tokenIn, tokenOut, amountIn, minAmountOut, feePct, recipient, tradeIndex
+            )
+        );
     }
 }
