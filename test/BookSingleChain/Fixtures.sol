@@ -27,12 +27,13 @@ contract BaseBookFixture is IBookSingleChainEvents, OracleFixture {
 }
 
 contract TradeFixture is BaseBookFixture {
+    using stdStorage for StdStorage;
     address internal testTokenIn = WETH;
     address internal testTokenOut = USDC;
     uint256 internal testFeePct = 0.01e18;
     uint256 internal testAmountIn = 1 ether;
     uint256 internal testAmountOutMin = 900 * 10**6;
-    address internal testRecipient = charlie;
+    address internal testRecipient = alice;
 
     function setUp() public virtual override {
         BaseBookFixture.setUp();
@@ -121,6 +122,29 @@ contract TradeFixture is BaseBookFixture {
             _to,
             _tradeIndex,
             _amountToSend
+        );
+    }
+
+    function _checkFill(
+        bytes32 _tradeId,
+        address _filledBy,
+        int256 _filledAtBlock
+    ) internal {
+        assertEq(
+            _filledBy,
+            stdstore
+                .target(address(book))
+                .sig(book.filledBy.selector)
+                .with_key(_tradeId)
+                .read_address()
+        );
+        assertEq(
+            _filledAtBlock,
+            stdstore
+                .target(address(book))
+                .sig(book.filledAtBlock.selector)
+                .with_key(_tradeId)
+                .read_int()
         );
     }
 }

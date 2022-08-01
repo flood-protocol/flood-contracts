@@ -59,10 +59,10 @@ error BookSingleChain__ZeroAmount();
 // the recipient of a transfer was the 0 address
 error BookSingleChain__SentToBlackHole();
 error BookSingleChain__InvalidFeeCombination();
+// The trade is not filled yet, doesn't exist or was disputed
+error BookSingleChain__TradeNotInFilledState(bytes32 tradeId);
 error BookSingleChain__TradeAlreadyFilled(bytes32 tradeId);
 error BookSingleChain__AmountOutTooLow();
-// The trade was not filled or doesn't exist
-error BookSingleChain__TradeNotFilled(bytes32 tradeId);
 error BookSingleChain__InvalidSignature();
 error BookSingleChain__DisputePeriodNotOver(uint256 blocksLeft);
 error BookSingleChain__DisputePeriodOver();
@@ -88,7 +88,7 @@ contract BookSingleChain is
     uint256 public numberOfTrades = 0;
     mapping(address => bool) public whitelistedTokens;
     // Maps each trade id to the block it was filled at.
-    mapping(bytes32 => uint256) public filledAtBlock;
+    mapping(bytes32 => int256) public filledAtBlock;
     // A mapping from a trade id to the relayer filling it.
     mapping(bytes32 => address) public filledBy;
 
@@ -224,6 +224,9 @@ contract BookSingleChain is
         if (newFeePct > MAX_FEE_PCT) {
             revert BookSingleChain__FeePctTooHigh(newFeePct);
         }
+        if (filledAtBlock[tradeId] < 0) {
+            revert BookSingleChain__TradeNotInFilledState(tradeId);
+        }
         if (filledAtBlock[tradeId] > 0) {
             revert BookSingleChain__TradeAlreadyFilled(tradeId);
         }
@@ -351,14 +354,16 @@ contract BookSingleChain is
             tradeIndex
         );
         // Check if the trade has already been settled, is not filled or does not exist.
-        if (filledAtBlock[tradeId] == 0) {
-            revert BookSingleChain__TradeNotFilled(tradeId);
+        if (filledAtBlock[tradeId] <= 0) {
+            revert BookSingleChain__TradeNotInFilledState(tradeId);
         }
-        // block.number - filledAtBlock[tradeId] < safeBlockThreshold -> block.number < safeBlockThreshold + filledAtBlock[tradeId]
-        if (block.number - filledAtBlock[tradeId] < safeBlockThreshold) {
+        // safe cast as for the check above we know that filledAtBlock[tradeId] > 0.
+        if (
+            block.number - uint256(filledAtBlock[tradeId]) < safeBlockThreshold
+        ) {
             // Always > 0 for the check above
             uint256 blocksLeft = safeBlockThreshold -
-                (block.number - filledAtBlock[tradeId]);
+                (block.number - uint256(filledAtBlock[tradeId]));
             revert BookSingleChain__DisputePeriodNotOver(blocksLeft);
         }
 
@@ -408,22 +413,21 @@ contract BookSingleChain is
         );
         // nest to avoid stack too deep, yes this is still a thing in 2022
         {
-            uint256 filledHeight = filledAtBlock[tradeId];
+            int256 filledHeight = filledAtBlock[tradeId];
 
-            // Check that the trade has been filled.
-            if (filledHeight == 0) {
-                revert BookSingleChain__TradeNotFilled(tradeId);
+            // Check that the trade exist and has not been disputed already.
+            if (filledHeight <= 0) {
+                revert BookSingleChain__TradeNotInFilledState(tradeId);
             }
-            // Check that the dispute period has not yet ended.
-            if (block.number - filledHeight >= safeBlockThreshold) {
+            // Check that the dispute period has not yet ended. Cast is safe for the check above.
+            if (block.number - uint256(filledHeight) >= safeBlockThreshold) {
                 revert BookSingleChain__DisputePeriodOver();
             }
+            // Change sign of the filledAtBlock to indicate that the trade is disputed.
+            filledAtBlock[tradeId] = -filledHeight;
         }
 
         address relayer = filledBy[tradeId];
-        // Mark the trade as unfilled to allow relayers to fill it again.
-        delete filledAtBlock[tradeId];
-        delete filledBy[tradeId];
 
         uint256 bondAmount = (amountIn * (disputeBondPct)) / 100;
 
@@ -485,6 +489,9 @@ contract BookSingleChain is
         if (newFeePct > MAX_FEE_PCT) {
             revert BookSingleChain__FeePctTooHigh(newFeePct);
         }
+        if (filledAtBlock[tradeId] < 0) {
+            revert BookSingleChain__TradeNotInFilledState(tradeId);
+        }
         if (filledAtBlock[tradeId] > 0) {
             revert BookSingleChain__TradeAlreadyFilled(tradeId);
         }
@@ -523,13 +530,16 @@ contract BookSingleChain is
         uint256 amountToSend,
         address relayer
     ) internal {
+        if (filledAtBlock[tradeId] < 0) {
+            revert BookSingleChain__TradeNotInFilledState(tradeId);
+        }
         if (filledAtBlock[tradeId] > 0) {
             revert BookSingleChain__TradeAlreadyFilled(tradeId);
         }
         if (amountToSend < minAmountOut) {
             revert BookSingleChain__AmountOutTooLow();
         }
-        filledAtBlock[tradeId] = block.number;
+        filledAtBlock[tradeId] = int256(block.number);
         filledBy[tradeId] = relayer;
 
         emit TradeFilled(relayer, tradeIndex, feePct, amountToSend);
@@ -539,11 +549,7 @@ contract BookSingleChain is
         uint256 amountInToRelayer = (amountIn * (100 - relayerPenaltyPct)) /
             100;
 
-        ERC20(tokenIn).safeTransferFrom(
-            address(this),
-            relayer,
-            amountInToRelayer
-        );
+        ERC20(tokenIn).safeTransfer(relayer, amountInToRelayer);
     }
 
     /**
