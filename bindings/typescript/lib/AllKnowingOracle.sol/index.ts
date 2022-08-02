@@ -4,4 +4,3 @@
 export type { AllKnowingOracle } from "./AllKnowingOracle";
 export type { IAllKnowingOracleEvents } from "./IAllKnowingOracleEvents";
 export type { IOptimisticRequester } from "./IOptimisticRequester";
-export type { IOracle } from "./IOracle";

@@ -23,19 +23,21 @@ export interface IBookSingleChainEventsInterface extends utils.Interface {
   functions: {};
 
   events: {
-    "MaxFeePctChanged(uint256)": EventFragment;
-    "SafeBlockThresholdChanged(uint256)": EventFragment;
+    "FeeCombinationSet(uint256,uint256,uint256)": EventFragment;
+    "SafeBlockThresholdSet(uint256)": EventFragment;
     "TokenWhitelisted(address,bool)": EventFragment;
-    "TradeDisputed(address,uint256,bytes32,uint256,uint256)": EventFragment;
+    "TradeDisputeSettled(address,uint256,bytes32,bool)": EventFragment;
+    "TradeDisputed(address,uint256,bytes32,uint256)": EventFragment;
     "TradeFilled(address,uint256,uint256,uint256)": EventFragment;
-    "TradeRequested(address,address,uint256,uint256,address,uint256)": EventFragment;
-    "TradeSettled(address,uint256,uint256,uint256)": EventFragment;
+    "TradeRequested(address,address,uint256,uint256,uint256,address,uint256)": EventFragment;
+    "TradeSettled(address,uint256,uint256)": EventFragment;
     "UpdatedFeeForTrade(address,uint256,uint256)": EventFragment;
   };
 
-  getEvent(nameOrSignatureOrTopic: "MaxFeePctChanged"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "SafeBlockThresholdChanged"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "FeeCombinationSet"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "SafeBlockThresholdSet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TokenWhitelisted"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "TradeDisputeSettled"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TradeDisputed"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TradeFilled"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TradeRequested"): EventFragment;
@@ -43,27 +45,29 @@ export interface IBookSingleChainEventsInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "UpdatedFeeForTrade"): EventFragment;
 }
 
-export interface MaxFeePctChangedEventObject {
-  newMaxFeePct: BigNumber;
+export interface FeeCombinationSetEventObject {
+  disputeBondPct: BigNumber;
+  tradeRebatePct: BigNumber;
+  relayerRefundPct: BigNumber;
 }
-export type MaxFeePctChangedEvent = TypedEvent<
-  [BigNumber],
-  MaxFeePctChangedEventObject
+export type FeeCombinationSetEvent = TypedEvent<
+  [BigNumber, BigNumber, BigNumber],
+  FeeCombinationSetEventObject
 >;
 
-export type MaxFeePctChangedEventFilter =
-  TypedEventFilter<MaxFeePctChangedEvent>;
+export type FeeCombinationSetEventFilter =
+  TypedEventFilter<FeeCombinationSetEvent>;
 
-export interface SafeBlockThresholdChangedEventObject {
+export interface SafeBlockThresholdSetEventObject {
   newSafeBlockThreshold: BigNumber;
 }
-export type SafeBlockThresholdChangedEvent = TypedEvent<
+export type SafeBlockThresholdSetEvent = TypedEvent<
   [BigNumber],
-  SafeBlockThresholdChangedEventObject
+  SafeBlockThresholdSetEventObject
 >;
 
-export type SafeBlockThresholdChangedEventFilter =
-  TypedEventFilter<SafeBlockThresholdChangedEvent>;
+export type SafeBlockThresholdSetEventFilter =
+  TypedEventFilter<SafeBlockThresholdSetEvent>;
 
 export interface TokenWhitelistedEventObject {
   token: string;
@@ -77,15 +81,28 @@ export type TokenWhitelistedEvent = TypedEvent<
 export type TokenWhitelistedEventFilter =
   TypedEventFilter<TokenWhitelistedEvent>;
 
+export interface TradeDisputeSettledEventObject {
+  relayer: string;
+  tradeIndex: BigNumber;
+  disputeId: string;
+  answer: boolean;
+}
+export type TradeDisputeSettledEvent = TypedEvent<
+  [string, BigNumber, string, boolean],
+  TradeDisputeSettledEventObject
+>;
+
+export type TradeDisputeSettledEventFilter =
+  TypedEventFilter<TradeDisputeSettledEvent>;
+
 export interface TradeDisputedEventObject {
   relayer: string;
   tradeIndex: BigNumber;
   disputeId: string;
-  filledAmount: BigNumber;
-  feePct: BigNumber;
+  filledAtBlock: BigNumber;
 }
 export type TradeDisputedEvent = TypedEvent<
-  [string, BigNumber, string, BigNumber, BigNumber],
+  [string, BigNumber, string, BigNumber],
   TradeDisputedEventObject
 >;
 
@@ -108,12 +125,13 @@ export interface TradeRequestedEventObject {
   tokenIn: string;
   tokenOut: string;
   amountIn: BigNumber;
+  minAmountOut: BigNumber;
   feePct: BigNumber;
   to: string;
   tradeIndex: BigNumber;
 }
 export type TradeRequestedEvent = TypedEvent<
-  [string, string, BigNumber, BigNumber, string, BigNumber],
+  [string, string, BigNumber, BigNumber, BigNumber, string, BigNumber],
   TradeRequestedEventObject
 >;
 
@@ -122,11 +140,10 @@ export type TradeRequestedEventFilter = TypedEventFilter<TradeRequestedEvent>;
 export interface TradeSettledEventObject {
   relayer: string;
   tradeIndex: BigNumber;
-  filledAmount: BigNumber;
-  feePct: BigNumber;
+  filledAtBlock: BigNumber;
 }
 export type TradeSettledEvent = TypedEvent<
-  [string, BigNumber, BigNumber, BigNumber],
+  [string, BigNumber, BigNumber],
   TradeSettledEventObject
 >;
 
@@ -176,17 +193,23 @@ export interface IBookSingleChainEvents extends BaseContract {
   callStatic: {};
 
   filters: {
-    "MaxFeePctChanged(uint256)"(
-      newMaxFeePct?: null
-    ): MaxFeePctChangedEventFilter;
-    MaxFeePctChanged(newMaxFeePct?: null): MaxFeePctChangedEventFilter;
+    "FeeCombinationSet(uint256,uint256,uint256)"(
+      disputeBondPct?: null,
+      tradeRebatePct?: null,
+      relayerRefundPct?: null
+    ): FeeCombinationSetEventFilter;
+    FeeCombinationSet(
+      disputeBondPct?: null,
+      tradeRebatePct?: null,
+      relayerRefundPct?: null
+    ): FeeCombinationSetEventFilter;
 
-    "SafeBlockThresholdChanged(uint256)"(
+    "SafeBlockThresholdSet(uint256)"(
       newSafeBlockThreshold?: null
-    ): SafeBlockThresholdChangedEventFilter;
-    SafeBlockThresholdChanged(
+    ): SafeBlockThresholdSetEventFilter;
+    SafeBlockThresholdSet(
       newSafeBlockThreshold?: null
-    ): SafeBlockThresholdChangedEventFilter;
+    ): SafeBlockThresholdSetEventFilter;
 
     "TokenWhitelisted(address,bool)"(
       token?: PromiseOrValue<string> | null,
@@ -197,19 +220,30 @@ export interface IBookSingleChainEvents extends BaseContract {
       whitelisted?: null
     ): TokenWhitelistedEventFilter;
 
-    "TradeDisputed(address,uint256,bytes32,uint256,uint256)"(
+    "TradeDisputeSettled(address,uint256,bytes32,bool)"(
       relayer?: PromiseOrValue<string> | null,
       tradeIndex?: PromiseOrValue<BigNumberish> | null,
       disputeId?: PromiseOrValue<BytesLike> | null,
-      filledAmount?: null,
-      feePct?: null
+      answer?: null
+    ): TradeDisputeSettledEventFilter;
+    TradeDisputeSettled(
+      relayer?: PromiseOrValue<string> | null,
+      tradeIndex?: PromiseOrValue<BigNumberish> | null,
+      disputeId?: PromiseOrValue<BytesLike> | null,
+      answer?: null
+    ): TradeDisputeSettledEventFilter;
+
+    "TradeDisputed(address,uint256,bytes32,uint256)"(
+      relayer?: PromiseOrValue<string> | null,
+      tradeIndex?: PromiseOrValue<BigNumberish> | null,
+      disputeId?: PromiseOrValue<BytesLike> | null,
+      filledAtBlock?: null
     ): TradeDisputedEventFilter;
     TradeDisputed(
       relayer?: PromiseOrValue<string> | null,
       tradeIndex?: PromiseOrValue<BigNumberish> | null,
       disputeId?: PromiseOrValue<BytesLike> | null,
-      filledAmount?: null,
-      feePct?: null
+      filledAtBlock?: null
     ): TradeDisputedEventFilter;
 
     "TradeFilled(address,uint256,uint256,uint256)"(
@@ -225,10 +259,11 @@ export interface IBookSingleChainEvents extends BaseContract {
       amountOut?: null
     ): TradeFilledEventFilter;
 
-    "TradeRequested(address,address,uint256,uint256,address,uint256)"(
+    "TradeRequested(address,address,uint256,uint256,uint256,address,uint256)"(
       tokenIn?: PromiseOrValue<string> | null,
       tokenOut?: PromiseOrValue<string> | null,
       amountIn?: null,
+      minAmountOut?: null,
       feePct?: null,
       to?: null,
       tradeIndex?: PromiseOrValue<BigNumberish> | null
@@ -237,22 +272,21 @@ export interface IBookSingleChainEvents extends BaseContract {
       tokenIn?: PromiseOrValue<string> | null,
       tokenOut?: PromiseOrValue<string> | null,
       amountIn?: null,
+      minAmountOut?: null,
       feePct?: null,
       to?: null,
       tradeIndex?: PromiseOrValue<BigNumberish> | null
     ): TradeRequestedEventFilter;
 
-    "TradeSettled(address,uint256,uint256,uint256)"(
+    "TradeSettled(address,uint256,uint256)"(
       relayer?: PromiseOrValue<string> | null,
       tradeIndex?: PromiseOrValue<BigNumberish> | null,
-      filledAmount?: PromiseOrValue<BigNumberish> | null,
-      feePct?: null
+      filledAtBlock?: null
     ): TradeSettledEventFilter;
     TradeSettled(
       relayer?: PromiseOrValue<string> | null,
       tradeIndex?: PromiseOrValue<BigNumberish> | null,
-      filledAmount?: PromiseOrValue<BigNumberish> | null,
-      feePct?: null
+      filledAtBlock?: null
     ): TradeSettledEventFilter;
 
     "UpdatedFeeForTrade(address,uint256,uint256)"(

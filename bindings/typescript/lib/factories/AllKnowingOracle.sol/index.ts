@@ -4,4 +4,3 @@
 export { AllKnowingOracle__factory } from "./AllKnowingOracle__factory";
 export { IAllKnowingOracleEvents__factory } from "./IAllKnowingOracleEvents__factory";
 export { IOptimisticRequester__factory } from "./IOptimisticRequester__factory";
-export { IOracle__factory } from "./IOracle__factory";

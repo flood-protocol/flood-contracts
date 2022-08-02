@@ -16,11 +16,23 @@ const _abi = [
       {
         indexed: false,
         internalType: "uint256",
-        name: "newMaxFeePct",
+        name: "disputeBondPct",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "tradeRebatePct",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "relayerRefundPct",
         type: "uint256",
       },
     ],
-    name: "MaxFeePctChanged",
+    name: "FeeCombinationSet",
     type: "event",
   },
   {
@@ -33,7 +45,7 @@ const _abi = [
         type: "uint256",
       },
     ],
-    name: "SafeBlockThresholdChanged",
+    name: "SafeBlockThresholdSet",
     type: "event",
   },
   {
@@ -78,14 +90,39 @@ const _abi = [
       },
       {
         indexed: false,
+        internalType: "bool",
+        name: "answer",
+        type: "bool",
+      },
+    ],
+    name: "TradeDisputeSettled",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "relayer",
+        type: "address",
+      },
+      {
+        indexed: true,
         internalType: "uint256",
-        name: "filledAmount",
+        name: "tradeIndex",
         type: "uint256",
+      },
+      {
+        indexed: true,
+        internalType: "bytes32",
+        name: "disputeId",
+        type: "bytes32",
       },
       {
         indexed: false,
         internalType: "uint256",
-        name: "feePct",
+        name: "filledAtBlock",
         type: "uint256",
       },
     ],
@@ -147,6 +184,12 @@ const _abi = [
       {
         indexed: false,
         internalType: "uint256",
+        name: "minAmountOut",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
         name: "feePct",
         type: "uint256",
       },
@@ -182,15 +225,9 @@ const _abi = [
         type: "uint256",
       },
       {
-        indexed: true,
-        internalType: "uint256",
-        name: "filledAmount",
-        type: "uint256",
-      },
-      {
         indexed: false,
         internalType: "uint256",
-        name: "feePct",
+        name: "filledAtBlock",
         type: "uint256",
       },
     ],

@@ -14,8 +14,6 @@ export type { IAllKnowingOracleEvents } from "./AllKnowingOracle.sol/IAllKnowing
 export { IAllKnowingOracleEvents__factory } from "./factories/AllKnowingOracle.sol/IAllKnowingOracleEvents__factory";
 export type { IOptimisticRequester } from "./AllKnowingOracle.sol/IOptimisticRequester";
 export { IOptimisticRequester__factory } from "./factories/AllKnowingOracle.sol/IOptimisticRequester__factory";
-export type { IOracle } from "./AllKnowingOracle.sol/IOracle";
-export { IOracle__factory } from "./factories/AllKnowingOracle.sol/IOracle__factory";
 export type { BookSingleChain } from "./BookSingleChain.sol/BookSingleChain";
 export { BookSingleChain__factory } from "./factories/BookSingleChain.sol/BookSingleChain__factory";
 export type { IBookSingleChainEvents } from "./BookSingleChain.sol/IBookSingleChainEvents";

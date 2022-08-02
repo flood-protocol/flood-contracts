@@ -27,57 +27,93 @@ import type {
   PromiseOrValue,
 } from "../common";
 
+export type RequestStruct = {
+  requester: PromiseOrValue<string>;
+  proposer: PromiseOrValue<string>;
+  disputer: PromiseOrValue<string>;
+  currency: PromiseOrValue<string>;
+  bond: PromiseOrValue<BigNumberish>;
+  state: PromiseOrValue<BigNumberish>;
+  answer: PromiseOrValue<boolean>;
+  data: PromiseOrValue<BytesLike>;
+};
+
+export type RequestStructOutput = [
+  string,
+  string,
+  string,
+  string,
+  BigNumber,
+  number,
+  boolean,
+  string
+] & {
+  requester: string;
+  proposer: string;
+  disputer: string;
+  currency: string;
+  bond: BigNumber;
+  state: number;
+  answer: boolean;
+  data: string;
+};
+
 export interface BookSingleChainInterface extends utils.Interface {
   functions: {
-    "disputeTrade(address,address,uint256,uint256,address,uint256)": FunctionFragment;
-    "fillTrade(address,address,uint256,uint256,address,uint256,uint256)": FunctionFragment;
-    "fillTradeWithUpdatedFee(address,address,uint256,uint256,address,uint256,uint256,address,uint256,bytes)": FunctionFragment;
-    "filledAmount(bytes32)": FunctionFragment;
+    "disputeBondPct()": FunctionFragment;
+    "disputeTrade(address,address,uint256,uint256,uint256,address,uint256)": FunctionFragment;
+    "fillTrade(address,address,uint256,uint256,uint256,address,uint256,uint256)": FunctionFragment;
+    "fillTradeWithUpdatedFee(address,address,uint256,uint256,uint256,address,uint256,uint256,address,uint256,bytes)": FunctionFragment;
     "filledAtBlock(bytes32)": FunctionFragment;
     "filledBy(bytes32)": FunctionFragment;
-    "maxFeePct()": FunctionFragment;
     "numberOfTrades()": FunctionFragment;
+    "onPriceSettled(bytes32,(address,address,address,address,uint256,uint8,bool,bytes))": FunctionFragment;
     "oracle()": FunctionFragment;
     "owner()": FunctionFragment;
-    "requestTrade(address,address,uint256,uint256,address)": FunctionFragment;
+    "relayerRefundPct()": FunctionFragment;
+    "requestTrade(address,address,uint256,uint256,uint256,address)": FunctionFragment;
     "safeBlockThreshold()": FunctionFragment;
-    "setMaxFeePct(uint256)": FunctionFragment;
     "setOwner(address)": FunctionFragment;
-    "setSafeBlockThreshold(uint256)": FunctionFragment;
-    "settleTrade(address,address,uint256,uint256,address,uint256)": FunctionFragment;
-    "updateFeeForTrade(address,address,uint256,uint256,address,uint256,address,uint256,bytes)": FunctionFragment;
+    "settleTrade(address,address,uint256,uint256,uint256,address,uint256)": FunctionFragment;
+    "tradeRebatePct()": FunctionFragment;
+    "updateFeeForTrade(address,address,uint256,uint256,uint256,address,uint256,address,uint256,bytes)": FunctionFragment;
     "whitelistToken(address,bool)": FunctionFragment;
     "whitelistedTokens(address)": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
+      | "disputeBondPct"
       | "disputeTrade"
       | "fillTrade"
       | "fillTradeWithUpdatedFee"
-      | "filledAmount"
       | "filledAtBlock"
       | "filledBy"
-      | "maxFeePct"
       | "numberOfTrades"
+      | "onPriceSettled"
       | "oracle"
       | "owner"
+      | "relayerRefundPct"
       | "requestTrade"
       | "safeBlockThreshold"
-      | "setMaxFeePct"
       | "setOwner"
-      | "setSafeBlockThreshold"
       | "settleTrade"
+      | "tradeRebatePct"
       | "updateFeeForTrade"
       | "whitelistToken"
       | "whitelistedTokens"
   ): FunctionFragment;
 
   encodeFunctionData(
+    functionFragment: "disputeBondPct",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "disputeTrade",
     values: [
       PromiseOrValue<string>,
       PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<string>,
@@ -89,6 +125,7 @@ export interface BookSingleChainInterface extends utils.Interface {
     values: [
       PromiseOrValue<string>,
       PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<string>,
@@ -103,6 +140,7 @@ export interface BookSingleChainInterface extends utils.Interface {
       PromiseOrValue<string>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
       PromiseOrValue<string>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
@@ -112,10 +150,6 @@ export interface BookSingleChainInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
-    functionFragment: "filledAmount",
-    values: [PromiseOrValue<BytesLike>]
-  ): string;
-  encodeFunctionData(
     functionFragment: "filledAtBlock",
     values: [PromiseOrValue<BytesLike>]
   ): string;
@@ -123,18 +157,26 @@ export interface BookSingleChainInterface extends utils.Interface {
     functionFragment: "filledBy",
     values: [PromiseOrValue<BytesLike>]
   ): string;
-  encodeFunctionData(functionFragment: "maxFeePct", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "numberOfTrades",
     values?: undefined
   ): string;
+  encodeFunctionData(
+    functionFragment: "onPriceSettled",
+    values: [PromiseOrValue<BytesLike>, RequestStruct]
+  ): string;
   encodeFunctionData(functionFragment: "oracle", values?: undefined): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "relayerRefundPct",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "requestTrade",
     values: [
       PromiseOrValue<string>,
       PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<string>
@@ -145,16 +187,8 @@ export interface BookSingleChainInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "setMaxFeePct",
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
     functionFragment: "setOwner",
     values: [PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setSafeBlockThreshold",
-    values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "settleTrade",
@@ -163,15 +197,21 @@ export interface BookSingleChainInterface extends utils.Interface {
       PromiseOrValue<string>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
       PromiseOrValue<string>,
       PromiseOrValue<BigNumberish>
     ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "tradeRebatePct",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "updateFeeForTrade",
     values: [
       PromiseOrValue<string>,
       PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<string>,
@@ -191,6 +231,10 @@ export interface BookSingleChainInterface extends utils.Interface {
   ): string;
 
   decodeFunctionResult(
+    functionFragment: "disputeBondPct",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "disputeTrade",
     data: BytesLike
   ): Result;
@@ -200,21 +244,24 @@ export interface BookSingleChainInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "filledAmount",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "filledAtBlock",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "filledBy", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "maxFeePct", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "numberOfTrades",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "onPriceSettled",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "oracle", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "relayerRefundPct",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "requestTrade",
     data: BytesLike
@@ -223,17 +270,13 @@ export interface BookSingleChainInterface extends utils.Interface {
     functionFragment: "safeBlockThreshold",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "setMaxFeePct",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "setOwner", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "setSafeBlockThreshold",
+    functionFragment: "settleTrade",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "settleTrade",
+    functionFragment: "tradeRebatePct",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -250,21 +293,23 @@ export interface BookSingleChainInterface extends utils.Interface {
   ): Result;
 
   events: {
-    "MaxFeePctChanged(uint256)": EventFragment;
+    "FeeCombinationSet(uint256,uint256,uint256)": EventFragment;
     "OwnerUpdated(address,address)": EventFragment;
-    "SafeBlockThresholdChanged(uint256)": EventFragment;
+    "SafeBlockThresholdSet(uint256)": EventFragment;
     "TokenWhitelisted(address,bool)": EventFragment;
-    "TradeDisputed(address,uint256,bytes32,uint256,uint256)": EventFragment;
+    "TradeDisputeSettled(address,uint256,bytes32,bool)": EventFragment;
+    "TradeDisputed(address,uint256,bytes32,uint256)": EventFragment;
     "TradeFilled(address,uint256,uint256,uint256)": EventFragment;
-    "TradeRequested(address,address,uint256,uint256,address,uint256)": EventFragment;
-    "TradeSettled(address,uint256,uint256,uint256)": EventFragment;
+    "TradeRequested(address,address,uint256,uint256,uint256,address,uint256)": EventFragment;
+    "TradeSettled(address,uint256,uint256)": EventFragment;
     "UpdatedFeeForTrade(address,uint256,uint256)": EventFragment;
   };
 
-  getEvent(nameOrSignatureOrTopic: "MaxFeePctChanged"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "FeeCombinationSet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnerUpdated"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "SafeBlockThresholdChanged"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "SafeBlockThresholdSet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TokenWhitelisted"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "TradeDisputeSettled"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TradeDisputed"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TradeFilled"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TradeRequested"): EventFragment;
@@ -272,16 +317,18 @@ export interface BookSingleChainInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "UpdatedFeeForTrade"): EventFragment;
 }
 
-export interface MaxFeePctChangedEventObject {
-  newMaxFeePct: BigNumber;
+export interface FeeCombinationSetEventObject {
+  disputeBondPct: BigNumber;
+  tradeRebatePct: BigNumber;
+  relayerRefundPct: BigNumber;
 }
-export type MaxFeePctChangedEvent = TypedEvent<
-  [BigNumber],
-  MaxFeePctChangedEventObject
+export type FeeCombinationSetEvent = TypedEvent<
+  [BigNumber, BigNumber, BigNumber],
+  FeeCombinationSetEventObject
 >;
 
-export type MaxFeePctChangedEventFilter =
-  TypedEventFilter<MaxFeePctChangedEvent>;
+export type FeeCombinationSetEventFilter =
+  TypedEventFilter<FeeCombinationSetEvent>;
 
 export interface OwnerUpdatedEventObject {
   user: string;
@@ -294,16 +341,16 @@ export type OwnerUpdatedEvent = TypedEvent<
 
 export type OwnerUpdatedEventFilter = TypedEventFilter<OwnerUpdatedEvent>;
 
-export interface SafeBlockThresholdChangedEventObject {
+export interface SafeBlockThresholdSetEventObject {
   newSafeBlockThreshold: BigNumber;
 }
-export type SafeBlockThresholdChangedEvent = TypedEvent<
+export type SafeBlockThresholdSetEvent = TypedEvent<
   [BigNumber],
-  SafeBlockThresholdChangedEventObject
+  SafeBlockThresholdSetEventObject
 >;
 
-export type SafeBlockThresholdChangedEventFilter =
-  TypedEventFilter<SafeBlockThresholdChangedEvent>;
+export type SafeBlockThresholdSetEventFilter =
+  TypedEventFilter<SafeBlockThresholdSetEvent>;
 
 export interface TokenWhitelistedEventObject {
   token: string;
@@ -317,15 +364,28 @@ export type TokenWhitelistedEvent = TypedEvent<
 export type TokenWhitelistedEventFilter =
   TypedEventFilter<TokenWhitelistedEvent>;
 
+export interface TradeDisputeSettledEventObject {
+  relayer: string;
+  tradeIndex: BigNumber;
+  disputeId: string;
+  answer: boolean;
+}
+export type TradeDisputeSettledEvent = TypedEvent<
+  [string, BigNumber, string, boolean],
+  TradeDisputeSettledEventObject
+>;
+
+export type TradeDisputeSettledEventFilter =
+  TypedEventFilter<TradeDisputeSettledEvent>;
+
 export interface TradeDisputedEventObject {
   relayer: string;
   tradeIndex: BigNumber;
   disputeId: string;
-  filledAmount: BigNumber;
-  feePct: BigNumber;
+  filledAtBlock: BigNumber;
 }
 export type TradeDisputedEvent = TypedEvent<
-  [string, BigNumber, string, BigNumber, BigNumber],
+  [string, BigNumber, string, BigNumber],
   TradeDisputedEventObject
 >;
 
@@ -348,12 +408,13 @@ export interface TradeRequestedEventObject {
   tokenIn: string;
   tokenOut: string;
   amountIn: BigNumber;
+  minAmountOut: BigNumber;
   feePct: BigNumber;
   to: string;
   tradeIndex: BigNumber;
 }
 export type TradeRequestedEvent = TypedEvent<
-  [string, string, BigNumber, BigNumber, string, BigNumber],
+  [string, string, BigNumber, BigNumber, BigNumber, string, BigNumber],
   TradeRequestedEventObject
 >;
 
@@ -362,11 +423,10 @@ export type TradeRequestedEventFilter = TypedEventFilter<TradeRequestedEvent>;
 export interface TradeSettledEventObject {
   relayer: string;
   tradeIndex: BigNumber;
-  filledAmount: BigNumber;
-  feePct: BigNumber;
+  filledAtBlock: BigNumber;
 }
 export type TradeSettledEvent = TypedEvent<
-  [string, BigNumber, BigNumber, BigNumber],
+  [string, BigNumber, BigNumber],
   TradeSettledEventObject
 >;
 
@@ -412,10 +472,13 @@ export interface BookSingleChain extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    disputeBondPct(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     disputeTrade(
       tokenIn: PromiseOrValue<string>,
       tokenOut: PromiseOrValue<string>,
       amountIn: PromiseOrValue<BigNumberish>,
+      minAmountOut: PromiseOrValue<BigNumberish>,
       feePct: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
       tradeIndex: PromiseOrValue<BigNumberish>,
@@ -426,6 +489,7 @@ export interface BookSingleChain extends BaseContract {
       tokenIn: PromiseOrValue<string>,
       tokenOut: PromiseOrValue<string>,
       amountIn: PromiseOrValue<BigNumberish>,
+      minAmountOut: PromiseOrValue<BigNumberish>,
       feePct: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
       tradeIndex: PromiseOrValue<BigNumberish>,
@@ -437,6 +501,7 @@ export interface BookSingleChain extends BaseContract {
       tokenIn: PromiseOrValue<string>,
       tokenOut: PromiseOrValue<string>,
       amountIn: PromiseOrValue<BigNumberish>,
+      minAmountOut: PromiseOrValue<BigNumberish>,
       feePct: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
       tradeIndex: PromiseOrValue<BigNumberish>,
@@ -446,11 +511,6 @@ export interface BookSingleChain extends BaseContract {
       traderSignature: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
-
-    filledAmount(
-      arg0: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
 
     filledAtBlock(
       arg0: PromiseOrValue<BytesLike>,
@@ -462,18 +522,25 @@ export interface BookSingleChain extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
-    maxFeePct(overrides?: CallOverrides): Promise<[BigNumber]>;
-
     numberOfTrades(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    onPriceSettled(
+      id: PromiseOrValue<BytesLike>,
+      request: RequestStruct,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
     oracle(overrides?: CallOverrides): Promise<[string]>;
 
     owner(overrides?: CallOverrides): Promise<[string]>;
 
+    relayerRefundPct(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     requestTrade(
       tokenIn: PromiseOrValue<string>,
       tokenOut: PromiseOrValue<string>,
       amountIn: PromiseOrValue<BigNumberish>,
+      minAmountOut: PromiseOrValue<BigNumberish>,
       feePct: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -481,18 +548,8 @@ export interface BookSingleChain extends BaseContract {
 
     safeBlockThreshold(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    setMaxFeePct(
-      newMaxFeePct: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
     setOwner(
       newOwner: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    setSafeBlockThreshold(
-      newSafeBlockThreshold: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -500,16 +557,20 @@ export interface BookSingleChain extends BaseContract {
       tokenIn: PromiseOrValue<string>,
       tokenOut: PromiseOrValue<string>,
       amountIn: PromiseOrValue<BigNumberish>,
+      minAmountOut: PromiseOrValue<BigNumberish>,
       feePct: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
       tradeIndex: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    tradeRebatePct(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     updateFeeForTrade(
       tokenIn: PromiseOrValue<string>,
       tokenOut: PromiseOrValue<string>,
       amountIn: PromiseOrValue<BigNumberish>,
+      minAmountOut: PromiseOrValue<BigNumberish>,
       feePct: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
       tradeIndex: PromiseOrValue<BigNumberish>,
@@ -531,10 +592,13 @@ export interface BookSingleChain extends BaseContract {
     ): Promise<[boolean]>;
   };
 
+  disputeBondPct(overrides?: CallOverrides): Promise<BigNumber>;
+
   disputeTrade(
     tokenIn: PromiseOrValue<string>,
     tokenOut: PromiseOrValue<string>,
     amountIn: PromiseOrValue<BigNumberish>,
+    minAmountOut: PromiseOrValue<BigNumberish>,
     feePct: PromiseOrValue<BigNumberish>,
     recipient: PromiseOrValue<string>,
     tradeIndex: PromiseOrValue<BigNumberish>,
@@ -545,6 +609,7 @@ export interface BookSingleChain extends BaseContract {
     tokenIn: PromiseOrValue<string>,
     tokenOut: PromiseOrValue<string>,
     amountIn: PromiseOrValue<BigNumberish>,
+    minAmountOut: PromiseOrValue<BigNumberish>,
     feePct: PromiseOrValue<BigNumberish>,
     recipient: PromiseOrValue<string>,
     tradeIndex: PromiseOrValue<BigNumberish>,
@@ -556,6 +621,7 @@ export interface BookSingleChain extends BaseContract {
     tokenIn: PromiseOrValue<string>,
     tokenOut: PromiseOrValue<string>,
     amountIn: PromiseOrValue<BigNumberish>,
+    minAmountOut: PromiseOrValue<BigNumberish>,
     feePct: PromiseOrValue<BigNumberish>,
     recipient: PromiseOrValue<string>,
     tradeIndex: PromiseOrValue<BigNumberish>,
@@ -565,11 +631,6 @@ export interface BookSingleChain extends BaseContract {
     traderSignature: PromiseOrValue<BytesLike>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
-
-  filledAmount(
-    arg0: PromiseOrValue<BytesLike>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
 
   filledAtBlock(
     arg0: PromiseOrValue<BytesLike>,
@@ -581,18 +642,25 @@ export interface BookSingleChain extends BaseContract {
     overrides?: CallOverrides
   ): Promise<string>;
 
-  maxFeePct(overrides?: CallOverrides): Promise<BigNumber>;
-
   numberOfTrades(overrides?: CallOverrides): Promise<BigNumber>;
+
+  onPriceSettled(
+    id: PromiseOrValue<BytesLike>,
+    request: RequestStruct,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   oracle(overrides?: CallOverrides): Promise<string>;
 
   owner(overrides?: CallOverrides): Promise<string>;
 
+  relayerRefundPct(overrides?: CallOverrides): Promise<BigNumber>;
+
   requestTrade(
     tokenIn: PromiseOrValue<string>,
     tokenOut: PromiseOrValue<string>,
     amountIn: PromiseOrValue<BigNumberish>,
+    minAmountOut: PromiseOrValue<BigNumberish>,
     feePct: PromiseOrValue<BigNumberish>,
     recipient: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -600,18 +668,8 @@ export interface BookSingleChain extends BaseContract {
 
   safeBlockThreshold(overrides?: CallOverrides): Promise<BigNumber>;
 
-  setMaxFeePct(
-    newMaxFeePct: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
   setOwner(
     newOwner: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  setSafeBlockThreshold(
-    newSafeBlockThreshold: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -619,16 +677,20 @@ export interface BookSingleChain extends BaseContract {
     tokenIn: PromiseOrValue<string>,
     tokenOut: PromiseOrValue<string>,
     amountIn: PromiseOrValue<BigNumberish>,
+    minAmountOut: PromiseOrValue<BigNumberish>,
     feePct: PromiseOrValue<BigNumberish>,
     recipient: PromiseOrValue<string>,
     tradeIndex: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  tradeRebatePct(overrides?: CallOverrides): Promise<BigNumber>;
+
   updateFeeForTrade(
     tokenIn: PromiseOrValue<string>,
     tokenOut: PromiseOrValue<string>,
     amountIn: PromiseOrValue<BigNumberish>,
+    minAmountOut: PromiseOrValue<BigNumberish>,
     feePct: PromiseOrValue<BigNumberish>,
     recipient: PromiseOrValue<string>,
     tradeIndex: PromiseOrValue<BigNumberish>,
@@ -650,10 +712,13 @@ export interface BookSingleChain extends BaseContract {
   ): Promise<boolean>;
 
   callStatic: {
+    disputeBondPct(overrides?: CallOverrides): Promise<BigNumber>;
+
     disputeTrade(
       tokenIn: PromiseOrValue<string>,
       tokenOut: PromiseOrValue<string>,
       amountIn: PromiseOrValue<BigNumberish>,
+      minAmountOut: PromiseOrValue<BigNumberish>,
       feePct: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
       tradeIndex: PromiseOrValue<BigNumberish>,
@@ -664,6 +729,7 @@ export interface BookSingleChain extends BaseContract {
       tokenIn: PromiseOrValue<string>,
       tokenOut: PromiseOrValue<string>,
       amountIn: PromiseOrValue<BigNumberish>,
+      minAmountOut: PromiseOrValue<BigNumberish>,
       feePct: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
       tradeIndex: PromiseOrValue<BigNumberish>,
@@ -675,6 +741,7 @@ export interface BookSingleChain extends BaseContract {
       tokenIn: PromiseOrValue<string>,
       tokenOut: PromiseOrValue<string>,
       amountIn: PromiseOrValue<BigNumberish>,
+      minAmountOut: PromiseOrValue<BigNumberish>,
       feePct: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
       tradeIndex: PromiseOrValue<BigNumberish>,
@@ -684,11 +751,6 @@ export interface BookSingleChain extends BaseContract {
       traderSignature: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<void>;
-
-    filledAmount(
-      arg0: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
 
     filledAtBlock(
       arg0: PromiseOrValue<BytesLike>,
@@ -700,18 +762,25 @@ export interface BookSingleChain extends BaseContract {
       overrides?: CallOverrides
     ): Promise<string>;
 
-    maxFeePct(overrides?: CallOverrides): Promise<BigNumber>;
-
     numberOfTrades(overrides?: CallOverrides): Promise<BigNumber>;
+
+    onPriceSettled(
+      id: PromiseOrValue<BytesLike>,
+      request: RequestStruct,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     oracle(overrides?: CallOverrides): Promise<string>;
 
     owner(overrides?: CallOverrides): Promise<string>;
 
+    relayerRefundPct(overrides?: CallOverrides): Promise<BigNumber>;
+
     requestTrade(
       tokenIn: PromiseOrValue<string>,
       tokenOut: PromiseOrValue<string>,
       amountIn: PromiseOrValue<BigNumberish>,
+      minAmountOut: PromiseOrValue<BigNumberish>,
       feePct: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -719,18 +788,8 @@ export interface BookSingleChain extends BaseContract {
 
     safeBlockThreshold(overrides?: CallOverrides): Promise<BigNumber>;
 
-    setMaxFeePct(
-      newMaxFeePct: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     setOwner(
       newOwner: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    setSafeBlockThreshold(
-      newSafeBlockThreshold: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -738,16 +797,20 @@ export interface BookSingleChain extends BaseContract {
       tokenIn: PromiseOrValue<string>,
       tokenOut: PromiseOrValue<string>,
       amountIn: PromiseOrValue<BigNumberish>,
+      minAmountOut: PromiseOrValue<BigNumberish>,
       feePct: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
       tradeIndex: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
+    tradeRebatePct(overrides?: CallOverrides): Promise<BigNumber>;
+
     updateFeeForTrade(
       tokenIn: PromiseOrValue<string>,
       tokenOut: PromiseOrValue<string>,
       amountIn: PromiseOrValue<BigNumberish>,
+      minAmountOut: PromiseOrValue<BigNumberish>,
       feePct: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
       tradeIndex: PromiseOrValue<BigNumberish>,
@@ -770,10 +833,16 @@ export interface BookSingleChain extends BaseContract {
   };
 
   filters: {
-    "MaxFeePctChanged(uint256)"(
-      newMaxFeePct?: null
-    ): MaxFeePctChangedEventFilter;
-    MaxFeePctChanged(newMaxFeePct?: null): MaxFeePctChangedEventFilter;
+    "FeeCombinationSet(uint256,uint256,uint256)"(
+      disputeBondPct?: null,
+      tradeRebatePct?: null,
+      relayerRefundPct?: null
+    ): FeeCombinationSetEventFilter;
+    FeeCombinationSet(
+      disputeBondPct?: null,
+      tradeRebatePct?: null,
+      relayerRefundPct?: null
+    ): FeeCombinationSetEventFilter;
 
     "OwnerUpdated(address,address)"(
       user?: PromiseOrValue<string> | null,
@@ -784,12 +853,12 @@ export interface BookSingleChain extends BaseContract {
       newOwner?: PromiseOrValue<string> | null
     ): OwnerUpdatedEventFilter;
 
-    "SafeBlockThresholdChanged(uint256)"(
+    "SafeBlockThresholdSet(uint256)"(
       newSafeBlockThreshold?: null
-    ): SafeBlockThresholdChangedEventFilter;
-    SafeBlockThresholdChanged(
+    ): SafeBlockThresholdSetEventFilter;
+    SafeBlockThresholdSet(
       newSafeBlockThreshold?: null
-    ): SafeBlockThresholdChangedEventFilter;
+    ): SafeBlockThresholdSetEventFilter;
 
     "TokenWhitelisted(address,bool)"(
       token?: PromiseOrValue<string> | null,
@@ -800,19 +869,30 @@ export interface BookSingleChain extends BaseContract {
       whitelisted?: null
     ): TokenWhitelistedEventFilter;
 
-    "TradeDisputed(address,uint256,bytes32,uint256,uint256)"(
+    "TradeDisputeSettled(address,uint256,bytes32,bool)"(
       relayer?: PromiseOrValue<string> | null,
       tradeIndex?: PromiseOrValue<BigNumberish> | null,
       disputeId?: PromiseOrValue<BytesLike> | null,
-      filledAmount?: null,
-      feePct?: null
+      answer?: null
+    ): TradeDisputeSettledEventFilter;
+    TradeDisputeSettled(
+      relayer?: PromiseOrValue<string> | null,
+      tradeIndex?: PromiseOrValue<BigNumberish> | null,
+      disputeId?: PromiseOrValue<BytesLike> | null,
+      answer?: null
+    ): TradeDisputeSettledEventFilter;
+
+    "TradeDisputed(address,uint256,bytes32,uint256)"(
+      relayer?: PromiseOrValue<string> | null,
+      tradeIndex?: PromiseOrValue<BigNumberish> | null,
+      disputeId?: PromiseOrValue<BytesLike> | null,
+      filledAtBlock?: null
     ): TradeDisputedEventFilter;
     TradeDisputed(
       relayer?: PromiseOrValue<string> | null,
       tradeIndex?: PromiseOrValue<BigNumberish> | null,
       disputeId?: PromiseOrValue<BytesLike> | null,
-      filledAmount?: null,
-      feePct?: null
+      filledAtBlock?: null
     ): TradeDisputedEventFilter;
 
     "TradeFilled(address,uint256,uint256,uint256)"(
@@ -828,10 +908,11 @@ export interface BookSingleChain extends BaseContract {
       amountOut?: null
     ): TradeFilledEventFilter;
 
-    "TradeRequested(address,address,uint256,uint256,address,uint256)"(
+    "TradeRequested(address,address,uint256,uint256,uint256,address,uint256)"(
       tokenIn?: PromiseOrValue<string> | null,
       tokenOut?: PromiseOrValue<string> | null,
       amountIn?: null,
+      minAmountOut?: null,
       feePct?: null,
       to?: null,
       tradeIndex?: PromiseOrValue<BigNumberish> | null
@@ -840,22 +921,21 @@ export interface BookSingleChain extends BaseContract {
       tokenIn?: PromiseOrValue<string> | null,
       tokenOut?: PromiseOrValue<string> | null,
       amountIn?: null,
+      minAmountOut?: null,
       feePct?: null,
       to?: null,
       tradeIndex?: PromiseOrValue<BigNumberish> | null
     ): TradeRequestedEventFilter;
 
-    "TradeSettled(address,uint256,uint256,uint256)"(
+    "TradeSettled(address,uint256,uint256)"(
       relayer?: PromiseOrValue<string> | null,
       tradeIndex?: PromiseOrValue<BigNumberish> | null,
-      filledAmount?: PromiseOrValue<BigNumberish> | null,
-      feePct?: null
+      filledAtBlock?: null
     ): TradeSettledEventFilter;
     TradeSettled(
       relayer?: PromiseOrValue<string> | null,
       tradeIndex?: PromiseOrValue<BigNumberish> | null,
-      filledAmount?: PromiseOrValue<BigNumberish> | null,
-      feePct?: null
+      filledAtBlock?: null
     ): TradeSettledEventFilter;
 
     "UpdatedFeeForTrade(address,uint256,uint256)"(
@@ -871,10 +951,13 @@ export interface BookSingleChain extends BaseContract {
   };
 
   estimateGas: {
+    disputeBondPct(overrides?: CallOverrides): Promise<BigNumber>;
+
     disputeTrade(
       tokenIn: PromiseOrValue<string>,
       tokenOut: PromiseOrValue<string>,
       amountIn: PromiseOrValue<BigNumberish>,
+      minAmountOut: PromiseOrValue<BigNumberish>,
       feePct: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
       tradeIndex: PromiseOrValue<BigNumberish>,
@@ -885,6 +968,7 @@ export interface BookSingleChain extends BaseContract {
       tokenIn: PromiseOrValue<string>,
       tokenOut: PromiseOrValue<string>,
       amountIn: PromiseOrValue<BigNumberish>,
+      minAmountOut: PromiseOrValue<BigNumberish>,
       feePct: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
       tradeIndex: PromiseOrValue<BigNumberish>,
@@ -896,6 +980,7 @@ export interface BookSingleChain extends BaseContract {
       tokenIn: PromiseOrValue<string>,
       tokenOut: PromiseOrValue<string>,
       amountIn: PromiseOrValue<BigNumberish>,
+      minAmountOut: PromiseOrValue<BigNumberish>,
       feePct: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
       tradeIndex: PromiseOrValue<BigNumberish>,
@@ -904,11 +989,6 @@ export interface BookSingleChain extends BaseContract {
       newFeePct: PromiseOrValue<BigNumberish>,
       traderSignature: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    filledAmount(
-      arg0: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     filledAtBlock(
@@ -921,18 +1001,25 @@ export interface BookSingleChain extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    maxFeePct(overrides?: CallOverrides): Promise<BigNumber>;
-
     numberOfTrades(overrides?: CallOverrides): Promise<BigNumber>;
+
+    onPriceSettled(
+      id: PromiseOrValue<BytesLike>,
+      request: RequestStruct,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
 
     oracle(overrides?: CallOverrides): Promise<BigNumber>;
 
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
+    relayerRefundPct(overrides?: CallOverrides): Promise<BigNumber>;
+
     requestTrade(
       tokenIn: PromiseOrValue<string>,
       tokenOut: PromiseOrValue<string>,
       amountIn: PromiseOrValue<BigNumberish>,
+      minAmountOut: PromiseOrValue<BigNumberish>,
       feePct: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -940,18 +1027,8 @@ export interface BookSingleChain extends BaseContract {
 
     safeBlockThreshold(overrides?: CallOverrides): Promise<BigNumber>;
 
-    setMaxFeePct(
-      newMaxFeePct: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
     setOwner(
       newOwner: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    setSafeBlockThreshold(
-      newSafeBlockThreshold: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -959,16 +1036,20 @@ export interface BookSingleChain extends BaseContract {
       tokenIn: PromiseOrValue<string>,
       tokenOut: PromiseOrValue<string>,
       amountIn: PromiseOrValue<BigNumberish>,
+      minAmountOut: PromiseOrValue<BigNumberish>,
       feePct: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
       tradeIndex: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    tradeRebatePct(overrides?: CallOverrides): Promise<BigNumber>;
+
     updateFeeForTrade(
       tokenIn: PromiseOrValue<string>,
       tokenOut: PromiseOrValue<string>,
       amountIn: PromiseOrValue<BigNumberish>,
+      minAmountOut: PromiseOrValue<BigNumberish>,
       feePct: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
       tradeIndex: PromiseOrValue<BigNumberish>,
@@ -991,10 +1072,13 @@ export interface BookSingleChain extends BaseContract {
   };
 
   populateTransaction: {
+    disputeBondPct(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     disputeTrade(
       tokenIn: PromiseOrValue<string>,
       tokenOut: PromiseOrValue<string>,
       amountIn: PromiseOrValue<BigNumberish>,
+      minAmountOut: PromiseOrValue<BigNumberish>,
       feePct: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
       tradeIndex: PromiseOrValue<BigNumberish>,
@@ -1005,6 +1089,7 @@ export interface BookSingleChain extends BaseContract {
       tokenIn: PromiseOrValue<string>,
       tokenOut: PromiseOrValue<string>,
       amountIn: PromiseOrValue<BigNumberish>,
+      minAmountOut: PromiseOrValue<BigNumberish>,
       feePct: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
       tradeIndex: PromiseOrValue<BigNumberish>,
@@ -1016,6 +1101,7 @@ export interface BookSingleChain extends BaseContract {
       tokenIn: PromiseOrValue<string>,
       tokenOut: PromiseOrValue<string>,
       amountIn: PromiseOrValue<BigNumberish>,
+      minAmountOut: PromiseOrValue<BigNumberish>,
       feePct: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
       tradeIndex: PromiseOrValue<BigNumberish>,
@@ -1024,11 +1110,6 @@ export interface BookSingleChain extends BaseContract {
       newFeePct: PromiseOrValue<BigNumberish>,
       traderSignature: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    filledAmount(
-      arg0: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     filledAtBlock(
@@ -1041,18 +1122,25 @@ export interface BookSingleChain extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    maxFeePct(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     numberOfTrades(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    onPriceSettled(
+      id: PromiseOrValue<BytesLike>,
+      request: RequestStruct,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
 
     oracle(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    relayerRefundPct(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     requestTrade(
       tokenIn: PromiseOrValue<string>,
       tokenOut: PromiseOrValue<string>,
       amountIn: PromiseOrValue<BigNumberish>,
+      minAmountOut: PromiseOrValue<BigNumberish>,
       feePct: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1062,18 +1150,8 @@ export interface BookSingleChain extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    setMaxFeePct(
-      newMaxFeePct: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
     setOwner(
       newOwner: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setSafeBlockThreshold(
-      newSafeBlockThreshold: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1081,16 +1159,20 @@ export interface BookSingleChain extends BaseContract {
       tokenIn: PromiseOrValue<string>,
       tokenOut: PromiseOrValue<string>,
       amountIn: PromiseOrValue<BigNumberish>,
+      minAmountOut: PromiseOrValue<BigNumberish>,
       feePct: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
       tradeIndex: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
+    tradeRebatePct(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     updateFeeForTrade(
       tokenIn: PromiseOrValue<string>,
       tokenOut: PromiseOrValue<string>,
       amountIn: PromiseOrValue<BigNumberish>,
+      minAmountOut: PromiseOrValue<BigNumberish>,
       feePct: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
       tradeIndex: PromiseOrValue<BigNumberish>,

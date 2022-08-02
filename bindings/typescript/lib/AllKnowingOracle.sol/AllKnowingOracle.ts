@@ -29,16 +29,15 @@ import type {
 
 export interface AllKnowingOracleInterface extends utils.Interface {
   functions: {
-    "ask(address,address,address,uint256)": FunctionFragment;
-    "bondForStake(uint256)": FunctionFragment;
-    "disputeBondPct()": FunctionFragment;
-    "getRequestId(address,address,address,uint256)": FunctionFragment;
+    "ask(address,address,address,uint256,bytes)": FunctionFragment;
+    "getRequestId(address,address,address,address,uint256)": FunctionFragment;
     "owner()": FunctionFragment;
+    "requesters(address)": FunctionFragment;
     "requests(bytes32)": FunctionFragment;
-    "setBondPct(uint256)": FunctionFragment;
     "setOwner(address)": FunctionFragment;
     "settle(bytes32,bool)": FunctionFragment;
     "settlers(address)": FunctionFragment;
+    "whitelistRequester(address,bool)": FunctionFragment;
     "whitelistSettler(address,bool)": FunctionFragment;
     "whitelistToken(address,bool)": FunctionFragment;
     "whitelistedTokens(address)": FunctionFragment;
@@ -47,15 +46,14 @@ export interface AllKnowingOracleInterface extends utils.Interface {
   getFunction(
     nameOrSignatureOrTopic:
       | "ask"
-      | "bondForStake"
-      | "disputeBondPct"
       | "getRequestId"
       | "owner"
+      | "requesters"
       | "requests"
-      | "setBondPct"
       | "setOwner"
       | "settle"
       | "settlers"
+      | "whitelistRequester"
       | "whitelistSettler"
       | "whitelistToken"
       | "whitelistedTokens"
@@ -67,20 +65,14 @@ export interface AllKnowingOracleInterface extends utils.Interface {
       PromiseOrValue<string>,
       PromiseOrValue<string>,
       PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BytesLike>
     ]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "bondForStake",
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "disputeBondPct",
-    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "getRequestId",
     values: [
+      PromiseOrValue<string>,
       PromiseOrValue<string>,
       PromiseOrValue<string>,
       PromiseOrValue<string>,
@@ -89,12 +81,12 @@ export interface AllKnowingOracleInterface extends utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "requests",
-    values: [PromiseOrValue<BytesLike>]
+    functionFragment: "requesters",
+    values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
-    functionFragment: "setBondPct",
-    values: [PromiseOrValue<BigNumberish>]
+    functionFragment: "requests",
+    values: [PromiseOrValue<BytesLike>]
   ): string;
   encodeFunctionData(
     functionFragment: "setOwner",
@@ -107,6 +99,10 @@ export interface AllKnowingOracleInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "settlers",
     values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "whitelistRequester",
+    values: [PromiseOrValue<string>, PromiseOrValue<boolean>]
   ): string;
   encodeFunctionData(
     functionFragment: "whitelistSettler",
@@ -123,23 +119,19 @@ export interface AllKnowingOracleInterface extends utils.Interface {
 
   decodeFunctionResult(functionFragment: "ask", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "bondForStake",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "disputeBondPct",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "getRequestId",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "requesters", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "requests", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "setBondPct", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "setOwner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "settle", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "settlers", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "whitelistRequester",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "whitelistSettler",
     data: BytesLike
@@ -154,42 +146,31 @@ export interface AllKnowingOracleInterface extends utils.Interface {
   ): Result;
 
   events: {
-    "BondPctChanged(uint256)": EventFragment;
-    "NewRequest(bytes32,address,address,address,uint256,uint256)": EventFragment;
+    "NewRequest(bytes32,address,address,address,uint256)": EventFragment;
     "OwnerUpdated(address,address)": EventFragment;
     "RequestSettled(bytes32,bool)": EventFragment;
+    "RequesterWhitelisted(address,bool)": EventFragment;
     "SettlerWhitelisted(address,bool)": EventFragment;
     "TokenWhitelisted(address,bool)": EventFragment;
   };
 
-  getEvent(nameOrSignatureOrTopic: "BondPctChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "NewRequest"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnerUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RequestSettled"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "RequesterWhitelisted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SettlerWhitelisted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TokenWhitelisted"): EventFragment;
 }
-
-export interface BondPctChangedEventObject {
-  newPct: BigNumber;
-}
-export type BondPctChangedEvent = TypedEvent<
-  [BigNumber],
-  BondPctChangedEventObject
->;
-
-export type BondPctChangedEventFilter = TypedEventFilter<BondPctChangedEvent>;
 
 export interface NewRequestEventObject {
   id: string;
   proposer: string;
   disputer: string;
-  bondToken: string;
-  stake: BigNumber;
+  currency: string;
   bond: BigNumber;
 }
 export type NewRequestEvent = TypedEvent<
-  [string, string, string, string, BigNumber, BigNumber],
+  [string, string, string, string, BigNumber],
   NewRequestEventObject
 >;
 
@@ -216,6 +197,18 @@ export type RequestSettledEvent = TypedEvent<
 >;
 
 export type RequestSettledEventFilter = TypedEventFilter<RequestSettledEvent>;
+
+export interface RequesterWhitelistedEventObject {
+  requester: string;
+  enabled: boolean;
+}
+export type RequesterWhitelistedEvent = TypedEvent<
+  [string, boolean],
+  RequesterWhitelistedEventObject
+>;
+
+export type RequesterWhitelistedEventFilter =
+  TypedEventFilter<RequesterWhitelistedEvent>;
 
 export interface SettlerWhitelistedEventObject {
   settler: string;
@@ -271,47 +264,43 @@ export interface AllKnowingOracle extends BaseContract {
     ask(
       proposer: PromiseOrValue<string>,
       disputer: PromiseOrValue<string>,
-      bondToken: PromiseOrValue<string>,
-      stake: PromiseOrValue<BigNumberish>,
+      currency: PromiseOrValue<string>,
+      bond: PromiseOrValue<BigNumberish>,
+      data: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    bondForStake(
-      stake: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    disputeBondPct(overrides?: CallOverrides): Promise<[BigNumber]>;
-
     getRequestId(
+      sender: PromiseOrValue<string>,
       proposer: PromiseOrValue<string>,
       disputer: PromiseOrValue<string>,
-      bondToken: PromiseOrValue<string>,
-      stake: PromiseOrValue<BigNumberish>,
+      currency: PromiseOrValue<string>,
+      bond: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[string]>;
 
     owner(overrides?: CallOverrides): Promise<[string]>;
 
+    requesters(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
     requests(
       arg0: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<
-      [string, string, string, BigNumber, BigNumber, boolean, number] & {
+      [string, string, string, string, BigNumber, number, boolean, string] & {
+        requester: string;
         proposer: string;
         disputer: string;
-        bondToken: string;
-        stake: BigNumber;
+        currency: string;
         bond: BigNumber;
-        answer: boolean;
         state: number;
+        answer: boolean;
+        data: string;
       }
     >;
-
-    setBondPct(
-      newPct: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
 
     setOwner(
       newOwner: PromiseOrValue<string>,
@@ -328,6 +317,12 @@ export interface AllKnowingOracle extends BaseContract {
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
+
+    whitelistRequester(
+      requester: PromiseOrValue<string>,
+      enabled: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
     whitelistSettler(
       settler: PromiseOrValue<string>,
@@ -350,47 +345,43 @@ export interface AllKnowingOracle extends BaseContract {
   ask(
     proposer: PromiseOrValue<string>,
     disputer: PromiseOrValue<string>,
-    bondToken: PromiseOrValue<string>,
-    stake: PromiseOrValue<BigNumberish>,
+    currency: PromiseOrValue<string>,
+    bond: PromiseOrValue<BigNumberish>,
+    data: PromiseOrValue<BytesLike>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  bondForStake(
-    stake: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  disputeBondPct(overrides?: CallOverrides): Promise<BigNumber>;
-
   getRequestId(
+    sender: PromiseOrValue<string>,
     proposer: PromiseOrValue<string>,
     disputer: PromiseOrValue<string>,
-    bondToken: PromiseOrValue<string>,
-    stake: PromiseOrValue<BigNumberish>,
+    currency: PromiseOrValue<string>,
+    bond: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<string>;
 
   owner(overrides?: CallOverrides): Promise<string>;
 
+  requesters(
+    arg0: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
   requests(
     arg0: PromiseOrValue<BytesLike>,
     overrides?: CallOverrides
   ): Promise<
-    [string, string, string, BigNumber, BigNumber, boolean, number] & {
+    [string, string, string, string, BigNumber, number, boolean, string] & {
+      requester: string;
       proposer: string;
       disputer: string;
-      bondToken: string;
-      stake: BigNumber;
+      currency: string;
       bond: BigNumber;
-      answer: boolean;
       state: number;
+      answer: boolean;
+      data: string;
     }
   >;
-
-  setBondPct(
-    newPct: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
 
   setOwner(
     newOwner: PromiseOrValue<string>,
@@ -407,6 +398,12 @@ export interface AllKnowingOracle extends BaseContract {
     arg0: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<boolean>;
+
+  whitelistRequester(
+    requester: PromiseOrValue<string>,
+    enabled: PromiseOrValue<boolean>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   whitelistSettler(
     settler: PromiseOrValue<string>,
@@ -429,47 +426,43 @@ export interface AllKnowingOracle extends BaseContract {
     ask(
       proposer: PromiseOrValue<string>,
       disputer: PromiseOrValue<string>,
-      bondToken: PromiseOrValue<string>,
-      stake: PromiseOrValue<BigNumberish>,
+      currency: PromiseOrValue<string>,
+      bond: PromiseOrValue<BigNumberish>,
+      data: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
-    ): Promise<void>;
-
-    bondForStake(
-      stake: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    disputeBondPct(overrides?: CallOverrides): Promise<BigNumber>;
+    ): Promise<string>;
 
     getRequestId(
+      sender: PromiseOrValue<string>,
       proposer: PromiseOrValue<string>,
       disputer: PromiseOrValue<string>,
-      bondToken: PromiseOrValue<string>,
-      stake: PromiseOrValue<BigNumberish>,
+      currency: PromiseOrValue<string>,
+      bond: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<string>;
 
     owner(overrides?: CallOverrides): Promise<string>;
 
+    requesters(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
     requests(
       arg0: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<
-      [string, string, string, BigNumber, BigNumber, boolean, number] & {
+      [string, string, string, string, BigNumber, number, boolean, string] & {
+        requester: string;
         proposer: string;
         disputer: string;
-        bondToken: string;
-        stake: BigNumber;
+        currency: string;
         bond: BigNumber;
-        answer: boolean;
         state: number;
+        answer: boolean;
+        data: string;
       }
     >;
-
-    setBondPct(
-      newPct: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
 
     setOwner(
       newOwner: PromiseOrValue<string>,
@@ -486,6 +479,12 @@ export interface AllKnowingOracle extends BaseContract {
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<boolean>;
+
+    whitelistRequester(
+      requester: PromiseOrValue<string>,
+      enabled: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     whitelistSettler(
       settler: PromiseOrValue<string>,
@@ -506,23 +505,18 @@ export interface AllKnowingOracle extends BaseContract {
   };
 
   filters: {
-    "BondPctChanged(uint256)"(newPct?: null): BondPctChangedEventFilter;
-    BondPctChanged(newPct?: null): BondPctChangedEventFilter;
-
-    "NewRequest(bytes32,address,address,address,uint256,uint256)"(
+    "NewRequest(bytes32,address,address,address,uint256)"(
       id?: PromiseOrValue<BytesLike> | null,
       proposer?: PromiseOrValue<string> | null,
       disputer?: PromiseOrValue<string> | null,
-      bondToken?: null,
-      stake?: null,
+      currency?: null,
       bond?: null
     ): NewRequestEventFilter;
     NewRequest(
       id?: PromiseOrValue<BytesLike> | null,
       proposer?: PromiseOrValue<string> | null,
       disputer?: PromiseOrValue<string> | null,
-      bondToken?: null,
-      stake?: null,
+      currency?: null,
       bond?: null
     ): NewRequestEventFilter;
 
@@ -543,6 +537,15 @@ export interface AllKnowingOracle extends BaseContract {
       id?: PromiseOrValue<BytesLike> | null,
       answer?: null
     ): RequestSettledEventFilter;
+
+    "RequesterWhitelisted(address,bool)"(
+      requester?: PromiseOrValue<string> | null,
+      enabled?: null
+    ): RequesterWhitelistedEventFilter;
+    RequesterWhitelisted(
+      requester?: PromiseOrValue<string> | null,
+      enabled?: null
+    ): RequesterWhitelistedEventFilter;
 
     "SettlerWhitelisted(address,bool)"(
       settler?: PromiseOrValue<string> | null,
@@ -567,36 +570,31 @@ export interface AllKnowingOracle extends BaseContract {
     ask(
       proposer: PromiseOrValue<string>,
       disputer: PromiseOrValue<string>,
-      bondToken: PromiseOrValue<string>,
-      stake: PromiseOrValue<BigNumberish>,
+      currency: PromiseOrValue<string>,
+      bond: PromiseOrValue<BigNumberish>,
+      data: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    bondForStake(
-      stake: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    disputeBondPct(overrides?: CallOverrides): Promise<BigNumber>;
-
     getRequestId(
+      sender: PromiseOrValue<string>,
       proposer: PromiseOrValue<string>,
       disputer: PromiseOrValue<string>,
-      bondToken: PromiseOrValue<string>,
-      stake: PromiseOrValue<BigNumberish>,
+      currency: PromiseOrValue<string>,
+      bond: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
-    requests(
-      arg0: PromiseOrValue<BytesLike>,
+    requesters(
+      arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    setBondPct(
-      newPct: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    requests(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     setOwner(
@@ -613,6 +611,12 @@ export interface AllKnowingOracle extends BaseContract {
     settlers(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    whitelistRequester(
+      requester: PromiseOrValue<string>,
+      enabled: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     whitelistSettler(
@@ -637,36 +641,31 @@ export interface AllKnowingOracle extends BaseContract {
     ask(
       proposer: PromiseOrValue<string>,
       disputer: PromiseOrValue<string>,
-      bondToken: PromiseOrValue<string>,
-      stake: PromiseOrValue<BigNumberish>,
+      currency: PromiseOrValue<string>,
+      bond: PromiseOrValue<BigNumberish>,
+      data: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    bondForStake(
-      stake: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    disputeBondPct(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     getRequestId(
+      sender: PromiseOrValue<string>,
       proposer: PromiseOrValue<string>,
       disputer: PromiseOrValue<string>,
-      bondToken: PromiseOrValue<string>,
-      stake: PromiseOrValue<BigNumberish>,
+      currency: PromiseOrValue<string>,
+      bond: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    requests(
-      arg0: PromiseOrValue<BytesLike>,
+    requesters(
+      arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    setBondPct(
-      newPct: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    requests(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     setOwner(
@@ -683,6 +682,12 @@ export interface AllKnowingOracle extends BaseContract {
     settlers(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    whitelistRequester(
+      requester: PromiseOrValue<string>,
+      enabled: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     whitelistSettler(
