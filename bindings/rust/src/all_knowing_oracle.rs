@@ -18,12 +18,12 @@ pub mod all_knowing_oracle {
     use std::sync::Arc;
     pub static ALLKNOWINGORACLE_ABI: ethers::contract::Lazy<ethers::core::abi::Abi> =
         ethers::contract::Lazy::new(|| {
-            ethers :: core :: utils :: __serde_json :: from_str ("[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"id\",\"type\":\"bytes32\",\"components\":[]}],\"type\":\"error\",\"name\":\"AllKnowingOracle__AlreadySettled\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"AllKnowingOracle__NonSettler\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\",\"components\":[]}],\"type\":\"error\",\"name\":\"AllKnowingOracle__NotWhitelisted\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"id\",\"type\":\"bytes32\",\"components\":[]}],\"type\":\"error\",\"name\":\"AllKnowingOracle__RequestAlreadyExists\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"newPct\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"BondPctChanged\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"id\",\"type\":\"bytes32\",\"components\":[],\"indexed\":true},{\"internalType\":\"address\",\"name\":\"proposer\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"address\",\"name\":\"disputer\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"address\",\"name\":\"bondToken\",\"type\":\"address\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"stake\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"bond\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"NewRequest\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"OwnerUpdated\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"id\",\"type\":\"bytes32\",\"components\":[],\"indexed\":true},{\"internalType\":\"bool\",\"name\":\"answer\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"RequestSettled\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"settler\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"bool\",\"name\":\"enabled\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"SettlerWhitelisted\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"bool\",\"name\":\"enabled\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"TokenWhitelisted\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"proposer\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"disputer\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"bondToken\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"stake\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"ask\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"stake\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"bondForStake\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"disputeBondPct\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"proposer\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"disputer\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"bondToken\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"stake\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getRequestId\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"requests\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"proposer\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"disputer\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"bondToken\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"stake\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"bond\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"bool\",\"name\":\"answer\",\"type\":\"bool\",\"components\":[]},{\"internalType\":\"enum RequestState\",\"name\":\"state\",\"type\":\"uint8\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"newPct\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setBondPct\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setOwner\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"id\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"bool\",\"name\":\"answer\",\"type\":\"bool\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"settle\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"settlers\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"settler\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"bool\",\"name\":\"enabled\",\"type\":\"bool\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"whitelistSettler\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"bool\",\"name\":\"enabled\",\"type\":\"bool\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"whitelistToken\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"whitelistedTokens\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]}]") . expect ("invalid abi")
+            ethers :: core :: utils :: __serde_json :: from_str ("[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"id\",\"type\":\"bytes32\",\"components\":[]}],\"type\":\"error\",\"name\":\"AllKnowingOracle__AlreadySettled\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"AllKnowingOracle__NonRequester\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"AllKnowingOracle__NonSettler\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"id\",\"type\":\"bytes32\",\"components\":[]}],\"type\":\"error\",\"name\":\"AllKnowingOracle__RequestAlreadyExists\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\",\"components\":[]}],\"type\":\"error\",\"name\":\"AllKnowingOracle__TokenNotWhitelisted\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"id\",\"type\":\"bytes32\",\"components\":[],\"indexed\":true},{\"internalType\":\"address\",\"name\":\"proposer\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"address\",\"name\":\"disputer\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"address\",\"name\":\"currency\",\"type\":\"address\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"bond\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"NewRequest\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"OwnerUpdated\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"id\",\"type\":\"bytes32\",\"components\":[],\"indexed\":true},{\"internalType\":\"bool\",\"name\":\"answer\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"RequestSettled\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"requester\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"bool\",\"name\":\"enabled\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"RequesterWhitelisted\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"settler\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"bool\",\"name\":\"enabled\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"SettlerWhitelisted\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"bool\",\"name\":\"enabled\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"TokenWhitelisted\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"proposer\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"disputer\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"currency\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"bond\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"ask\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"id\",\"type\":\"bytes32\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"proposer\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"disputer\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"currency\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"bond\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"pure\",\"type\":\"function\",\"name\":\"getRequestId\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"requesters\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"requests\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"requester\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"proposer\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"disputer\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"contract ERC20\",\"name\":\"currency\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"bond\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"enum RequestState\",\"name\":\"state\",\"type\":\"uint8\",\"components\":[]},{\"internalType\":\"bool\",\"name\":\"answer\",\"type\":\"bool\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setOwner\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"id\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"bool\",\"name\":\"answer\",\"type\":\"bool\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"settle\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"settlers\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"requester\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"bool\",\"name\":\"enabled\",\"type\":\"bool\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"whitelistRequester\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"settler\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"bool\",\"name\":\"enabled\",\"type\":\"bool\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"whitelistSettler\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"bool\",\"name\":\"enabled\",\"type\":\"bool\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"whitelistToken\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"whitelistedTokens\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]}]") . expect ("invalid abi")
         });
     #[doc = r" Bytecode of the #name contract"]
     pub static ALLKNOWINGORACLE_BYTECODE: ethers::contract::Lazy<ethers::core::types::Bytes> =
         ethers::contract::Lazy::new(|| {
-            "0x608060405234801561001057600080fd5b50600080546001600160a01b031916339081178255604051909182917f8292fce18fa69edf4db7b94ea2e58241df0ae57f97e0a6c9b29067028bf92d76908290a350601960049081553360009081526003602052604090819020805460ff19166001179055905490517fa2e09ae7caa0e84bcfe806d931934b92bf11ce67ffcaa3033af9a1e031996951916100a89190815260200190565b60405180910390a1610d28806100bf6000396000f3fe608060405234801561001057600080fd5b50600436106100cf5760003560e01c80638945bd281161008c578063af5899fc11610066578063af5899fc14610202578063c70a900f14610215578063daf9c21014610248578063fc361c381461026b57600080fd5b80638945bd28146101515780638da5cb5b146101645780639d8669851461018f57600080fd5b806307de99f6146100d45780630ffb1d8b146100fa57806313af40351461010f578063329e53be14610122578063391fe4e21461013557806384bfabcf1461013e575b600080fd5b6100e76100e2366004610ad9565b61027e565b6040519081526020015b60405180910390f35b61010d610108366004610b1e565b61028f565b005b61010d61011d366004610b51565b610322565b61010d610130366004610b1e565b610397565b6100e760045481565b6100e761014c366004610b73565b610419565b61010d61015f366004610ad9565b61043e565b600054610177906001600160a01b031681565b6040516001600160a01b0390911681526020016100f1565b6101ef61019d366004610ad9565b60016020819052600091825260409091208054918101546002820154600383015460048401546005909401546001600160a01b0395861695938416949390921692909160ff8082169161010090041687565b6040516100f19796959493929190610bd4565b61010d610210366004610b73565b6104a3565b610238610223366004610b51565b60036020526000908152604090205460ff1681565b60405190151581526020016100f1565b610238610256366004610b51565b60026020526000908152604090205460ff1681565b61010d610279366004610c3a565b6106fe565b600061028982610962565b92915050565b6000546001600160a01b031633146102c25760405162461bcd60e51b81526004016102b990610c5d565b60405180910390fd5b6001600160a01b038216600081815260026020908152604091829020805460ff191685151590811790915591519182527fef81a9943b96c8df4ef243401c9bf5159146166211356898b52d382086168d9291015b60405180910390a25050565b6000546001600160a01b0316331461034c5760405162461bcd60e51b81526004016102b990610c5d565b600080546001600160a01b0319166001600160a01b0383169081178255604051909133917f8292fce18fa69edf4db7b94ea2e58241df0ae57f97e0a6c9b29067028bf92d769190a350565b6000546001600160a01b031633146103c15760405162461bcd60e51b81526004016102b990610c5d565b6001600160a01b038216600081815260036020908152604091829020805460ff191685151590811790915591519182527f8cc72bec7e2cf5979aefd933f40a28eb590098d522a5c458e497e71c5e6fa90f9101610316565b60008061042583610962565b9050610434868686868561097e565b9695505050505050565b6000546001600160a01b031633146104685760405162461bcd60e51b81526004016102b990610c5d565b60048190556040518181527fa2e09ae7caa0e84bcfe806d931934b92bf11ce67ffcaa3033af9a1e0319969519060200160405180910390a150565b6001600160a01b03821660009081526002602052604090205460ff166104e75760405163010d7e6160e11b81526001600160a01b03831660048201526024016102b9565b60006104f282610962565b90506000610503868686868661097e565b90506001600082815260016020526040902060050154610100900460ff16600281111561053257610532610bbe565b036105535760405163d5e880e960e01b8152600481018290526024016102b9565b60006040518060e00160405280886001600160a01b03168152602001876001600160a01b03168152602001866001600160a01b03168152602001858152602001848152602001600015158152602001600160028111156105b5576105b5610bbe565b9052600083815260016020818152604092839020845181546001600160a01b03199081166001600160a01b03928316178355928601519382018054841694821694909417909355928401516002808501805490931691909316179055606083015160038301556080830151600483015560a083015160058301805460ff198116921515928317825560c0860151959650869593919261ffff1990911661ff0019909116179061010090849081111561066f5761066f610bbe565b021790555061068c9150506001600160a01b0386168730866109d1565b6106a16001600160a01b0386163330876109d1565b604080516001600160a01b038781168252602082018790529181018590528188169189169084907fb10e0c42d0d8cd4a999f95c50d18109fb205fdf5e55a8ed89121cab7f9f65f699060600160405180910390a450505050505050565b3360009081526003602052604090205460ff1661072e576040516314e9dd3960e31b815260040160405180910390fd5b6000828152600160208181526040808420815160e08101835281546001600160a01b03908116825294820154851693810193909352600280820154909416918301919091526003810154606083015260048101546080830152600581015460ff808216151560a08501529293919260c085019261010090920416908111156107b8576107b8610bbe565b60028111156107c9576107c9610bbe565b905250905060028160c0015160028111156107e6576107e6610bbe565b036108075760405163b677167760e01b8152600481018490526024016102b9565b81156108415780516060820151608083015161083c929161082791610c99565b60408401516001600160a01b03169190610a5b565b61085d565b61085d8160200151826060015183608001516108279190610c99565b600260c0820181815283151560a08401908152600086815260016020818152604092839020875181546001600160a01b039182166001600160a01b0319918216178355928901519382018054948216948416949094179093559287015183870180549190931691161790556060850151600382015560808501516004820155905160058201805491151560ff198316811782559351869593949093919261ff001990911661ffff19909116179061010090849081111561091f5761091f610bbe565b02179055505060405183151581528491507fdbed7580b9c2829ee6b384e3833f10b16f9885601c98a01c40fd705b543e9c669060200160405180910390a2505050565b60006064600454836109749190610cb1565b6102899190610cd0565b604080516001600160a01b0396871660208083019190915295871681830152939095166060840152608083019190915260a0808301919091528351808303909101815260c0909101909252815191012090565b60006040516323b872dd60e01b81528460048201528360248201528260448201526020600060648360008a5af13d15601f3d1160016000511416171691505080610a545760405162461bcd60e51b81526020600482015260146024820152731514905394d1915497d19493d357d1905253115160621b60448201526064016102b9565b5050505050565b600060405163a9059cbb60e01b8152836004820152826024820152602060006044836000895af13d15601f3d1160016000511416171691505080610ad35760405162461bcd60e51b815260206004820152600f60248201526e1514905394d1915497d19052531151608a1b60448201526064016102b9565b50505050565b600060208284031215610aeb57600080fd5b5035919050565b80356001600160a01b0381168114610b0957600080fd5b919050565b80358015158114610b0957600080fd5b60008060408385031215610b3157600080fd5b610b3a83610af2565b9150610b4860208401610b0e565b90509250929050565b600060208284031215610b6357600080fd5b610b6c82610af2565b9392505050565b60008060008060808587031215610b8957600080fd5b610b9285610af2565b9350610ba060208601610af2565b9250610bae60408601610af2565b9396929550929360600135925050565b634e487b7160e01b600052602160045260246000fd5b6001600160a01b038881168252878116602083015286166040820152606081018590526080810184905282151560a082015260e0810160038310610c2857634e487b7160e01b600052602160045260246000fd5b8260c083015298975050505050505050565b60008060408385031215610c4d57600080fd5b82359150610b4860208401610b0e565b6020808252600c908201526b15539055551213d49256915160a21b604082015260600190565b634e487b7160e01b600052601160045260246000fd5b60008219821115610cac57610cac610c83565b500190565b6000816000190483118215151615610ccb57610ccb610c83565b500290565b600082610ced57634e487b7160e01b600052601260045260246000fd5b50049056fea2646970667358221220a086d5378c38188b517141b491168433bcacdd1ef66aa0a3a08acd1fabd82c2a64736f6c634300080f0033" . parse () . expect ("invalid bytecode")
+            "0x608060405234801561001057600080fd5b50600080546001600160a01b031916339081178255604051909182917f8292fce18fa69edf4db7b94ea2e58241df0ae57f97e0a6c9b29067028bf92d76908290a350336000908152600360205260409020805460ff191660011790556110e58061007b6000396000f3fe608060405234801561001057600080fd5b50600436106100b45760003560e01c8063c70a900f11610071578063c70a900f1461015e578063d6f8307f14610191578063daf9c210146101b4578063e6717ce7146101d7578063f7d3b58b146101f8578063fc361c381461020b57600080fd5b80630ffb1d8b146100b957806313af4035146100ce578063329e53be146100e1578063889590f1146100f45780638da5cb5b146101075780639d86698514610137575b600080fd5b6100cc6100c7366004610b44565b61021e565b005b6100cc6100dc366004610b77565b6102b1565b6100cc6100ef366004610b44565b610326565b6100cc610102366004610b44565b6103a8565b60005461011a906001600160a01b031681565b6040516001600160a01b0390911681526020015b60405180910390f35b61014a610145366004610b99565b61042a565b60405161012e989796959493929190610bea565b61018161016c366004610b77565b60036020526000908152604090205460ff1681565b604051901515815260200161012e565b61018161019f366004610b77565b60046020526000908152604090205460ff1681565b6101816101c2366004610b77565b60026020526000908152604090205460ff1681565b6101ea6101e5366004610c93565b610511565b60405190815260200161012e565b6101ea610206366004610cef565b61052a565b6100cc610219366004610d9c565b610804565b6000546001600160a01b031633146102515760405162461bcd60e51b815260040161024890610dbf565b60405180910390fd5b6001600160a01b038216600081815260026020908152604091829020805460ff191685151590811790915591519182527fef81a9943b96c8df4ef243401c9bf5159146166211356898b52d382086168d9291015b60405180910390a25050565b6000546001600160a01b031633146102db5760405162461bcd60e51b815260040161024890610dbf565b600080546001600160a01b0319166001600160a01b0383169081178255604051909133917f8292fce18fa69edf4db7b94ea2e58241df0ae57f97e0a6c9b29067028bf92d769190a350565b6000546001600160a01b031633146103505760405162461bcd60e51b815260040161024890610dbf565b6001600160a01b038216600081815260036020908152604091829020805460ff191685151590811790915591519182527f8cc72bec7e2cf5979aefd933f40a28eb590098d522a5c458e497e71c5e6fa90f91016102a5565b6000546001600160a01b031633146103d25760405162461bcd60e51b815260040161024890610dbf565b6001600160a01b038216600081815260046020908152604091829020805460ff191685151590811790915591519182527f2bf32d6c1bf8a8d32ace419214cf1c0fa979b6ed1135840088771f67f25f104991016102a5565b600160208190526000918252604090912080549181015460028201546003830154600484015460058501546006860180546001600160a01b0398891698968716979587169690941694929360ff808416946101009094041692919061048e90610de5565b80601f01602080910402602001604051908101604052809291908181526020018280546104ba90610de5565b80156105075780601f106104dc57610100808354040283529160200191610507565b820191906000526020600020905b8154815290600101906020018083116104ea57829003601f168201915b5050505050905088565b600061052086868686866109ae565b9695505050505050565b3360009081526004602052604081205460ff1661055a576040516325c0cb7960e11b815260040160405180910390fd5b6001600160a01b03851660009081526002602052604090205460ff1661059e5760405163028511d160e51b81526001600160a01b0386166004820152602401610248565b6105ab33888888886109ae565b90506000808281526001602052604090206005015460ff1660028111156105d4576105d4610bb2565b146105f55760405163d5e880e960e01b815260048101829052602401610248565b6000604051806101000160405280336001600160a01b03168152602001896001600160a01b03168152602001886001600160a01b03168152602001876001600160a01b031681526020018681526020016001600281111561065857610658610bb2565b815260200160001515815260200185858080601f016020809104026020016040519081016040528093929190818152602001838380828437600092018290525093909452505084815260016020818152604092839020855181546001600160a01b03199081166001600160a01b039283161783559287015182850180548516918316919091179055938601516002808301805485169287169290921790915560608701516003830180549094169516949094179091556080850151600482015560a085015160058201805496975087969295509093909260ff199092169190849081111561074857610748610bb2565b021790555060c08201516005820180549115156101000261ff001990921691909117905560e082015160068201906107809082610e84565b5050604080516001600160a01b03898116825260208201899052808b1693508b169185917f2609e116ca576195fecb47831f147fd6fee721377e4d88fff48807f3e9442a42910160405180910390a46107e46001600160a01b038716333088610a16565b6107f96001600160a01b038716883088610a16565b509695505050505050565b3360009081526003602052604090205460ff16610834576040516314e9dd3960e31b815260040160405180910390fd5b60008281526001602052604090206002600582015460ff16600281111561085d5761085d610bb2565b0361087e5760405163b677167760e01b815260048101849052602401610248565b6000816004015460026108919190610f44565b905082156108bf57600182015460038301546108ba916001600160a01b03918216911683610aa0565b6108e0565b600282015460038301546108e0916001600160a01b03918216911683610aa0565b60058201805461ffff19166101008515159081029190911760021790915560405190815284907fdbed7580b9c2829ee6b384e3833f10b16f9885601c98a01c40fd705b543e9c669060200160405180910390a281546001600160a01b03163b156109a857815460405163734d162760e01b81526001600160a01b039091169063734d1627906109759087908690600401610fee565b600060405180830381600087803b15801561098f57600080fd5b505af11580156109a3573d6000803e3d6000fd5b505050505b50505050565b6040516bffffffffffffffffffffffff19606087811b8216602084015286811b8216603484015285811b8216604884015284901b16605c8201526070810182905260009060900160405160208183030381529060405280519060200120905095945050505050565b60006040516323b872dd60e01b81528460048201528360248201528260448201526020600060648360008a5af13d15601f3d1160016000511416171691505080610a995760405162461bcd60e51b81526020600482015260146024820152731514905394d1915497d19493d357d1905253115160621b6044820152606401610248565b5050505050565b600060405163a9059cbb60e01b8152836004820152826024820152602060006044836000895af13d15601f3d11600160005114161716915050806109a85760405162461bcd60e51b815260206004820152600f60248201526e1514905394d1915497d19052531151608a1b6044820152606401610248565b80356001600160a01b0381168114610b2f57600080fd5b919050565b80358015158114610b2f57600080fd5b60008060408385031215610b5757600080fd5b610b6083610b18565b9150610b6e60208401610b34565b90509250929050565b600060208284031215610b8957600080fd5b610b9282610b18565b9392505050565b600060208284031215610bab57600080fd5b5035919050565b634e487b7160e01b600052602160045260246000fd5b60038110610be657634e487b7160e01b600052602160045260246000fd5b9052565b600061010060018060a01b03808c1684526020818c1681860152818b166040860152818a166060860152886080860152610c2760a0860189610bc8565b86151560c08601528260e0860152855191508183860152600092505b81831015610c6257858301810151858401610120015291820191610c43565b5080821115610c7657600061012082860101525b601f01601f191692909201610120019a9950505050505050505050565b600080600080600060a08688031215610cab57600080fd5b610cb486610b18565b9450610cc260208701610b18565b9350610cd060408701610b18565b9250610cde60608701610b18565b949793965091946080013592915050565b60008060008060008060a08789031215610d0857600080fd5b610d1187610b18565b9550610d1f60208801610b18565b9450610d2d60408801610b18565b935060608701359250608087013567ffffffffffffffff80821115610d5157600080fd5b818901915089601f830112610d6557600080fd5b813581811115610d7457600080fd5b8a6020828501011115610d8657600080fd5b6020830194508093505050509295509295509295565b60008060408385031215610daf57600080fd5b82359150610b6e60208401610b34565b6020808252600c908201526b15539055551213d49256915160a21b604082015260600190565b600181811c90821680610df957607f821691505b602082108103610e1957634e487b7160e01b600052602260045260246000fd5b50919050565b634e487b7160e01b600052604160045260246000fd5b601f821115610e7f57600081815260208120601f850160051c81016020861015610e5c5750805b601f850160051c820191505b81811015610e7b57828155600101610e68565b5050505b505050565b815167ffffffffffffffff811115610e9e57610e9e610e1f565b610eb281610eac8454610de5565b84610e35565b602080601f831160018114610ee75760008415610ecf5750858301515b600019600386901b1c1916600185901b178555610e7b565b600085815260208120601f198616915b82811015610f1657888601518255948401946001909101908401610ef7565b5085821015610f345787850151600019600388901b60f8161c191681555b5050505050600190811b01905550565b6000816000190483118215151615610f6c57634e487b7160e01b600052601160045260246000fd5b500290565b60008154610f7e81610de5565b808552602060018381168015610f9b5760018114610fb557610fe3565b60ff1985168884015283151560051b880183019550610fe3565b866000528260002060005b85811015610fdb5781548a8201860152908301908401610fc0565b890184019650505b505050505092915050565b8281526040602082015261101d6040820161101084546001600160a01b031690565b6001600160a01b03169052565b600061103360018401546001600160a01b031690565b6001600160a01b03908116606084015260028401548116608084015260038401541660a0830152600483015460c0830152600583015461107960e0840160ff8316610bc8565b61010061108f81850160ff8460081c1615159052565b610120840152506110a7610140830160068501610f71565b94935050505056fea2646970667358221220378e2adecaf12d8d961ecc660ca8a2e8d7f85594e2d186b05480fc09bda2009864736f6c634300080f0033" . parse () . expect ("invalid bytecode")
         });
     pub struct AllKnowingOracle<M>(ethers::contract::Contract<M>);
     impl<M> Clone for AllKnowingOracle<M> {
@@ -94,47 +94,35 @@ pub mod all_knowing_oracle {
             let deployer = ethers::contract::ContractDeployer::new(deployer);
             Ok(deployer)
         }
-        #[doc = "Calls the contract's `ask` (0xaf5899fc) function"]
+        #[doc = "Calls the contract's `ask` (0xf7d3b58b) function"]
         pub fn ask(
             &self,
             proposer: ethers::core::types::Address,
             disputer: ethers::core::types::Address,
-            bond_token: ethers::core::types::Address,
-            stake: ethers::core::types::U256,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
-            self.0
-                .method_hash([175, 88, 153, 252], (proposer, disputer, bond_token, stake))
-                .expect("method not found (this should never happen)")
-        }
-        #[doc = "Calls the contract's `bondForStake` (0x07de99f6) function"]
-        pub fn bond_for_stake(
-            &self,
-            stake: ethers::core::types::U256,
-        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::U256> {
-            self.0
-                .method_hash([7, 222, 153, 246], stake)
-                .expect("method not found (this should never happen)")
-        }
-        #[doc = "Calls the contract's `disputeBondPct` (0x391fe4e2) function"]
-        pub fn dispute_bond_pct(
-            &self,
-        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::U256> {
-            self.0
-                .method_hash([57, 31, 228, 226], ())
-                .expect("method not found (this should never happen)")
-        }
-        #[doc = "Calls the contract's `getRequestId` (0x84bfabcf) function"]
-        pub fn get_request_id(
-            &self,
-            proposer: ethers::core::types::Address,
-            disputer: ethers::core::types::Address,
-            bond_token: ethers::core::types::Address,
-            stake: ethers::core::types::U256,
+            currency: ethers::core::types::Address,
+            bond: ethers::core::types::U256,
+            data: ethers::core::types::Bytes,
         ) -> ethers::contract::builders::ContractCall<M, [u8; 32]> {
             self.0
                 .method_hash(
-                    [132, 191, 171, 207],
-                    (proposer, disputer, bond_token, stake),
+                    [247, 211, 181, 139],
+                    (proposer, disputer, currency, bond, data),
+                )
+                .expect("method not found (this should never happen)")
+        }
+        #[doc = "Calls the contract's `getRequestId` (0xe6717ce7) function"]
+        pub fn get_request_id(
+            &self,
+            sender: ethers::core::types::Address,
+            proposer: ethers::core::types::Address,
+            disputer: ethers::core::types::Address,
+            currency: ethers::core::types::Address,
+            bond: ethers::core::types::U256,
+        ) -> ethers::contract::builders::ContractCall<M, [u8; 32]> {
+            self.0
+                .method_hash(
+                    [230, 113, 124, 231],
+                    (sender, proposer, disputer, currency, bond),
                 )
                 .expect("method not found (this should never happen)")
         }
@@ -144,6 +132,15 @@ pub mod all_knowing_oracle {
         ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::Address> {
             self.0
                 .method_hash([141, 165, 203, 91], ())
+                .expect("method not found (this should never happen)")
+        }
+        #[doc = "Calls the contract's `requesters` (0xd6f8307f) function"]
+        pub fn requesters(
+            &self,
+            p0: ethers::core::types::Address,
+        ) -> ethers::contract::builders::ContractCall<M, bool> {
+            self.0
+                .method_hash([214, 248, 48, 127], p0)
                 .expect("method not found (this should never happen)")
         }
         #[doc = "Calls the contract's `requests` (0x9d866985) function"]
@@ -156,23 +153,15 @@ pub mod all_knowing_oracle {
                 ethers::core::types::Address,
                 ethers::core::types::Address,
                 ethers::core::types::Address,
+                ethers::core::types::Address,
                 ethers::core::types::U256,
-                ethers::core::types::U256,
-                bool,
                 u8,
+                bool,
+                ethers::core::types::Bytes,
             ),
         > {
             self.0
                 .method_hash([157, 134, 105, 133], p0)
-                .expect("method not found (this should never happen)")
-        }
-        #[doc = "Calls the contract's `setBondPct` (0x8945bd28) function"]
-        pub fn set_bond_pct(
-            &self,
-            new_pct: ethers::core::types::U256,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
-            self.0
-                .method_hash([137, 69, 189, 40], new_pct)
                 .expect("method not found (this should never happen)")
         }
         #[doc = "Calls the contract's `setOwner` (0x13af4035) function"]
@@ -201,6 +190,16 @@ pub mod all_knowing_oracle {
         ) -> ethers::contract::builders::ContractCall<M, bool> {
             self.0
                 .method_hash([199, 10, 144, 15], p0)
+                .expect("method not found (this should never happen)")
+        }
+        #[doc = "Calls the contract's `whitelistRequester` (0x889590f1) function"]
+        pub fn whitelist_requester(
+            &self,
+            requester: ethers::core::types::Address,
+            enabled: bool,
+        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            self.0
+                .method_hash([136, 149, 144, 241], (requester, enabled))
                 .expect("method not found (this should never happen)")
         }
         #[doc = "Calls the contract's `whitelistSettler` (0x329e53be) function"]
@@ -232,12 +231,6 @@ pub mod all_knowing_oracle {
                 .method_hash([218, 249, 194, 16], p0)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Gets the contract's `BondPctChanged` event"]
-        pub fn bond_pct_changed_filter(
-            &self,
-        ) -> ethers::contract::builders::Event<M, BondPctChangedFilter> {
-            self.0.event()
-        }
         #[doc = "Gets the contract's `NewRequest` event"]
         pub fn new_request_filter(&self) -> ethers::contract::builders::Event<M, NewRequestFilter> {
             self.0.event()
@@ -252,6 +245,12 @@ pub mod all_knowing_oracle {
         pub fn request_settled_filter(
             &self,
         ) -> ethers::contract::builders::Event<M, RequestSettledFilter> {
+            self.0.event()
+        }
+        #[doc = "Gets the contract's `RequesterWhitelisted` event"]
+        pub fn requester_whitelisted_filter(
+            &self,
+        ) -> ethers::contract::builders::Event<M, RequesterWhitelistedFilter> {
             self.0.event()
         }
         #[doc = "Gets the contract's `SettlerWhitelisted` event"]
@@ -285,22 +284,9 @@ pub mod all_knowing_oracle {
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
     )]
-    #[ethevent(name = "BondPctChanged", abi = "BondPctChanged(uint256)")]
-    pub struct BondPctChangedFilter {
-        pub new_pct: ethers::core::types::U256,
-    }
-    #[derive(
-        Clone,
-        Debug,
-        Default,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-    )]
     #[ethevent(
         name = "NewRequest",
-        abi = "NewRequest(bytes32,address,address,address,uint256,uint256)"
+        abi = "NewRequest(bytes32,address,address,address,uint256)"
     )]
     pub struct NewRequestFilter {
         #[ethevent(indexed)]
@@ -309,8 +295,7 @@ pub mod all_knowing_oracle {
         pub proposer: ethers::core::types::Address,
         #[ethevent(indexed)]
         pub disputer: ethers::core::types::Address,
-        pub bond_token: ethers::core::types::Address,
-        pub stake: ethers::core::types::U256,
+        pub currency: ethers::core::types::Address,
         pub bond: ethers::core::types::U256,
     }
     #[derive(
@@ -353,6 +338,24 @@ pub mod all_knowing_oracle {
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
     )]
+    #[ethevent(
+        name = "RequesterWhitelisted",
+        abi = "RequesterWhitelisted(address,bool)"
+    )]
+    pub struct RequesterWhitelistedFilter {
+        #[ethevent(indexed)]
+        pub requester: ethers::core::types::Address,
+        pub enabled: bool,
+    }
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthEvent,
+        ethers :: contract :: EthDisplay,
+    )]
     #[ethevent(name = "SettlerWhitelisted", abi = "SettlerWhitelisted(address,bool)")]
     pub struct SettlerWhitelistedFilter {
         #[ethevent(indexed)]
@@ -376,10 +379,10 @@ pub mod all_knowing_oracle {
     }
     #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
     pub enum AllKnowingOracleEvents {
-        BondPctChangedFilter(BondPctChangedFilter),
         NewRequestFilter(NewRequestFilter),
         OwnerUpdatedFilter(OwnerUpdatedFilter),
         RequestSettledFilter(RequestSettledFilter),
+        RequesterWhitelistedFilter(RequesterWhitelistedFilter),
         SettlerWhitelistedFilter(SettlerWhitelistedFilter),
         TokenWhitelistedFilter(TokenWhitelistedFilter),
     }
@@ -388,9 +391,6 @@ pub mod all_knowing_oracle {
         where
             Self: Sized,
         {
-            if let Ok(decoded) = BondPctChangedFilter::decode_log(log) {
-                return Ok(AllKnowingOracleEvents::BondPctChangedFilter(decoded));
-            }
             if let Ok(decoded) = NewRequestFilter::decode_log(log) {
                 return Ok(AllKnowingOracleEvents::NewRequestFilter(decoded));
             }
@@ -399,6 +399,9 @@ pub mod all_knowing_oracle {
             }
             if let Ok(decoded) = RequestSettledFilter::decode_log(log) {
                 return Ok(AllKnowingOracleEvents::RequestSettledFilter(decoded));
+            }
+            if let Ok(decoded) = RequesterWhitelistedFilter::decode_log(log) {
+                return Ok(AllKnowingOracleEvents::RequesterWhitelistedFilter(decoded));
             }
             if let Ok(decoded) = SettlerWhitelistedFilter::decode_log(log) {
                 return Ok(AllKnowingOracleEvents::SettlerWhitelistedFilter(decoded));
@@ -412,16 +415,16 @@ pub mod all_knowing_oracle {
     impl ::std::fmt::Display for AllKnowingOracleEvents {
         fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
             match self {
-                AllKnowingOracleEvents::BondPctChangedFilter(element) => element.fmt(f),
                 AllKnowingOracleEvents::NewRequestFilter(element) => element.fmt(f),
                 AllKnowingOracleEvents::OwnerUpdatedFilter(element) => element.fmt(f),
                 AllKnowingOracleEvents::RequestSettledFilter(element) => element.fmt(f),
+                AllKnowingOracleEvents::RequesterWhitelistedFilter(element) => element.fmt(f),
                 AllKnowingOracleEvents::SettlerWhitelistedFilter(element) => element.fmt(f),
                 AllKnowingOracleEvents::TokenWhitelistedFilter(element) => element.fmt(f),
             }
         }
     }
-    #[doc = "Container type for all input parameters for the `ask` function with signature `ask(address,address,address,uint256)` and selector `[175, 88, 153, 252]`"]
+    #[doc = "Container type for all input parameters for the `ask` function with signature `ask(address,address,address,uint256,bytes)` and selector `[247, 211, 181, 139]`"]
     #[derive(
         Clone,
         Debug,
@@ -431,40 +434,15 @@ pub mod all_knowing_oracle {
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
     )]
-    #[ethcall(name = "ask", abi = "ask(address,address,address,uint256)")]
+    #[ethcall(name = "ask", abi = "ask(address,address,address,uint256,bytes)")]
     pub struct AskCall {
         pub proposer: ethers::core::types::Address,
         pub disputer: ethers::core::types::Address,
-        pub bond_token: ethers::core::types::Address,
-        pub stake: ethers::core::types::U256,
+        pub currency: ethers::core::types::Address,
+        pub bond: ethers::core::types::U256,
+        pub data: ethers::core::types::Bytes,
     }
-    #[doc = "Container type for all input parameters for the `bondForStake` function with signature `bondForStake(uint256)` and selector `[7, 222, 153, 246]`"]
-    #[derive(
-        Clone,
-        Debug,
-        Default,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-    )]
-    #[ethcall(name = "bondForStake", abi = "bondForStake(uint256)")]
-    pub struct BondForStakeCall {
-        pub stake: ethers::core::types::U256,
-    }
-    #[doc = "Container type for all input parameters for the `disputeBondPct` function with signature `disputeBondPct()` and selector `[57, 31, 228, 226]`"]
-    #[derive(
-        Clone,
-        Debug,
-        Default,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-    )]
-    #[ethcall(name = "disputeBondPct", abi = "disputeBondPct()")]
-    pub struct DisputeBondPctCall;
-    #[doc = "Container type for all input parameters for the `getRequestId` function with signature `getRequestId(address,address,address,uint256)` and selector `[132, 191, 171, 207]`"]
+    #[doc = "Container type for all input parameters for the `getRequestId` function with signature `getRequestId(address,address,address,address,uint256)` and selector `[230, 113, 124, 231]`"]
     #[derive(
         Clone,
         Debug,
@@ -476,13 +454,14 @@ pub mod all_knowing_oracle {
     )]
     #[ethcall(
         name = "getRequestId",
-        abi = "getRequestId(address,address,address,uint256)"
+        abi = "getRequestId(address,address,address,address,uint256)"
     )]
     pub struct GetRequestIdCall {
+        pub sender: ethers::core::types::Address,
         pub proposer: ethers::core::types::Address,
         pub disputer: ethers::core::types::Address,
-        pub bond_token: ethers::core::types::Address,
-        pub stake: ethers::core::types::U256,
+        pub currency: ethers::core::types::Address,
+        pub bond: ethers::core::types::U256,
     }
     #[doc = "Container type for all input parameters for the `owner` function with signature `owner()` and selector `[141, 165, 203, 91]`"]
     #[derive(
@@ -496,6 +475,18 @@ pub mod all_knowing_oracle {
     )]
     #[ethcall(name = "owner", abi = "owner()")]
     pub struct OwnerCall;
+    #[doc = "Container type for all input parameters for the `requesters` function with signature `requesters(address)` and selector `[214, 248, 48, 127]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethcall(name = "requesters", abi = "requesters(address)")]
+    pub struct RequestersCall(pub ethers::core::types::Address);
     #[doc = "Container type for all input parameters for the `requests` function with signature `requests(bytes32)` and selector `[157, 134, 105, 133]`"]
     #[derive(
         Clone,
@@ -508,20 +499,6 @@ pub mod all_knowing_oracle {
     )]
     #[ethcall(name = "requests", abi = "requests(bytes32)")]
     pub struct RequestsCall(pub [u8; 32]);
-    #[doc = "Container type for all input parameters for the `setBondPct` function with signature `setBondPct(uint256)` and selector `[137, 69, 189, 40]`"]
-    #[derive(
-        Clone,
-        Debug,
-        Default,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-    )]
-    #[ethcall(name = "setBondPct", abi = "setBondPct(uint256)")]
-    pub struct SetBondPctCall {
-        pub new_pct: ethers::core::types::U256,
-    }
     #[doc = "Container type for all input parameters for the `setOwner` function with signature `setOwner(address)` and selector `[19, 175, 64, 53]`"]
     #[derive(
         Clone,
@@ -563,6 +540,21 @@ pub mod all_knowing_oracle {
     )]
     #[ethcall(name = "settlers", abi = "settlers(address)")]
     pub struct SettlersCall(pub ethers::core::types::Address);
+    #[doc = "Container type for all input parameters for the `whitelistRequester` function with signature `whitelistRequester(address,bool)` and selector `[136, 149, 144, 241]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethcall(name = "whitelistRequester", abi = "whitelistRequester(address,bool)")]
+    pub struct WhitelistRequesterCall {
+        pub requester: ethers::core::types::Address,
+        pub enabled: bool,
+    }
     #[doc = "Container type for all input parameters for the `whitelistSettler` function with signature `whitelistSettler(address,bool)` and selector `[50, 158, 83, 190]`"]
     #[derive(
         Clone,
@@ -608,15 +600,14 @@ pub mod all_knowing_oracle {
     #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
     pub enum AllKnowingOracleCalls {
         Ask(AskCall),
-        BondForStake(BondForStakeCall),
-        DisputeBondPct(DisputeBondPctCall),
         GetRequestId(GetRequestIdCall),
         Owner(OwnerCall),
+        Requesters(RequestersCall),
         Requests(RequestsCall),
-        SetBondPct(SetBondPctCall),
         SetOwner(SetOwnerCall),
         Settle(SettleCall),
         Settlers(SettlersCall),
+        WhitelistRequester(WhitelistRequesterCall),
         WhitelistSettler(WhitelistSettlerCall),
         WhitelistToken(WhitelistTokenCall),
         WhitelistedTokens(WhitelistedTokensCall),
@@ -625,16 +616,6 @@ pub mod all_knowing_oracle {
         fn decode(data: impl AsRef<[u8]>) -> Result<Self, ethers::core::abi::AbiError> {
             if let Ok(decoded) = <AskCall as ethers::core::abi::AbiDecode>::decode(data.as_ref()) {
                 return Ok(AllKnowingOracleCalls::Ask(decoded));
-            }
-            if let Ok(decoded) =
-                <BondForStakeCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(AllKnowingOracleCalls::BondForStake(decoded));
-            }
-            if let Ok(decoded) =
-                <DisputeBondPctCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(AllKnowingOracleCalls::DisputeBondPct(decoded));
             }
             if let Ok(decoded) =
                 <GetRequestIdCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
@@ -646,14 +627,14 @@ pub mod all_knowing_oracle {
                 return Ok(AllKnowingOracleCalls::Owner(decoded));
             }
             if let Ok(decoded) =
+                <RequestersCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(AllKnowingOracleCalls::Requesters(decoded));
+            }
+            if let Ok(decoded) =
                 <RequestsCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
             {
                 return Ok(AllKnowingOracleCalls::Requests(decoded));
-            }
-            if let Ok(decoded) =
-                <SetBondPctCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(AllKnowingOracleCalls::SetBondPct(decoded));
             }
             if let Ok(decoded) =
                 <SetOwnerCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
@@ -668,6 +649,11 @@ pub mod all_knowing_oracle {
                 <SettlersCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
             {
                 return Ok(AllKnowingOracleCalls::Settlers(decoded));
+            }
+            if let Ok(decoded) =
+                <WhitelistRequesterCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(AllKnowingOracleCalls::WhitelistRequester(decoded));
             }
             if let Ok(decoded) =
                 <WhitelistSettlerCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
@@ -691,15 +677,14 @@ pub mod all_knowing_oracle {
         fn encode(self) -> Vec<u8> {
             match self {
                 AllKnowingOracleCalls::Ask(element) => element.encode(),
-                AllKnowingOracleCalls::BondForStake(element) => element.encode(),
-                AllKnowingOracleCalls::DisputeBondPct(element) => element.encode(),
                 AllKnowingOracleCalls::GetRequestId(element) => element.encode(),
                 AllKnowingOracleCalls::Owner(element) => element.encode(),
+                AllKnowingOracleCalls::Requesters(element) => element.encode(),
                 AllKnowingOracleCalls::Requests(element) => element.encode(),
-                AllKnowingOracleCalls::SetBondPct(element) => element.encode(),
                 AllKnowingOracleCalls::SetOwner(element) => element.encode(),
                 AllKnowingOracleCalls::Settle(element) => element.encode(),
                 AllKnowingOracleCalls::Settlers(element) => element.encode(),
+                AllKnowingOracleCalls::WhitelistRequester(element) => element.encode(),
                 AllKnowingOracleCalls::WhitelistSettler(element) => element.encode(),
                 AllKnowingOracleCalls::WhitelistToken(element) => element.encode(),
                 AllKnowingOracleCalls::WhitelistedTokens(element) => element.encode(),
@@ -710,15 +695,14 @@ pub mod all_knowing_oracle {
         fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
             match self {
                 AllKnowingOracleCalls::Ask(element) => element.fmt(f),
-                AllKnowingOracleCalls::BondForStake(element) => element.fmt(f),
-                AllKnowingOracleCalls::DisputeBondPct(element) => element.fmt(f),
                 AllKnowingOracleCalls::GetRequestId(element) => element.fmt(f),
                 AllKnowingOracleCalls::Owner(element) => element.fmt(f),
+                AllKnowingOracleCalls::Requesters(element) => element.fmt(f),
                 AllKnowingOracleCalls::Requests(element) => element.fmt(f),
-                AllKnowingOracleCalls::SetBondPct(element) => element.fmt(f),
                 AllKnowingOracleCalls::SetOwner(element) => element.fmt(f),
                 AllKnowingOracleCalls::Settle(element) => element.fmt(f),
                 AllKnowingOracleCalls::Settlers(element) => element.fmt(f),
+                AllKnowingOracleCalls::WhitelistRequester(element) => element.fmt(f),
                 AllKnowingOracleCalls::WhitelistSettler(element) => element.fmt(f),
                 AllKnowingOracleCalls::WhitelistToken(element) => element.fmt(f),
                 AllKnowingOracleCalls::WhitelistedTokens(element) => element.fmt(f),
@@ -728,16 +712,6 @@ pub mod all_knowing_oracle {
     impl ::std::convert::From<AskCall> for AllKnowingOracleCalls {
         fn from(var: AskCall) -> Self {
             AllKnowingOracleCalls::Ask(var)
-        }
-    }
-    impl ::std::convert::From<BondForStakeCall> for AllKnowingOracleCalls {
-        fn from(var: BondForStakeCall) -> Self {
-            AllKnowingOracleCalls::BondForStake(var)
-        }
-    }
-    impl ::std::convert::From<DisputeBondPctCall> for AllKnowingOracleCalls {
-        fn from(var: DisputeBondPctCall) -> Self {
-            AllKnowingOracleCalls::DisputeBondPct(var)
         }
     }
     impl ::std::convert::From<GetRequestIdCall> for AllKnowingOracleCalls {
@@ -750,14 +724,14 @@ pub mod all_knowing_oracle {
             AllKnowingOracleCalls::Owner(var)
         }
     }
+    impl ::std::convert::From<RequestersCall> for AllKnowingOracleCalls {
+        fn from(var: RequestersCall) -> Self {
+            AllKnowingOracleCalls::Requesters(var)
+        }
+    }
     impl ::std::convert::From<RequestsCall> for AllKnowingOracleCalls {
         fn from(var: RequestsCall) -> Self {
             AllKnowingOracleCalls::Requests(var)
-        }
-    }
-    impl ::std::convert::From<SetBondPctCall> for AllKnowingOracleCalls {
-        fn from(var: SetBondPctCall) -> Self {
-            AllKnowingOracleCalls::SetBondPct(var)
         }
     }
     impl ::std::convert::From<SetOwnerCall> for AllKnowingOracleCalls {
@@ -775,6 +749,11 @@ pub mod all_knowing_oracle {
             AllKnowingOracleCalls::Settlers(var)
         }
     }
+    impl ::std::convert::From<WhitelistRequesterCall> for AllKnowingOracleCalls {
+        fn from(var: WhitelistRequesterCall) -> Self {
+            AllKnowingOracleCalls::WhitelistRequester(var)
+        }
+    }
     impl ::std::convert::From<WhitelistSettlerCall> for AllKnowingOracleCalls {
         fn from(var: WhitelistSettlerCall) -> Self {
             AllKnowingOracleCalls::WhitelistSettler(var)
@@ -790,7 +769,7 @@ pub mod all_knowing_oracle {
             AllKnowingOracleCalls::WhitelistedTokens(var)
         }
     }
-    #[doc = "Container type for all return fields from the `bondForStake` function with signature `bondForStake(uint256)` and selector `[7, 222, 153, 246]`"]
+    #[doc = "Container type for all return fields from the `ask` function with signature `ask(address,address,address,uint256,bytes)` and selector `[247, 211, 181, 139]`"]
     #[derive(
         Clone,
         Debug,
@@ -800,19 +779,10 @@ pub mod all_knowing_oracle {
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
     )]
-    pub struct BondForStakeReturn(pub ethers::core::types::U256);
-    #[doc = "Container type for all return fields from the `disputeBondPct` function with signature `disputeBondPct()` and selector `[57, 31, 228, 226]`"]
-    #[derive(
-        Clone,
-        Debug,
-        Default,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-    )]
-    pub struct DisputeBondPctReturn(pub ethers::core::types::U256);
-    #[doc = "Container type for all return fields from the `getRequestId` function with signature `getRequestId(address,address,address,uint256)` and selector `[132, 191, 171, 207]`"]
+    pub struct AskReturn {
+        pub id: [u8; 32],
+    }
+    #[doc = "Container type for all return fields from the `getRequestId` function with signature `getRequestId(address,address,address,address,uint256)` and selector `[230, 113, 124, 231]`"]
     #[derive(
         Clone,
         Debug,
@@ -834,6 +804,17 @@ pub mod all_knowing_oracle {
         ethers :: contract :: EthAbiCodec,
     )]
     pub struct OwnerReturn(pub ethers::core::types::Address);
+    #[doc = "Container type for all return fields from the `requesters` function with signature `requesters(address)` and selector `[214, 248, 48, 127]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthAbiType,
+        ethers :: contract :: EthAbiCodec,
+    )]
+    pub struct RequestersReturn(pub bool);
     #[doc = "Container type for all return fields from the `requests` function with signature `requests(bytes32)` and selector `[157, 134, 105, 133]`"]
     #[derive(
         Clone,
@@ -845,13 +826,14 @@ pub mod all_knowing_oracle {
         ethers :: contract :: EthAbiCodec,
     )]
     pub struct RequestsReturn {
+        pub requester: ethers::core::types::Address,
         pub proposer: ethers::core::types::Address,
         pub disputer: ethers::core::types::Address,
-        pub bond_token: ethers::core::types::Address,
-        pub stake: ethers::core::types::U256,
+        pub currency: ethers::core::types::Address,
         pub bond: ethers::core::types::U256,
-        pub answer: bool,
         pub state: u8,
+        pub answer: bool,
+        pub data: ethers::core::types::Bytes,
     }
     #[doc = "Container type for all return fields from the `settlers` function with signature `settlers(address)` and selector `[199, 10, 144, 15]`"]
     #[derive(

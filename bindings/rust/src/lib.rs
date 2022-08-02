@@ -21,7 +21,6 @@ pub mod erc20;
 pub mod i_all_knowing_oracle_events;
 pub mod i_book_single_chain_events;
 pub mod i_optimistic_requester;
-pub mod i_oracle;
 pub mod mock_requester;
 pub mod mock_token;
 pub mod oracle_fixture;

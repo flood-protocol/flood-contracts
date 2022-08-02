@@ -5,6 +5,7 @@ pub mod book_single_chain {
     #![allow(dead_code)]
     #![allow(clippy::type_complexity)]
     #![allow(unused_imports)]
+    pub use super::super::shared_types::*;
     use ethers::contract::{
         builders::{ContractCall, Event},
         Contract, Lazy,
@@ -18,12 +19,12 @@ pub mod book_single_chain {
     use std::sync::Arc;
     pub static BOOKSINGLECHAIN_ABI: ethers::contract::Lazy<ethers::core::abi::Abi> =
         ethers::contract::Lazy::new(|| {
-            ethers :: core :: utils :: __serde_json :: from_str ("[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_safeBlockThreshold\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"_oracleAddress\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"blocksLeft\",\"type\":\"uint256\",\"components\":[]}],\"type\":\"error\",\"name\":\"BookSingleChain__DisputePeriodNotOver\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"BookSingleChain__DisputePeriodOver\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\",\"components\":[]}],\"type\":\"error\",\"name\":\"BookSingleChain__FeePctTooHigh\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"BookSingleChain__InvalidSignature\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\",\"components\":[]}],\"type\":\"error\",\"name\":\"BookSingleChain__InvalidToken\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"BookSingleChain__NewFeePctTooHigh\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"BookSingleChain__SameToken\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"BookSingleChain__SentToBlackHole\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"tradeId\",\"type\":\"bytes32\",\"components\":[]}],\"type\":\"error\",\"name\":\"BookSingleChain__TradeAlreadyFilled\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"tradeId\",\"type\":\"bytes32\",\"components\":[]}],\"type\":\"error\",\"name\":\"BookSingleChain__TradeNotFilled\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\",\"components\":[]}],\"type\":\"error\",\"name\":\"BookSingleChain__UnsafeTokenToWhitelist\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"BookSingleChain__ZeroAmount\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"newMaxFeePct\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"MaxFeePctChanged\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"OwnerUpdated\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"newSafeBlockThreshold\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"SafeBlockThresholdChanged\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"bool\",\"name\":\"whitelisted\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"TokenWhitelisted\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"relayer\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"bytes32\",\"name\":\"disputeId\",\"type\":\"bytes32\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"filledAmount\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"feePct\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"TradeDisputed\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"relayer\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"feePct\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"amountOut\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"TradeFilled\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenIn\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"address\",\"name\":\"tokenOut\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"amountIn\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"feePct\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"TradeRequested\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"relayer\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"filledAmount\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"feePct\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"TradeSettled\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"trader\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"newFeePct\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"UpdatedFeeForTrade\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenIn\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"tokenOut\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amountIn\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"feePct\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"disputeTrade\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenIn\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"tokenOut\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amountIn\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"feePct\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amountToSend\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"fillTrade\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenIn\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"tokenOut\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amountIn\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"feePct\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amountToSend\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"trader\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"newFeePct\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"traderSignature\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"fillTradeWithUpdatedFee\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"filledAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"filledAtBlock\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"filledBy\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"maxFeePct\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"numberOfTrades\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"oracle\",\"outputs\":[{\"internalType\":\"contract IOracle\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenIn\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"tokenOut\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amountIn\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"feePct\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"requestTrade\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"safeBlockThreshold\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"newMaxFeePct\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setMaxFeePct\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setOwner\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"newSafeBlockThreshold\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setSafeBlockThreshold\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenIn\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"tokenOut\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amountIn\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"feePct\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"settleTrade\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenIn\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"tokenOut\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amountIn\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"feePct\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"trader\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"newFeePct\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"traderSignature\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"updateFeeForTrade\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"bool\",\"name\":\"whitelisted\",\"type\":\"bool\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"whitelistToken\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"whitelistedTokens\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]}]") . expect ("invalid abi")
+            ethers :: core :: utils :: __serde_json :: from_str ("[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_oracle\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"_safeBlockThreshold\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"_disputeBondPct\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"_tradeRebatePct\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"_relayerRefundPct\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"BookSingleChain__AmountOutTooLow\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"blocksLeft\",\"type\":\"uint256\",\"components\":[]}],\"type\":\"error\",\"name\":\"BookSingleChain__DisputePeriodNotOver\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"BookSingleChain__DisputePeriodOver\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\",\"components\":[]}],\"type\":\"error\",\"name\":\"BookSingleChain__FeePctTooHigh\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"BookSingleChain__InvalidFeeCombination\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"BookSingleChain__InvalidSignature\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\",\"components\":[]}],\"type\":\"error\",\"name\":\"BookSingleChain__InvalidToken\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"caller\",\"type\":\"address\",\"components\":[]}],\"type\":\"error\",\"name\":\"BookSingleChain__MaliciousCaller\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"BookSingleChain__SameToken\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"BookSingleChain__SentToBlackHole\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"tradeId\",\"type\":\"bytes32\",\"components\":[]}],\"type\":\"error\",\"name\":\"BookSingleChain__TradeAlreadyFilled\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"tradeId\",\"type\":\"bytes32\",\"components\":[]}],\"type\":\"error\",\"name\":\"BookSingleChain__TradeNotInFilledState\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\",\"components\":[]}],\"type\":\"error\",\"name\":\"BookSingleChain__UnsafeTokenToWhitelist\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"BookSingleChain__ZeroAmount\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"disputeBondPct\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"tradeRebatePct\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"relayerRefundPct\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"FeeCombinationSet\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"OwnerUpdated\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"newSafeBlockThreshold\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"SafeBlockThresholdSet\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"bool\",\"name\":\"whitelisted\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"TokenWhitelisted\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"relayer\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"bytes32\",\"name\":\"disputeId\",\"type\":\"bytes32\",\"components\":[],\"indexed\":true},{\"internalType\":\"bool\",\"name\":\"answer\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"TradeDisputeSettled\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"relayer\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"bytes32\",\"name\":\"disputeId\",\"type\":\"bytes32\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"filledAtBlock\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"TradeDisputed\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"relayer\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"feePct\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"amountOut\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"TradeFilled\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenIn\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"address\",\"name\":\"tokenOut\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"amountIn\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"minAmountOut\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"feePct\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"TradeRequested\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"relayer\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"filledAtBlock\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"TradeSettled\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"trader\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"newFeePct\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"UpdatedFeeForTrade\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"disputeBondPct\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenIn\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"tokenOut\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amountIn\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"minAmountOut\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"feePct\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"disputeTrade\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenIn\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"tokenOut\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amountIn\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"minAmountOut\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"feePct\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amountToSend\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"fillTrade\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenIn\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"tokenOut\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amountIn\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"minAmountOut\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"feePct\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amountToSend\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"trader\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"newFeePct\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"traderSignature\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"fillTradeWithUpdatedFee\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"filledAtBlock\",\"outputs\":[{\"internalType\":\"int256\",\"name\":\"\",\"type\":\"int256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"filledBy\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"numberOfTrades\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"id\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"struct Request\",\"name\":\"request\",\"type\":\"tuple\",\"components\":[{\"internalType\":\"address\",\"name\":\"requester\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"proposer\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"disputer\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"contract ERC20\",\"name\":\"currency\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"bond\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"enum RequestState\",\"name\":\"state\",\"type\":\"uint8\",\"components\":[]},{\"internalType\":\"bool\",\"name\":\"answer\",\"type\":\"bool\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\",\"components\":[]}]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"onPriceSettled\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"oracle\",\"outputs\":[{\"internalType\":\"contract AllKnowingOracle\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"relayerRefundPct\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenIn\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"tokenOut\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amountIn\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"minAmountOut\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"feePct\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"requestTrade\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"safeBlockThreshold\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setOwner\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenIn\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"tokenOut\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amountIn\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"minAmountOut\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"feePct\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"settleTrade\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"tradeRebatePct\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenIn\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"tokenOut\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amountIn\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"minAmountOut\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"feePct\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"trader\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"newFeePct\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"traderSignature\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"updateFeeForTrade\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"bool\",\"name\":\"whitelisted\",\"type\":\"bool\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"whitelistToken\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"whitelistedTokens\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]}]") . expect ("invalid abi")
         });
     #[doc = r" Bytecode of the #name contract"]
     pub static BOOKSINGLECHAIN_BYTECODE: ethers::contract::Lazy<ethers::core::types::Bytes> =
         ethers::contract::Lazy::new(|| {
-            "0x60a060405260018055600060025534801561001957600080fd5b50604051611a3f380380611a3f83398101604081905261003891610106565b600080546001600160a01b031916339081178255604051909182917f8292fce18fa69edf4db7b94ea2e58241df0ae57f97e0a6c9b29067028bf92d76908290a3506001600160a01b03811660805260038290556040518281527fcf29a5174acb8c175d760a7381ffc52c6ae644e3a4ba3fa7e01344f959cd76159060200160405180910390a16703782dace9d9000060048190556040519081527f841095ec206e4a3d8124f54a431661bd653b296066d7d695baaa9178e9d21bb49060200160405180910390a15050610143565b6000806040838503121561011957600080fd5b825160208401519092506001600160a01b038116811461013857600080fd5b809150509250929050565b6080516118c561017a600039600081816101c80152818161035c015281816106540152818161071e015261077701526118c56000f3fe608060405234801561001057600080fd5b50600436106101215760003560e01c80639170c05b116100ad578063d70e3dfd11610071578063d70e3dfd14610277578063daf9c210146102a0578063e02c0279146102d3578063ec4cd7db146102e6578063fc711c3a146102f957600080fd5b80639170c05b146102155780639501325f14610228578063bd20a85914610248578063bd4ac9971461025b578063cd805d5e1461026e57600080fd5b80632613f307116100f45780632613f3071461018a5780632b0cf6531461019d5780637d9dd85d146101b05780637dc0d1d0146101c35780638da5cb5b1461020257600080fd5b80630b20b7bc146101265780630ff0c00e146101595780630ffb1d8b1461016257806313af403514610177575b600080fd5b610146610134366004611454565b60086020526000908152604090205481565b6040519081526020015b60405180910390f35b61014660035481565b610175610170366004611497565b610302565b005b6101756101853660046114ce565b610451565b610175610198366004611454565b6104c6565b6101756101ab3660046114f0565b61052c565b6101756101be366004611591565b6107e4565b6101ea7f000000000000000000000000000000000000000000000000000000000000000081565b6040516001600160a01b039091168152602001610150565b6000546101ea906001600160a01b031681565b61017561022336600461164d565b610859565b610146610236366004611454565b60066020526000908152604090205481565b610175610256366004611454565b610a06565b6101756102693660046116a4565b610a8d565b61014660025481565b6101ea610285366004611454565b6007602052600090815260409020546001600160a01b031681565b6102c36102ae3660046114ce565b60056020526000908152604090205460ff1681565b6040519015158152602001610150565b6101756102e13660046114f0565b610b53565b6101756102f4366004611755565b610cb6565b61014660045481565b6000546001600160a01b031633146103355760405162461bcd60e51b815260040161032c906117bf565b60405180910390fd5b8080156103c95750604051630daf9c2160e41b81526001600160a01b0383811660048301527f0000000000000000000000000000000000000000000000000000000000000000169063daf9c21090602401602060405180830381865afa1580156103a3573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906103c791906117e5565b155b156103f2576040516313c42eef60e21b81526001600160a01b038316600482015260240161032c565b6001600160a01b038216600081815260056020908152604091829020805460ff191685151590811790915591519182527fef81a9943b96c8df4ef243401c9bf5159146166211356898b52d382086168d92910160405180910390a25050565b6000546001600160a01b0316331461047b5760405162461bcd60e51b815260040161032c906117bf565b600080546001600160a01b0319166001600160a01b0383169081178255604051909133917f8292fce18fa69edf4db7b94ea2e58241df0ae57f97e0a6c9b29067028bf92d769190a350565b6000546001600160a01b031633146104f05760405162461bcd60e51b815260040161032c906117bf565b60038190556040518181527fcf29a5174acb8c175d760a7381ffc52c6ae644e3a4ba3fa7e01344f959cd7615906020015b60405180910390a150565b60015460011461056b5760405162461bcd60e51b815260206004820152600a6024820152695245454e5452414e435960b01b604482015260640161032c565b60026001556000610580878787878787610d4b565b6000818152600660205260408120549192508190036105b55760405163cc4f06a160e01b81526004810183905260240161032c565b6003546105c28243611818565b106105e057604051632c02744560e11b815260040160405180910390fd5b600082815260086020818152604080842080546007845282862080546006865284882088905581546001600160a01b03191690915594909352849055516384bfabcf60e01b81526001600160a01b03928316600482018190523360248301528b8416604483015260648201839052919391927f000000000000000000000000000000000000000000000000000000000000000016906384bfabcf90608401602060405180830381865afa15801561069b573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906106bf919061182f565b90508086836001600160a01b03167fc293ada1a20d5f6111738a64aec9c7262db402de1650b576e691e321964bb01e868c604051610707929190918252602082015260400190565b60405180910390a46107436001600160a01b038b167f000000000000000000000000000000000000000000000000000000000000000085610da3565b604051632bd6267f60e21b81526001600160a01b0383811660048301523360248301528b81166044830152606482018590527f0000000000000000000000000000000000000000000000000000000000000000169063af5899fc90608401600060405180830381600087803b1580156107bb57600080fd5b505af11580156107cf573d6000803e3d6000fd5b50506001805550505050505050505050505050565b60006107f48c8c8c8c8c8c610d4b565b90506108038582868686610e20565b61080e8b8288610f8d565b6040805185815260208101889052889133917f942417ccf4f356e8d909c054f8a8147622647605cbeafd9c63b4fc3cc1dd2a53910160405180910390a3505050505050505050505050565b6001600160a01b03851660009081526005602052604090205460ff1661089d5760405163f602627d60e01b81526001600160a01b038616600482015260240161032c565b6001600160a01b03841660009081526005602052604090205460ff166108e15760405163f602627d60e01b81526001600160a01b038516600482015260240161032c565b836001600160a01b0316856001600160a01b03160361091357604051631d2792fb60e31b815260040160405180910390fd5b600454821115610939576040516305bf279d60e41b81526004810183905260240161032c565b8260000361095a5760405163abc5ee6f60e01b815260040160405180910390fd5b6001600160a01b03811661098157604051631feef77d60e01b815260040160405180910390fd5b6109966001600160a01b038616333086610fe1565b60025460408051858152602081018590526001600160a01b03848116828401529151878316928916917f7361c265d28ece9d5df249995186533440e0b7a1310ae54d496fa1783056e3da919081900360600190a4600280549060006109fa83611848565b91905055505050505050565b6000546001600160a01b03163314610a305760405162461bcd60e51b815260040161032c906117bf565b670de0b6b3a76400008110610a5857604051636a143fdd60e11b815260040160405180910390fd5b60048190556040518181527f841095ec206e4a3d8124f54a431661bd653b296066d7d695baaa9178e9d21bb490602001610521565b6000610a9d8b8b8b8b8b8b610d4b565b9050600454841115610ac5576040516305bf279d60e41b81526004810185905260240161032c565b60008181526006602052604090205415610af5576040516304daa62560e21b81526004810182905260240161032c565b610b028582868686610e20565b85856001600160a01b03167f6ab91dbc42f726b630639350395426be048c50255f12e82d28e2dffac417459386604051610b3e91815260200190565b60405180910390a35050505050505050505050565b6000610b63878787878787610d4b565b60008181526006602052604081205491925003610b965760405163cc4f06a160e01b81526004810182905260240161032c565b600354600082815260066020526040902054610bb29043611818565b1015610bfd57600081815260066020526040812054610bd19043611818565b600354610bde9190611818565b9050806040516325797e0360e11b815260040161032c91815260200190565b600081815260086020818152604080842080546007845282862080546006865293872087905580546001600160a01b031916905593909252929055906001600160a01b0390811690610c52908916868461106b565b610c666001600160a01b038a16828961106b565b8184826001600160a01b03167f3281f74a3f7405b6bd35e9687b3fcaaf242c466ac789d117f22b62b140af8dcc89604051610ca391815260200190565b60405180910390a4505050505050505050565b6000610cc6888888888888610d4b565b60008181526006602052604090205490915015610cf9576040516304daa62560e21b81526004810182905260240161032c565b610d04878284610f8d565b6040805186815260208101849052849133917f942417ccf4f356e8d909c054f8a8147622647605cbeafd9c63b4fc3cc1dd2a53910160405180910390a35050505050505050565b604080516001600160a01b039788166020808301919091529688168183015260608101959095526080850193909352941660a083015260c0808301949094528051808303909401845260e09091019052815191012090565b600060405163095ea7b360e01b8152836004820152826024820152602060006044836000895af13d15601f3d1160016000511416171691505080610e1a5760405162461bcd60e51b815260206004820152600e60248201526d1054141493d59157d1905253115160921b604482015260640161032c565b50505050565b600454831115610e46576040516305bf279d60e41b81526004810184905260240161032c565b60008481526006602052604090205415610e76576040516304daa62560e21b81526004810185905260240161032c565b604080517f0efb9dda140a951df4393d44ca40349032d31811466afd20eacd4b4136c3f4986020808301919091528183018790526060808301879052835180840390910181526080830184528051908201207f19457468657265756d205369676e6564204d6573736167653a0a33320000000060a084015260bc8084018290528451808503909101815260dc90930190935281519101206000610f4f8286868080601f0160208091040260200160405190810160405280939291908181526020018383808284376000920191909152506110e392505050565b9050876001600160a01b0316816001600160a01b031614610f83576040516324a0dbd760e21b815260040160405180910390fd5b5050505050505050565b60008281526006602090815260408083204390556007825280832080546001600160a01b031916339081179091556008909252909120829055610fdc906001600160a01b038516903084610fe1565b505050565b60006040516323b872dd60e01b81528460048201528360248201528260448201526020600060648360008a5af13d15601f3d11600160005114161716915050806110645760405162461bcd60e51b81526020600482015260146024820152731514905394d1915497d19493d357d1905253115160621b604482015260640161032c565b5050505050565b600060405163a9059cbb60e01b8152836004820152826024820152602060006044836000895af13d15601f3d1160016000511416171691505080610e1a5760405162461bcd60e51b815260206004820152600f60248201526e1514905394d1915497d19052531151608a1b604482015260640161032c565b60008060006110f28585611107565b915091506110ff81611175565b509392505050565b600080825160410361113d5760208301516040840151606085015160001a6111318782858561132e565b9450945050505061116e565b8251604003611166576020830151604084015161115b86838361141b565b93509350505061116e565b506000905060025b9250929050565b600081600481111561118957611189611861565b036111915750565b60018160048111156111a5576111a5611861565b036111f25760405162461bcd60e51b815260206004820152601860248201527f45434453413a20696e76616c6964207369676e61747572650000000000000000604482015260640161032c565b600281600481111561120657611206611861565b036112535760405162461bcd60e51b815260206004820152601f60248201527f45434453413a20696e76616c6964207369676e6174757265206c656e67746800604482015260640161032c565b600381600481111561126757611267611861565b036112bf5760405162461bcd60e51b815260206004820152602260248201527f45434453413a20696e76616c6964207369676e6174757265202773272076616c604482015261756560f01b606482015260840161032c565b60048160048111156112d3576112d3611861565b0361132b5760405162461bcd60e51b815260206004820152602260248201527f45434453413a20696e76616c6964207369676e6174757265202776272076616c604482015261756560f01b606482015260840161032c565b50565b6000807f7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a08311156113655750600090506003611412565b8460ff16601b1415801561137d57508460ff16601c14155b1561138e5750600090506004611412565b6040805160008082526020820180845289905260ff881692820192909252606081018690526080810185905260019060a0016020604051602081039080840390855afa1580156113e2573d6000803e3d6000fd5b5050604051601f1901519150506001600160a01b03811661140b57600060019250925050611412565b9150600090505b94509492505050565b6000806001600160ff1b0383168161143860ff86901c601b611877565b90506114468782888561132e565b935093505050935093915050565b60006020828403121561146657600080fd5b5035919050565b80356001600160a01b038116811461148457600080fd5b919050565b801515811461132b57600080fd5b600080604083850312156114aa57600080fd5b6114b38361146d565b915060208301356114c381611489565b809150509250929050565b6000602082840312156114e057600080fd5b6114e98261146d565b9392505050565b60008060008060008060c0878903121561150957600080fd5b6115128761146d565b95506115206020880161146d565b9450604087013593506060870135925061153c6080880161146d565b915060a087013590509295509295509295565b60008083601f84011261156157600080fd5b50813567ffffffffffffffff81111561157957600080fd5b60208301915083602082850101111561116e57600080fd5b60008060008060008060008060008060006101408c8e0312156115b357600080fd5b6115bc8c61146d565b9a506115ca60208d0161146d565b995060408c0135985060608c013597506115e660808d0161146d565b965060a08c0135955060c08c0135945061160260e08d0161146d565b93506101008c013592506101208c013567ffffffffffffffff81111561162757600080fd5b6116338e828f0161154f565b915080935050809150509295989b509295989b9093969950565b600080600080600060a0868803121561166557600080fd5b61166e8661146d565b945061167c6020870161146d565b935060408601359250606086013591506116986080870161146d565b90509295509295909350565b6000806000806000806000806000806101208b8d0312156116c457600080fd5b6116cd8b61146d565b99506116db60208c0161146d565b985060408b0135975060608b013596506116f760808c0161146d565b955060a08b0135945061170c60c08c0161146d565b935060e08b013592506101008b013567ffffffffffffffff81111561173057600080fd5b61173c8d828e0161154f565b915080935050809150509295989b9194979a5092959850565b600080600080600080600060e0888a03121561177057600080fd5b6117798861146d565b96506117876020890161146d565b955060408801359450606088013593506117a36080890161146d565b925060a0880135915060c0880135905092959891949750929550565b6020808252600c908201526b15539055551213d49256915160a21b604082015260600190565b6000602082840312156117f757600080fd5b81516114e981611489565b634e487b7160e01b600052601160045260246000fd5b60008282101561182a5761182a611802565b500390565b60006020828403121561184157600080fd5b5051919050565b60006001820161185a5761185a611802565b5060010190565b634e487b7160e01b600052602160045260246000fd5b6000821982111561188a5761188a611802565b50019056fea2646970667358221220113fb638bdd45eef8a6121716cc16f962536180e2705f01f90d7a5598262081364736f6c634300080f0033" . parse () . expect ("invalid bytecode")
+            "0x61012060405260006001553480156200001757600080fd5b5060405162001f8938038062001f898339810160408190526200003a9162000156565b600080546001600160a01b031916339081178255604051909182917f8292fce18fa69edf4db7b94ea2e58241df0ae57f97e0a6c9b29067028bf92d76908290a3506001600160a01b0385166101005260808490526040518481527f882885d0e4612a71677644a9d70e58ca05fc5a1ea1b0875f6e46c315241bfe149060200160405180910390a180620000ce8385620001ad565b620000da9190620001ad565b606414620000fb5760405163bcf1e5b360e01b815260040160405180910390fd5b60a083905260c082905260e081905260408051848152602081018490529081018290527ff33486d12ebec978385318eaf8163e096679d7eab14d4def8f26b7a5fda0f5829060600160405180910390a15050505050620001d4565b600080600080600060a086880312156200016f57600080fd5b85516001600160a01b03811681146200018757600080fd5b602087015160408801516060890151608090990151929a91995097965090945092505050565b60008219821115620001cf57634e487b7160e01b600052601160045260246000fd5b500190565b60805160a05160c05160e05161010051611d1c6200026d60003960008181610214015281816103ce0152818161068c015281816106b501528181610798015261081c0152600081816101c701528181610d630152610fc5015260008181610299015261088a0152600081816101a0015261064c01526000818161012b015281816105ce01528181610c910152610cdf0152611d1c6000f3fe608060405234801561001057600080fd5b50600436106101215760003560e01c80638da5cb5b116100ad578063cb7b1ec811610071578063cb7b1ec8146102ce578063cd805d5e146102e1578063d70e3dfd146102ea578063daf9c21014610313578063ee35a4f91461034657600080fd5b80638da5cb5b1461024e5780639501325f14610261578063ad3e762514610281578063c16402bb14610294578063c3f6f431146102bb57600080fd5b8063391fe4e2116100f4578063391fe4e21461019b57806353906a59146101c257806369cf50c1146101e9578063734d1627146101fc5780637dc0d1d01461020f57600080fd5b80630ff0c00e146101265780630ffb1d8b1461016057806313af4035146101755780631655b32314610188575b600080fd5b61014d7f000000000000000000000000000000000000000000000000000000000000000081565b6040519081526020015b60405180910390f35b61017361016e3660046116df565b610359565b005b610173610183366004611718565b6104c3565b61017361019636600461173c565b610557565b61014d7f000000000000000000000000000000000000000000000000000000000000000081565b61014d7f000000000000000000000000000000000000000000000000000000000000000081565b6101736101f73660046117b6565b610587565b61017361020a366004611828565b610811565b6102367f000000000000000000000000000000000000000000000000000000000000000081565b6040516001600160a01b039091168152602001610157565b600054610236906001600160a01b031681565b61014d61026f36600461186c565b60036020526000908152604090205481565b61017361028f366004611885565b610985565b61014d7f000000000000000000000000000000000000000000000000000000000000000081565b6101736102c936600461192e565b610b4a565b6101736102dc3660046117b6565b610c4a565b61014d60015481565b6102366102f836600461186c565b6004602052600090815260409020546001600160a01b031681565b610336610321366004611718565b60026020526000908152604090205460ff1681565b6040519015158152602001610157565b6101736103543660046119f2565b610e03565b6000546001600160a01b031633146103a75760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b60448201526064015b60405180910390fd5b80801561043b5750604051630daf9c2160e41b81526001600160a01b0383811660048301527f0000000000000000000000000000000000000000000000000000000000000000169063daf9c21090602401602060405180830381865afa158015610415573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906104399190611ac2565b155b15610464576040516313c42eef60e21b81526001600160a01b038316600482015260240161039e565b6001600160a01b038216600081815260026020908152604091829020805460ff191685151590811790915591519182527fef81a9943b96c8df4ef243401c9bf5159146166211356898b52d382086168d92910160405180910390a25050565b6000546001600160a01b0316331461050c5760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b604482015260640161039e565b600080546001600160a01b0319166001600160a01b0383169081178255604051909133917f8292fce18fa69edf4db7b94ea2e58241df0ae57f97e0a6c9b29067028bf92d769190a350565b600061056889898989898989610e44565b905061057c89898989898989888a33610eb2565b505050505050505050565b600061059888888888888888610e44565b60008181526003602052604081205491925081136105cc57604051635c8aa24760e11b81526004810183905260240161039e565b7f00000000000000000000000000000000000000000000000000000000000000006105f78243611af5565b1061061557604051632c02744560e11b815260040160405180910390fd5b61061e81611b0c565b60008381526003602090815260408083209390935560049052908120546001600160a01b03169060646106717f00000000000000000000000000000000000000000000000000000000000000008b611b28565b61067b9190611b47565b90506106b16001600160a01b038c167f000000000000000000000000000000000000000000000000000000000000000083611017565b60007f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031663f7d3b58b84338f868f8d8d604051602001610715939291909283526001600160a01b03919091166020830152604082015260600190565b6040516020818303038152906040526040518663ffffffff1660e01b8152600401610744959493929190611b69565b6020604051808303816000875af1158015610763573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906107879190611bea565b90506107be6001600160a01b038d167f00000000000000000000000000000000000000000000000000000000000000006000611017565b8086846001600160a01b03167f3ce24c6eab720bcebe9baf9d21eee3175218126f896eb40e25675b054f19a40f876040516107fb91815260200190565b60405180910390a4505050505050505050505050565b336001600160a01b037f0000000000000000000000000000000000000000000000000000000000000000161461085c5760405163179a2eb160e01b815233600482015260240161039e565b6000808061086d60e0850185611c03565b81019061087a9190611c4a565b91945092509050600060646108af7f000000000000000000000000000000000000000000000000000000000000000086611b28565b6108b99190611b47565b90506108cb60e0860160c08701611c82565b15610909576109046108e36040870160208801611718565b826108f46080890160608a01611718565b6001600160a01b03169190611094565b61091e565b61091e83826108f46080890160608a01611718565b85826109306040880160208901611718565b6001600160a01b03167f5346d9dd24f7f5e01b23ca4dada136d909acecf7ff9e4ed41474140d5d1319f661096a60e08a0160c08b01611c82565b604051901515815260200160405180910390a4505050505050565b6001600160a01b03861660009081526002602052604090205460ff166109c95760405163f602627d60e01b81526001600160a01b038716600482015260240161039e565b6001600160a01b03851660009081526002602052604090205460ff16610a0d5760405163f602627d60e01b81526001600160a01b038616600482015260240161039e565b846001600160a01b0316866001600160a01b031603610a3f57604051631d2792fb60e31b815260040160405180910390fd5b6703782dace9d90000821115610a6b576040516305bf279d60e41b81526004810183905260240161039e565b831580610a76575082155b15610a945760405163abc5ee6f60e01b815260040160405180910390fd5b6001600160a01b038116610abb57604051631feef77d60e01b815260040160405180910390fd5b60015460408051868152602081018690529081018490526001600160a01b03838116606083015280881691908916907ff4650f30e27746417929b97bf256a6022b15957ffef5971ddbe48867d9e01d459060800160405180910390a460018054906000610b2783611c9f565b90915550610b4290506001600160a01b03871633308761110c565b505050505050565b6000610b5b8c8c8c8c8c8c8c610e44565b90506703782dace9d90000841115610b89576040516305bf279d60e41b81526004810185905260240161039e565b6000818152600360205260408120541215610bba57604051635c8aa24760e11b81526004810182905260240161039e565b6000818152600360205260408120541315610beb576040516304daa62560e21b81526004810182905260240161039e565b610bf88582868686611196565b85856001600160a01b03167f6ab91dbc42f726b630639350395426be048c50255f12e82d28e2dffac417459386604051610c3491815260200190565b60405180910390a3505050505050505050505050565b6000610c5b88888888888888610e44565b6000818152600360205260408120549192508113610c8f57604051635c8aa24760e11b81526004810183905260240161039e565b7f0000000000000000000000000000000000000000000000000000000000000000610cba8243611af5565b1015610d2257600082815260036020526040812054610cd99043611af5565b610d03907f0000000000000000000000000000000000000000000000000000000000000000611af5565b9050806040516325797e0360e11b815260040161039e91815260200190565b60008281526004602081815260408084208054600384529185208590559290915281546001600160a01b0319169091556001600160a01b0316906064610d887f000000000000000000000000000000000000000000000000000000000000000082611af5565b610d92908b611b28565b610d9c9190611b47565b9050610db26001600160a01b038c168383611094565b84826001600160a01b03167f32b1eeadbe2d36ad64238ef29d8064aedff6d8150cf1f0c4d6617bae1c00d92685604051610dee91815260200190565b60405180910390a35050505050505050505050565b6000610e148d8d8d8d8d8d8d610e44565b9050610e238582868686611196565b610e358d8d8d8d888d8d888e33610eb2565b50505050505050505050505050565b604080516bffffffffffffffffffffffff196060998a1b8116602080840191909152988a1b81166034830152604882019790975260688101959095526088850193909352951b90921660a882015260bc808201949094528151808203909401845260dc019052815191012090565b6000838152600360205260408120541215610ee357604051635c8aa24760e11b81526004810184905260240161039e565b6000838152600360205260408120541315610f14576040516304daa62560e21b81526004810184905260240161039e565b86821015610f355760405163a53754a760e01b815260040160405180910390fd5b6000838152600360209081526040808320439055600482529182902080546001600160a01b0319166001600160a01b0385169081179091558251898152918201859052869290917f942417ccf4f356e8d909c054f8a8147622647605cbeafd9c63b4fc3cc1dd2a53910160405180910390a3610fbc6001600160a01b038a1682878561110c565b60006064610fea7f00000000000000000000000000000000000000000000000000000000000000008b611b28565b610ff49190611b47565b905061100a6001600160a01b038c168383611094565b5050505050505050505050565b600060405163095ea7b360e01b8152836004820152826024820152602060006044836000895af13d15601f3d116001600051141617169150508061108e5760405162461bcd60e51b815260206004820152600e60248201526d1054141493d59157d1905253115160921b604482015260640161039e565b50505050565b600060405163a9059cbb60e01b8152836004820152826024820152602060006044836000895af13d15601f3d116001600051141617169150508061108e5760405162461bcd60e51b815260206004820152600f60248201526e1514905394d1915497d19052531151608a1b604482015260640161039e565b60006040516323b872dd60e01b81528460048201528360248201528260448201526020600060648360008a5af13d15601f3d116001600051141617169150508061118f5760405162461bcd60e51b81526020600482015260146024820152731514905394d1915497d19493d357d1905253115160621b604482015260640161039e565b5050505050565b6703782dace9d900008311156111c2576040516305bf279d60e41b81526004810184905260240161039e565b60008481526003602052604081205412156111f357604051635c8aa24760e11b81526004810185905260240161039e565b6000848152600360205260408120541315611224576040516304daa62560e21b81526004810185905260240161039e565b604080517f582b2ba4cf2b931b2e1a054db15a958a1d2222e9e884ffc3c15f79da7d0177ba6020808301919091528183018790526060808301879052835180840390910181526080830184528051908201207f19457468657265756d205369676e6564204d6573736167653a0a33320000000060a084015260bc8084018290528451808503909101815260dc909301909352815191012060006112fd8286868080601f01602080910402602001604051908101604052809392919081815260200183838082843760009201919091525061133b92505050565b9050876001600160a01b0316816001600160a01b031614611331576040516324a0dbd760e21b815260040160405180910390fd5b5050505050505050565b600080600061134a858561135f565b91509150611357816113cd565b509392505050565b60008082516041036113955760208301516040840151606085015160001a61138987828585611586565b945094505050506113c6565b82516040036113be57602083015160408401516113b3868383611673565b9350935050506113c6565b506000905060025b9250929050565b60008160048111156113e1576113e1611cb8565b036113e95750565b60018160048111156113fd576113fd611cb8565b0361144a5760405162461bcd60e51b815260206004820152601860248201527f45434453413a20696e76616c6964207369676e61747572650000000000000000604482015260640161039e565b600281600481111561145e5761145e611cb8565b036114ab5760405162461bcd60e51b815260206004820152601f60248201527f45434453413a20696e76616c6964207369676e6174757265206c656e67746800604482015260640161039e565b60038160048111156114bf576114bf611cb8565b036115175760405162461bcd60e51b815260206004820152602260248201527f45434453413a20696e76616c6964207369676e6174757265202773272076616c604482015261756560f01b606482015260840161039e565b600481600481111561152b5761152b611cb8565b036115835760405162461bcd60e51b815260206004820152602260248201527f45434453413a20696e76616c6964207369676e6174757265202776272076616c604482015261756560f01b606482015260840161039e565b50565b6000807f7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a08311156115bd575060009050600361166a565b8460ff16601b141580156115d557508460ff16601c14155b156115e6575060009050600461166a565b6040805160008082526020820180845289905260ff881692820192909252606081018690526080810185905260019060a0016020604051602081039080840390855afa15801561163a573d6000803e3d6000fd5b5050604051601f1901519150506001600160a01b0381166116635760006001925092505061166a565b9150600090505b94509492505050565b6000806001600160ff1b0383168161169060ff86901c601b611cce565b905061169e87828885611586565b935093505050935093915050565b6001600160a01b038116811461158357600080fd5b80356116cc816116ac565b919050565b801515811461158357600080fd5b600080604083850312156116f257600080fd5b82356116fd816116ac565b9150602083013561170d816116d1565b809150509250929050565b60006020828403121561172a57600080fd5b8135611735816116ac565b9392505050565b600080600080600080600080610100898b03121561175957600080fd5b8835611764816116ac565b97506020890135611774816116ac565b965060408901359550606089013594506080890135935060a0890135611799816116ac565b979a969950949793969295929450505060c08201359160e0013590565b600080600080600080600060e0888a0312156117d157600080fd5b87356117dc816116ac565b965060208801356117ec816116ac565b955060408801359450606088013593506080880135925060a0880135611811816116ac565b8092505060c0880135905092959891949750929550565b6000806040838503121561183b57600080fd5b82359150602083013567ffffffffffffffff81111561185957600080fd5b8301610100818603121561170d57600080fd5b60006020828403121561187e57600080fd5b5035919050565b60008060008060008060c0878903121561189e57600080fd5b86356118a9816116ac565b955060208701356118b9816116ac565b945060408701359350606087013592506080870135915060a08701356118de816116ac565b809150509295509295509295565b60008083601f8401126118fe57600080fd5b50813567ffffffffffffffff81111561191657600080fd5b6020830191508360208285010111156113c657600080fd5b60008060008060008060008060008060006101408c8e03121561195057600080fd5b8b3561195b816116ac565b9a5060208c013561196b816116ac565b995060408c0135985060608c0135975060808c0135965060a08c0135611990816116ac565b955060c08c0135945060e08c01356119a7816116ac565b93506101008c013592506101208c013567ffffffffffffffff8111156119cc57600080fd5b6119d88e828f016118ec565b915080935050809150509295989b509295989b9093969950565b6000806000806000806000806000806000806101608d8f031215611a1557600080fd5b611a1f8d356116ac565b8c359b50611a3060208e01356116ac565b60208d01359a5060408d0135995060608d0135985060808d01359750611a5860a08e016116c1565b965060c08d0135955060e08d01359450611a756101008e016116c1565b93506101208d0135925067ffffffffffffffff6101408e01351115611a9957600080fd5b611aaa8e6101408f01358f016118ec565b81935080925050509295989b509295989b509295989b565b600060208284031215611ad457600080fd5b8151611735816116d1565b634e487b7160e01b600052601160045260246000fd5b600082821015611b0757611b07611adf565b500390565b6000600160ff1b8201611b2157611b21611adf565b5060000390565b6000816000190483118215151615611b4257611b42611adf565b500290565b600082611b6457634e487b7160e01b600052601260045260246000fd5b500490565b600060018060a01b038088168352602081881681850152818716604085015285606085015260a06080850152845191508160a085015260005b82811015611bbe5785810182015185820160c001528101611ba2565b82811115611bd057600060c084870101525b5050601f01601f19169190910160c0019695505050505050565b600060208284031215611bfc57600080fd5b5051919050565b6000808335601e19843603018112611c1a57600080fd5b83018035915067ffffffffffffffff821115611c3557600080fd5b6020019150368190038213156113c657600080fd5b600080600060608486031215611c5f57600080fd5b833592506020840135611c71816116ac565b929592945050506040919091013590565b600060208284031215611c9457600080fd5b8135611735816116d1565b600060018201611cb157611cb1611adf565b5060010190565b634e487b7160e01b600052602160045260246000fd5b60008219821115611ce157611ce1611adf565b50019056fea2646970667358221220d4b04807a9b92af316f64575d8e0c355adb8979067c87ce0ab86bdfe7a5f7c6964736f6c634300080f0033" . parse () . expect ("invalid bytecode")
         });
     pub struct BookSingleChain<M>(ethers::contract::Contract<M>);
     impl<M> Clone for BookSingleChain<M> {
@@ -94,23 +95,33 @@ pub mod book_single_chain {
             let deployer = ethers::contract::ContractDeployer::new(deployer);
             Ok(deployer)
         }
-        #[doc = "Calls the contract's `disputeTrade` (0x2b0cf653) function"]
+        #[doc = "Calls the contract's `disputeBondPct` (0x391fe4e2) function"]
+        pub fn dispute_bond_pct(
+            &self,
+        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::U256> {
+            self.0
+                .method_hash([57, 31, 228, 226], ())
+                .expect("method not found (this should never happen)")
+        }
+        #[doc = "Calls the contract's `disputeTrade` (0x69cf50c1) function"]
         pub fn dispute_trade(
             &self,
             token_in: ethers::core::types::Address,
             token_out: ethers::core::types::Address,
             amount_in: ethers::core::types::U256,
+            min_amount_out: ethers::core::types::U256,
             fee_pct: ethers::core::types::U256,
             recipient: ethers::core::types::Address,
             trade_index: ethers::core::types::U256,
         ) -> ethers::contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash(
-                    [43, 12, 246, 83],
+                    [105, 207, 80, 193],
                     (
                         token_in,
                         token_out,
                         amount_in,
+                        min_amount_out,
                         fee_pct,
                         recipient,
                         trade_index,
@@ -118,12 +129,13 @@ pub mod book_single_chain {
                 )
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `fillTrade` (0xec4cd7db) function"]
+        #[doc = "Calls the contract's `fillTrade` (0x1655b323) function"]
         pub fn fill_trade(
             &self,
             token_in: ethers::core::types::Address,
             token_out: ethers::core::types::Address,
             amount_in: ethers::core::types::U256,
+            min_amount_out: ethers::core::types::U256,
             fee_pct: ethers::core::types::U256,
             recipient: ethers::core::types::Address,
             trade_index: ethers::core::types::U256,
@@ -131,11 +143,12 @@ pub mod book_single_chain {
         ) -> ethers::contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash(
-                    [236, 76, 215, 219],
+                    [22, 85, 179, 35],
                     (
                         token_in,
                         token_out,
                         amount_in,
+                        min_amount_out,
                         fee_pct,
                         recipient,
                         trade_index,
@@ -144,12 +157,13 @@ pub mod book_single_chain {
                 )
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `fillTradeWithUpdatedFee` (0x7d9dd85d) function"]
+        #[doc = "Calls the contract's `fillTradeWithUpdatedFee` (0xee35a4f9) function"]
         pub fn fill_trade_with_updated_fee(
             &self,
             token_in: ethers::core::types::Address,
             token_out: ethers::core::types::Address,
             amount_in: ethers::core::types::U256,
+            min_amount_out: ethers::core::types::U256,
             fee_pct: ethers::core::types::U256,
             recipient: ethers::core::types::Address,
             trade_index: ethers::core::types::U256,
@@ -160,11 +174,12 @@ pub mod book_single_chain {
         ) -> ethers::contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash(
-                    [125, 157, 216, 93],
+                    [238, 53, 164, 249],
                     (
                         token_in,
                         token_out,
                         amount_in,
+                        min_amount_out,
                         fee_pct,
                         recipient,
                         trade_index,
@@ -176,20 +191,11 @@ pub mod book_single_chain {
                 )
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `filledAmount` (0x0b20b7bc) function"]
-        pub fn filled_amount(
-            &self,
-            p0: [u8; 32],
-        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::U256> {
-            self.0
-                .method_hash([11, 32, 183, 188], p0)
-                .expect("method not found (this should never happen)")
-        }
         #[doc = "Calls the contract's `filledAtBlock` (0x9501325f) function"]
         pub fn filled_at_block(
             &self,
             p0: [u8; 32],
-        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::U256> {
+        ) -> ethers::contract::builders::ContractCall<M, I256> {
             self.0
                 .method_hash([149, 1, 50, 95], p0)
                 .expect("method not found (this should never happen)")
@@ -203,20 +209,22 @@ pub mod book_single_chain {
                 .method_hash([215, 14, 61, 253], p0)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `maxFeePct` (0xfc711c3a) function"]
-        pub fn max_fee_pct(
-            &self,
-        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::U256> {
-            self.0
-                .method_hash([252, 113, 28, 58], ())
-                .expect("method not found (this should never happen)")
-        }
         #[doc = "Calls the contract's `numberOfTrades` (0xcd805d5e) function"]
         pub fn number_of_trades(
             &self,
         ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::U256> {
             self.0
                 .method_hash([205, 128, 93, 94], ())
+                .expect("method not found (this should never happen)")
+        }
+        #[doc = "Calls the contract's `onPriceSettled` (0x734d1627) function"]
+        pub fn on_price_settled(
+            &self,
+            id: [u8; 32],
+            request: Request,
+        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            self.0
+                .method_hash([115, 77, 22, 39], (id, request))
                 .expect("method not found (this should never happen)")
         }
         #[doc = "Calls the contract's `oracle` (0x7dc0d1d0) function"]
@@ -235,19 +243,35 @@ pub mod book_single_chain {
                 .method_hash([141, 165, 203, 91], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `requestTrade` (0x9170c05b) function"]
+        #[doc = "Calls the contract's `relayerRefundPct` (0x53906a59) function"]
+        pub fn relayer_refund_pct(
+            &self,
+        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::U256> {
+            self.0
+                .method_hash([83, 144, 106, 89], ())
+                .expect("method not found (this should never happen)")
+        }
+        #[doc = "Calls the contract's `requestTrade` (0xad3e7625) function"]
         pub fn request_trade(
             &self,
             token_in: ethers::core::types::Address,
             token_out: ethers::core::types::Address,
             amount_in: ethers::core::types::U256,
+            min_amount_out: ethers::core::types::U256,
             fee_pct: ethers::core::types::U256,
             recipient: ethers::core::types::Address,
         ) -> ethers::contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash(
-                    [145, 112, 192, 91],
-                    (token_in, token_out, amount_in, fee_pct, recipient),
+                    [173, 62, 118, 37],
+                    (
+                        token_in,
+                        token_out,
+                        amount_in,
+                        min_amount_out,
+                        fee_pct,
+                        recipient,
+                    ),
                 )
                 .expect("method not found (this should never happen)")
         }
@@ -259,15 +283,6 @@ pub mod book_single_chain {
                 .method_hash([15, 240, 192, 14], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `setMaxFeePct` (0xbd20a859) function"]
-        pub fn set_max_fee_pct(
-            &self,
-            new_max_fee_pct: ethers::core::types::U256,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
-            self.0
-                .method_hash([189, 32, 168, 89], new_max_fee_pct)
-                .expect("method not found (this should never happen)")
-        }
         #[doc = "Calls the contract's `setOwner` (0x13af4035) function"]
         pub fn set_owner(
             &self,
@@ -277,32 +292,25 @@ pub mod book_single_chain {
                 .method_hash([19, 175, 64, 53], new_owner)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `setSafeBlockThreshold` (0x2613f307) function"]
-        pub fn set_safe_block_threshold(
-            &self,
-            new_safe_block_threshold: ethers::core::types::U256,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
-            self.0
-                .method_hash([38, 19, 243, 7], new_safe_block_threshold)
-                .expect("method not found (this should never happen)")
-        }
-        #[doc = "Calls the contract's `settleTrade` (0xe02c0279) function"]
+        #[doc = "Calls the contract's `settleTrade` (0xcb7b1ec8) function"]
         pub fn settle_trade(
             &self,
             token_in: ethers::core::types::Address,
             token_out: ethers::core::types::Address,
             amount_in: ethers::core::types::U256,
+            min_amount_out: ethers::core::types::U256,
             fee_pct: ethers::core::types::U256,
             recipient: ethers::core::types::Address,
             trade_index: ethers::core::types::U256,
         ) -> ethers::contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash(
-                    [224, 44, 2, 121],
+                    [203, 123, 30, 200],
                     (
                         token_in,
                         token_out,
                         amount_in,
+                        min_amount_out,
                         fee_pct,
                         recipient,
                         trade_index,
@@ -310,12 +318,21 @@ pub mod book_single_chain {
                 )
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `updateFeeForTrade` (0xbd4ac997) function"]
+        #[doc = "Calls the contract's `tradeRebatePct` (0xc16402bb) function"]
+        pub fn trade_rebate_pct(
+            &self,
+        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::U256> {
+            self.0
+                .method_hash([193, 100, 2, 187], ())
+                .expect("method not found (this should never happen)")
+        }
+        #[doc = "Calls the contract's `updateFeeForTrade` (0xc3f6f431) function"]
         pub fn update_fee_for_trade(
             &self,
             token_in: ethers::core::types::Address,
             token_out: ethers::core::types::Address,
             amount_in: ethers::core::types::U256,
+            min_amount_out: ethers::core::types::U256,
             fee_pct: ethers::core::types::U256,
             recipient: ethers::core::types::Address,
             trade_index: ethers::core::types::U256,
@@ -325,11 +342,12 @@ pub mod book_single_chain {
         ) -> ethers::contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash(
-                    [189, 74, 201, 151],
+                    [195, 246, 244, 49],
                     (
                         token_in,
                         token_out,
                         amount_in,
+                        min_amount_out,
                         fee_pct,
                         recipient,
                         trade_index,
@@ -359,10 +377,10 @@ pub mod book_single_chain {
                 .method_hash([218, 249, 194, 16], p0)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Gets the contract's `MaxFeePctChanged` event"]
-        pub fn max_fee_pct_changed_filter(
+        #[doc = "Gets the contract's `FeeCombinationSet` event"]
+        pub fn fee_combination_set_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, MaxFeePctChangedFilter> {
+        ) -> ethers::contract::builders::Event<M, FeeCombinationSetFilter> {
             self.0.event()
         }
         #[doc = "Gets the contract's `OwnerUpdated` event"]
@@ -371,16 +389,22 @@ pub mod book_single_chain {
         ) -> ethers::contract::builders::Event<M, OwnerUpdatedFilter> {
             self.0.event()
         }
-        #[doc = "Gets the contract's `SafeBlockThresholdChanged` event"]
-        pub fn safe_block_threshold_changed_filter(
+        #[doc = "Gets the contract's `SafeBlockThresholdSet` event"]
+        pub fn safe_block_threshold_set_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, SafeBlockThresholdChangedFilter> {
+        ) -> ethers::contract::builders::Event<M, SafeBlockThresholdSetFilter> {
             self.0.event()
         }
         #[doc = "Gets the contract's `TokenWhitelisted` event"]
         pub fn token_whitelisted_filter(
             &self,
         ) -> ethers::contract::builders::Event<M, TokenWhitelistedFilter> {
+            self.0.event()
+        }
+        #[doc = "Gets the contract's `TradeDisputeSettled` event"]
+        pub fn trade_dispute_settled_filter(
+            &self,
+        ) -> ethers::contract::builders::Event<M, TradeDisputeSettledFilter> {
             self.0.event()
         }
         #[doc = "Gets the contract's `TradeDisputed` event"]
@@ -432,9 +456,14 @@ pub mod book_single_chain {
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
     )]
-    #[ethevent(name = "MaxFeePctChanged", abi = "MaxFeePctChanged(uint256)")]
-    pub struct MaxFeePctChangedFilter {
-        pub new_max_fee_pct: ethers::core::types::U256,
+    #[ethevent(
+        name = "FeeCombinationSet",
+        abi = "FeeCombinationSet(uint256,uint256,uint256)"
+    )]
+    pub struct FeeCombinationSetFilter {
+        pub dispute_bond_pct: ethers::core::types::U256,
+        pub trade_rebate_pct: ethers::core::types::U256,
+        pub relayer_refund_pct: ethers::core::types::U256,
     }
     #[derive(
         Clone,
@@ -461,11 +490,8 @@ pub mod book_single_chain {
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
     )]
-    #[ethevent(
-        name = "SafeBlockThresholdChanged",
-        abi = "SafeBlockThresholdChanged(uint256)"
-    )]
-    pub struct SafeBlockThresholdChangedFilter {
+    #[ethevent(name = "SafeBlockThresholdSet", abi = "SafeBlockThresholdSet(uint256)")]
+    pub struct SafeBlockThresholdSetFilter {
         pub new_safe_block_threshold: ethers::core::types::U256,
     }
     #[derive(
@@ -493,8 +519,30 @@ pub mod book_single_chain {
         ethers :: contract :: EthDisplay,
     )]
     #[ethevent(
+        name = "TradeDisputeSettled",
+        abi = "TradeDisputeSettled(address,uint256,bytes32,bool)"
+    )]
+    pub struct TradeDisputeSettledFilter {
+        #[ethevent(indexed)]
+        pub relayer: ethers::core::types::Address,
+        #[ethevent(indexed)]
+        pub trade_index: ethers::core::types::U256,
+        #[ethevent(indexed)]
+        pub dispute_id: [u8; 32],
+        pub answer: bool,
+    }
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthEvent,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethevent(
         name = "TradeDisputed",
-        abi = "TradeDisputed(address,uint256,bytes32,uint256,uint256)"
+        abi = "TradeDisputed(address,uint256,bytes32,uint256)"
     )]
     pub struct TradeDisputedFilter {
         #[ethevent(indexed)]
@@ -503,8 +551,7 @@ pub mod book_single_chain {
         pub trade_index: ethers::core::types::U256,
         #[ethevent(indexed)]
         pub dispute_id: [u8; 32],
-        pub filled_amount: ethers::core::types::U256,
-        pub fee_pct: ethers::core::types::U256,
+        pub filled_at_block: ethers::core::types::U256,
     }
     #[derive(
         Clone,
@@ -538,7 +585,7 @@ pub mod book_single_chain {
     )]
     #[ethevent(
         name = "TradeRequested",
-        abi = "TradeRequested(address,address,uint256,uint256,address,uint256)"
+        abi = "TradeRequested(address,address,uint256,uint256,uint256,address,uint256)"
     )]
     pub struct TradeRequestedFilter {
         #[ethevent(indexed)]
@@ -546,6 +593,7 @@ pub mod book_single_chain {
         #[ethevent(indexed)]
         pub token_out: ethers::core::types::Address,
         pub amount_in: ethers::core::types::U256,
+        pub min_amount_out: ethers::core::types::U256,
         pub fee_pct: ethers::core::types::U256,
         pub to: ethers::core::types::Address,
         #[ethevent(indexed)]
@@ -560,18 +608,13 @@ pub mod book_single_chain {
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
     )]
-    #[ethevent(
-        name = "TradeSettled",
-        abi = "TradeSettled(address,uint256,uint256,uint256)"
-    )]
+    #[ethevent(name = "TradeSettled", abi = "TradeSettled(address,uint256,uint256)")]
     pub struct TradeSettledFilter {
         #[ethevent(indexed)]
         pub relayer: ethers::core::types::Address,
         #[ethevent(indexed)]
         pub trade_index: ethers::core::types::U256,
-        #[ethevent(indexed)]
-        pub filled_amount: ethers::core::types::U256,
-        pub fee_pct: ethers::core::types::U256,
+        pub filled_at_block: ethers::core::types::U256,
     }
     #[derive(
         Clone,
@@ -595,10 +638,11 @@ pub mod book_single_chain {
     }
     #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
     pub enum BookSingleChainEvents {
-        MaxFeePctChangedFilter(MaxFeePctChangedFilter),
+        FeeCombinationSetFilter(FeeCombinationSetFilter),
         OwnerUpdatedFilter(OwnerUpdatedFilter),
-        SafeBlockThresholdChangedFilter(SafeBlockThresholdChangedFilter),
+        SafeBlockThresholdSetFilter(SafeBlockThresholdSetFilter),
         TokenWhitelistedFilter(TokenWhitelistedFilter),
+        TradeDisputeSettledFilter(TradeDisputeSettledFilter),
         TradeDisputedFilter(TradeDisputedFilter),
         TradeFilledFilter(TradeFilledFilter),
         TradeRequestedFilter(TradeRequestedFilter),
@@ -610,19 +654,20 @@ pub mod book_single_chain {
         where
             Self: Sized,
         {
-            if let Ok(decoded) = MaxFeePctChangedFilter::decode_log(log) {
-                return Ok(BookSingleChainEvents::MaxFeePctChangedFilter(decoded));
+            if let Ok(decoded) = FeeCombinationSetFilter::decode_log(log) {
+                return Ok(BookSingleChainEvents::FeeCombinationSetFilter(decoded));
             }
             if let Ok(decoded) = OwnerUpdatedFilter::decode_log(log) {
                 return Ok(BookSingleChainEvents::OwnerUpdatedFilter(decoded));
             }
-            if let Ok(decoded) = SafeBlockThresholdChangedFilter::decode_log(log) {
-                return Ok(BookSingleChainEvents::SafeBlockThresholdChangedFilter(
-                    decoded,
-                ));
+            if let Ok(decoded) = SafeBlockThresholdSetFilter::decode_log(log) {
+                return Ok(BookSingleChainEvents::SafeBlockThresholdSetFilter(decoded));
             }
             if let Ok(decoded) = TokenWhitelistedFilter::decode_log(log) {
                 return Ok(BookSingleChainEvents::TokenWhitelistedFilter(decoded));
+            }
+            if let Ok(decoded) = TradeDisputeSettledFilter::decode_log(log) {
+                return Ok(BookSingleChainEvents::TradeDisputeSettledFilter(decoded));
             }
             if let Ok(decoded) = TradeDisputedFilter::decode_log(log) {
                 return Ok(BookSingleChainEvents::TradeDisputedFilter(decoded));
@@ -645,10 +690,11 @@ pub mod book_single_chain {
     impl ::std::fmt::Display for BookSingleChainEvents {
         fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
             match self {
-                BookSingleChainEvents::MaxFeePctChangedFilter(element) => element.fmt(f),
+                BookSingleChainEvents::FeeCombinationSetFilter(element) => element.fmt(f),
                 BookSingleChainEvents::OwnerUpdatedFilter(element) => element.fmt(f),
-                BookSingleChainEvents::SafeBlockThresholdChangedFilter(element) => element.fmt(f),
+                BookSingleChainEvents::SafeBlockThresholdSetFilter(element) => element.fmt(f),
                 BookSingleChainEvents::TokenWhitelistedFilter(element) => element.fmt(f),
+                BookSingleChainEvents::TradeDisputeSettledFilter(element) => element.fmt(f),
                 BookSingleChainEvents::TradeDisputedFilter(element) => element.fmt(f),
                 BookSingleChainEvents::TradeFilledFilter(element) => element.fmt(f),
                 BookSingleChainEvents::TradeRequestedFilter(element) => element.fmt(f),
@@ -657,7 +703,19 @@ pub mod book_single_chain {
             }
         }
     }
-    #[doc = "Container type for all input parameters for the `disputeTrade` function with signature `disputeTrade(address,address,uint256,uint256,address,uint256)` and selector `[43, 12, 246, 83]`"]
+    #[doc = "Container type for all input parameters for the `disputeBondPct` function with signature `disputeBondPct()` and selector `[57, 31, 228, 226]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethcall(name = "disputeBondPct", abi = "disputeBondPct()")]
+    pub struct DisputeBondPctCall;
+    #[doc = "Container type for all input parameters for the `disputeTrade` function with signature `disputeTrade(address,address,uint256,uint256,uint256,address,uint256)` and selector `[105, 207, 80, 193]`"]
     #[derive(
         Clone,
         Debug,
@@ -669,17 +727,18 @@ pub mod book_single_chain {
     )]
     #[ethcall(
         name = "disputeTrade",
-        abi = "disputeTrade(address,address,uint256,uint256,address,uint256)"
+        abi = "disputeTrade(address,address,uint256,uint256,uint256,address,uint256)"
     )]
     pub struct DisputeTradeCall {
         pub token_in: ethers::core::types::Address,
         pub token_out: ethers::core::types::Address,
         pub amount_in: ethers::core::types::U256,
+        pub min_amount_out: ethers::core::types::U256,
         pub fee_pct: ethers::core::types::U256,
         pub recipient: ethers::core::types::Address,
         pub trade_index: ethers::core::types::U256,
     }
-    #[doc = "Container type for all input parameters for the `fillTrade` function with signature `fillTrade(address,address,uint256,uint256,address,uint256,uint256)` and selector `[236, 76, 215, 219]`"]
+    #[doc = "Container type for all input parameters for the `fillTrade` function with signature `fillTrade(address,address,uint256,uint256,uint256,address,uint256,uint256)` and selector `[22, 85, 179, 35]`"]
     #[derive(
         Clone,
         Debug,
@@ -691,18 +750,19 @@ pub mod book_single_chain {
     )]
     #[ethcall(
         name = "fillTrade",
-        abi = "fillTrade(address,address,uint256,uint256,address,uint256,uint256)"
+        abi = "fillTrade(address,address,uint256,uint256,uint256,address,uint256,uint256)"
     )]
     pub struct FillTradeCall {
         pub token_in: ethers::core::types::Address,
         pub token_out: ethers::core::types::Address,
         pub amount_in: ethers::core::types::U256,
+        pub min_amount_out: ethers::core::types::U256,
         pub fee_pct: ethers::core::types::U256,
         pub recipient: ethers::core::types::Address,
         pub trade_index: ethers::core::types::U256,
         pub amount_to_send: ethers::core::types::U256,
     }
-    #[doc = "Container type for all input parameters for the `fillTradeWithUpdatedFee` function with signature `fillTradeWithUpdatedFee(address,address,uint256,uint256,address,uint256,uint256,address,uint256,bytes)` and selector `[125, 157, 216, 93]`"]
+    #[doc = "Container type for all input parameters for the `fillTradeWithUpdatedFee` function with signature `fillTradeWithUpdatedFee(address,address,uint256,uint256,uint256,address,uint256,uint256,address,uint256,bytes)` and selector `[238, 53, 164, 249]`"]
     #[derive(
         Clone,
         Debug,
@@ -714,12 +774,13 @@ pub mod book_single_chain {
     )]
     #[ethcall(
         name = "fillTradeWithUpdatedFee",
-        abi = "fillTradeWithUpdatedFee(address,address,uint256,uint256,address,uint256,uint256,address,uint256,bytes)"
+        abi = "fillTradeWithUpdatedFee(address,address,uint256,uint256,uint256,address,uint256,uint256,address,uint256,bytes)"
     )]
     pub struct FillTradeWithUpdatedFeeCall {
         pub token_in: ethers::core::types::Address,
         pub token_out: ethers::core::types::Address,
         pub amount_in: ethers::core::types::U256,
+        pub min_amount_out: ethers::core::types::U256,
         pub fee_pct: ethers::core::types::U256,
         pub recipient: ethers::core::types::Address,
         pub trade_index: ethers::core::types::U256,
@@ -728,18 +789,6 @@ pub mod book_single_chain {
         pub new_fee_pct: ethers::core::types::U256,
         pub trader_signature: ethers::core::types::Bytes,
     }
-    #[doc = "Container type for all input parameters for the `filledAmount` function with signature `filledAmount(bytes32)` and selector `[11, 32, 183, 188]`"]
-    #[derive(
-        Clone,
-        Debug,
-        Default,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-    )]
-    #[ethcall(name = "filledAmount", abi = "filledAmount(bytes32)")]
-    pub struct FilledAmountCall(pub [u8; 32]);
     #[doc = "Container type for all input parameters for the `filledAtBlock` function with signature `filledAtBlock(bytes32)` and selector `[149, 1, 50, 95]`"]
     #[derive(
         Clone,
@@ -764,18 +813,6 @@ pub mod book_single_chain {
     )]
     #[ethcall(name = "filledBy", abi = "filledBy(bytes32)")]
     pub struct FilledByCall(pub [u8; 32]);
-    #[doc = "Container type for all input parameters for the `maxFeePct` function with signature `maxFeePct()` and selector `[252, 113, 28, 58]`"]
-    #[derive(
-        Clone,
-        Debug,
-        Default,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-    )]
-    #[ethcall(name = "maxFeePct", abi = "maxFeePct()")]
-    pub struct MaxFeePctCall;
     #[doc = "Container type for all input parameters for the `numberOfTrades` function with signature `numberOfTrades()` and selector `[205, 128, 93, 94]`"]
     #[derive(
         Clone,
@@ -788,6 +825,24 @@ pub mod book_single_chain {
     )]
     #[ethcall(name = "numberOfTrades", abi = "numberOfTrades()")]
     pub struct NumberOfTradesCall;
+    #[doc = "Container type for all input parameters for the `onPriceSettled` function with signature `onPriceSettled(bytes32,(address,address,address,address,uint256,uint8,bool,bytes))` and selector `[115, 77, 22, 39]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethcall(
+        name = "onPriceSettled",
+        abi = "onPriceSettled(bytes32,(address,address,address,address,uint256,uint8,bool,bytes))"
+    )]
+    pub struct OnPriceSettledCall {
+        pub id: [u8; 32],
+        pub request: Request,
+    }
     #[doc = "Container type for all input parameters for the `oracle` function with signature `oracle()` and selector `[125, 192, 209, 208]`"]
     #[derive(
         Clone,
@@ -812,7 +867,19 @@ pub mod book_single_chain {
     )]
     #[ethcall(name = "owner", abi = "owner()")]
     pub struct OwnerCall;
-    #[doc = "Container type for all input parameters for the `requestTrade` function with signature `requestTrade(address,address,uint256,uint256,address)` and selector `[145, 112, 192, 91]`"]
+    #[doc = "Container type for all input parameters for the `relayerRefundPct` function with signature `relayerRefundPct()` and selector `[83, 144, 106, 89]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethcall(name = "relayerRefundPct", abi = "relayerRefundPct()")]
+    pub struct RelayerRefundPctCall;
+    #[doc = "Container type for all input parameters for the `requestTrade` function with signature `requestTrade(address,address,uint256,uint256,uint256,address)` and selector `[173, 62, 118, 37]`"]
     #[derive(
         Clone,
         Debug,
@@ -824,12 +891,13 @@ pub mod book_single_chain {
     )]
     #[ethcall(
         name = "requestTrade",
-        abi = "requestTrade(address,address,uint256,uint256,address)"
+        abi = "requestTrade(address,address,uint256,uint256,uint256,address)"
     )]
     pub struct RequestTradeCall {
         pub token_in: ethers::core::types::Address,
         pub token_out: ethers::core::types::Address,
         pub amount_in: ethers::core::types::U256,
+        pub min_amount_out: ethers::core::types::U256,
         pub fee_pct: ethers::core::types::U256,
         pub recipient: ethers::core::types::Address,
     }
@@ -845,20 +913,6 @@ pub mod book_single_chain {
     )]
     #[ethcall(name = "safeBlockThreshold", abi = "safeBlockThreshold()")]
     pub struct SafeBlockThresholdCall;
-    #[doc = "Container type for all input parameters for the `setMaxFeePct` function with signature `setMaxFeePct(uint256)` and selector `[189, 32, 168, 89]`"]
-    #[derive(
-        Clone,
-        Debug,
-        Default,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-    )]
-    #[ethcall(name = "setMaxFeePct", abi = "setMaxFeePct(uint256)")]
-    pub struct SetMaxFeePctCall {
-        pub new_max_fee_pct: ethers::core::types::U256,
-    }
     #[doc = "Container type for all input parameters for the `setOwner` function with signature `setOwner(address)` and selector `[19, 175, 64, 53]`"]
     #[derive(
         Clone,
@@ -873,21 +927,7 @@ pub mod book_single_chain {
     pub struct SetOwnerCall {
         pub new_owner: ethers::core::types::Address,
     }
-    #[doc = "Container type for all input parameters for the `setSafeBlockThreshold` function with signature `setSafeBlockThreshold(uint256)` and selector `[38, 19, 243, 7]`"]
-    #[derive(
-        Clone,
-        Debug,
-        Default,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-    )]
-    #[ethcall(name = "setSafeBlockThreshold", abi = "setSafeBlockThreshold(uint256)")]
-    pub struct SetSafeBlockThresholdCall {
-        pub new_safe_block_threshold: ethers::core::types::U256,
-    }
-    #[doc = "Container type for all input parameters for the `settleTrade` function with signature `settleTrade(address,address,uint256,uint256,address,uint256)` and selector `[224, 44, 2, 121]`"]
+    #[doc = "Container type for all input parameters for the `settleTrade` function with signature `settleTrade(address,address,uint256,uint256,uint256,address,uint256)` and selector `[203, 123, 30, 200]`"]
     #[derive(
         Clone,
         Debug,
@@ -899,17 +939,30 @@ pub mod book_single_chain {
     )]
     #[ethcall(
         name = "settleTrade",
-        abi = "settleTrade(address,address,uint256,uint256,address,uint256)"
+        abi = "settleTrade(address,address,uint256,uint256,uint256,address,uint256)"
     )]
     pub struct SettleTradeCall {
         pub token_in: ethers::core::types::Address,
         pub token_out: ethers::core::types::Address,
         pub amount_in: ethers::core::types::U256,
+        pub min_amount_out: ethers::core::types::U256,
         pub fee_pct: ethers::core::types::U256,
         pub recipient: ethers::core::types::Address,
         pub trade_index: ethers::core::types::U256,
     }
-    #[doc = "Container type for all input parameters for the `updateFeeForTrade` function with signature `updateFeeForTrade(address,address,uint256,uint256,address,uint256,address,uint256,bytes)` and selector `[189, 74, 201, 151]`"]
+    #[doc = "Container type for all input parameters for the `tradeRebatePct` function with signature `tradeRebatePct()` and selector `[193, 100, 2, 187]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethcall(name = "tradeRebatePct", abi = "tradeRebatePct()")]
+    pub struct TradeRebatePctCall;
+    #[doc = "Container type for all input parameters for the `updateFeeForTrade` function with signature `updateFeeForTrade(address,address,uint256,uint256,uint256,address,uint256,address,uint256,bytes)` and selector `[195, 246, 244, 49]`"]
     #[derive(
         Clone,
         Debug,
@@ -921,12 +974,13 @@ pub mod book_single_chain {
     )]
     #[ethcall(
         name = "updateFeeForTrade",
-        abi = "updateFeeForTrade(address,address,uint256,uint256,address,uint256,address,uint256,bytes)"
+        abi = "updateFeeForTrade(address,address,uint256,uint256,uint256,address,uint256,address,uint256,bytes)"
     )]
     pub struct UpdateFeeForTradeCall {
         pub token_in: ethers::core::types::Address,
         pub token_out: ethers::core::types::Address,
         pub amount_in: ethers::core::types::U256,
+        pub min_amount_out: ethers::core::types::U256,
         pub fee_pct: ethers::core::types::U256,
         pub recipient: ethers::core::types::Address,
         pub trade_index: ethers::core::types::U256,
@@ -963,28 +1017,33 @@ pub mod book_single_chain {
     pub struct WhitelistedTokensCall(pub ethers::core::types::Address);
     #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
     pub enum BookSingleChainCalls {
+        DisputeBondPct(DisputeBondPctCall),
         DisputeTrade(DisputeTradeCall),
         FillTrade(FillTradeCall),
         FillTradeWithUpdatedFee(FillTradeWithUpdatedFeeCall),
-        FilledAmount(FilledAmountCall),
         FilledAtBlock(FilledAtBlockCall),
         FilledBy(FilledByCall),
-        MaxFeePct(MaxFeePctCall),
         NumberOfTrades(NumberOfTradesCall),
+        OnPriceSettled(OnPriceSettledCall),
         Oracle(OracleCall),
         Owner(OwnerCall),
+        RelayerRefundPct(RelayerRefundPctCall),
         RequestTrade(RequestTradeCall),
         SafeBlockThreshold(SafeBlockThresholdCall),
-        SetMaxFeePct(SetMaxFeePctCall),
         SetOwner(SetOwnerCall),
-        SetSafeBlockThreshold(SetSafeBlockThresholdCall),
         SettleTrade(SettleTradeCall),
+        TradeRebatePct(TradeRebatePctCall),
         UpdateFeeForTrade(UpdateFeeForTradeCall),
         WhitelistToken(WhitelistTokenCall),
         WhitelistedTokens(WhitelistedTokensCall),
     }
     impl ethers::core::abi::AbiDecode for BookSingleChainCalls {
         fn decode(data: impl AsRef<[u8]>) -> Result<Self, ethers::core::abi::AbiError> {
+            if let Ok(decoded) =
+                <DisputeBondPctCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(BookSingleChainCalls::DisputeBondPct(decoded));
+            }
             if let Ok(decoded) =
                 <DisputeTradeCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
             {
@@ -1001,11 +1060,6 @@ pub mod book_single_chain {
                 return Ok(BookSingleChainCalls::FillTradeWithUpdatedFee(decoded));
             }
             if let Ok(decoded) =
-                <FilledAmountCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(BookSingleChainCalls::FilledAmount(decoded));
-            }
-            if let Ok(decoded) =
                 <FilledAtBlockCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
             {
                 return Ok(BookSingleChainCalls::FilledAtBlock(decoded));
@@ -1016,14 +1070,14 @@ pub mod book_single_chain {
                 return Ok(BookSingleChainCalls::FilledBy(decoded));
             }
             if let Ok(decoded) =
-                <MaxFeePctCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(BookSingleChainCalls::MaxFeePct(decoded));
-            }
-            if let Ok(decoded) =
                 <NumberOfTradesCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
             {
                 return Ok(BookSingleChainCalls::NumberOfTrades(decoded));
+            }
+            if let Ok(decoded) =
+                <OnPriceSettledCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(BookSingleChainCalls::OnPriceSettled(decoded));
             }
             if let Ok(decoded) = <OracleCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
             {
@@ -1032,6 +1086,11 @@ pub mod book_single_chain {
             if let Ok(decoded) = <OwnerCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
             {
                 return Ok(BookSingleChainCalls::Owner(decoded));
+            }
+            if let Ok(decoded) =
+                <RelayerRefundPctCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(BookSingleChainCalls::RelayerRefundPct(decoded));
             }
             if let Ok(decoded) =
                 <RequestTradeCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
@@ -1044,24 +1103,19 @@ pub mod book_single_chain {
                 return Ok(BookSingleChainCalls::SafeBlockThreshold(decoded));
             }
             if let Ok(decoded) =
-                <SetMaxFeePctCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(BookSingleChainCalls::SetMaxFeePct(decoded));
-            }
-            if let Ok(decoded) =
                 <SetOwnerCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
             {
                 return Ok(BookSingleChainCalls::SetOwner(decoded));
             }
             if let Ok(decoded) =
-                <SetSafeBlockThresholdCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(BookSingleChainCalls::SetSafeBlockThreshold(decoded));
-            }
-            if let Ok(decoded) =
                 <SettleTradeCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
             {
                 return Ok(BookSingleChainCalls::SettleTrade(decoded));
+            }
+            if let Ok(decoded) =
+                <TradeRebatePctCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(BookSingleChainCalls::TradeRebatePct(decoded));
             }
             if let Ok(decoded) =
                 <UpdateFeeForTradeCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
@@ -1084,22 +1138,22 @@ pub mod book_single_chain {
     impl ethers::core::abi::AbiEncode for BookSingleChainCalls {
         fn encode(self) -> Vec<u8> {
             match self {
+                BookSingleChainCalls::DisputeBondPct(element) => element.encode(),
                 BookSingleChainCalls::DisputeTrade(element) => element.encode(),
                 BookSingleChainCalls::FillTrade(element) => element.encode(),
                 BookSingleChainCalls::FillTradeWithUpdatedFee(element) => element.encode(),
-                BookSingleChainCalls::FilledAmount(element) => element.encode(),
                 BookSingleChainCalls::FilledAtBlock(element) => element.encode(),
                 BookSingleChainCalls::FilledBy(element) => element.encode(),
-                BookSingleChainCalls::MaxFeePct(element) => element.encode(),
                 BookSingleChainCalls::NumberOfTrades(element) => element.encode(),
+                BookSingleChainCalls::OnPriceSettled(element) => element.encode(),
                 BookSingleChainCalls::Oracle(element) => element.encode(),
                 BookSingleChainCalls::Owner(element) => element.encode(),
+                BookSingleChainCalls::RelayerRefundPct(element) => element.encode(),
                 BookSingleChainCalls::RequestTrade(element) => element.encode(),
                 BookSingleChainCalls::SafeBlockThreshold(element) => element.encode(),
-                BookSingleChainCalls::SetMaxFeePct(element) => element.encode(),
                 BookSingleChainCalls::SetOwner(element) => element.encode(),
-                BookSingleChainCalls::SetSafeBlockThreshold(element) => element.encode(),
                 BookSingleChainCalls::SettleTrade(element) => element.encode(),
+                BookSingleChainCalls::TradeRebatePct(element) => element.encode(),
                 BookSingleChainCalls::UpdateFeeForTrade(element) => element.encode(),
                 BookSingleChainCalls::WhitelistToken(element) => element.encode(),
                 BookSingleChainCalls::WhitelistedTokens(element) => element.encode(),
@@ -1109,26 +1163,31 @@ pub mod book_single_chain {
     impl ::std::fmt::Display for BookSingleChainCalls {
         fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
             match self {
+                BookSingleChainCalls::DisputeBondPct(element) => element.fmt(f),
                 BookSingleChainCalls::DisputeTrade(element) => element.fmt(f),
                 BookSingleChainCalls::FillTrade(element) => element.fmt(f),
                 BookSingleChainCalls::FillTradeWithUpdatedFee(element) => element.fmt(f),
-                BookSingleChainCalls::FilledAmount(element) => element.fmt(f),
                 BookSingleChainCalls::FilledAtBlock(element) => element.fmt(f),
                 BookSingleChainCalls::FilledBy(element) => element.fmt(f),
-                BookSingleChainCalls::MaxFeePct(element) => element.fmt(f),
                 BookSingleChainCalls::NumberOfTrades(element) => element.fmt(f),
+                BookSingleChainCalls::OnPriceSettled(element) => element.fmt(f),
                 BookSingleChainCalls::Oracle(element) => element.fmt(f),
                 BookSingleChainCalls::Owner(element) => element.fmt(f),
+                BookSingleChainCalls::RelayerRefundPct(element) => element.fmt(f),
                 BookSingleChainCalls::RequestTrade(element) => element.fmt(f),
                 BookSingleChainCalls::SafeBlockThreshold(element) => element.fmt(f),
-                BookSingleChainCalls::SetMaxFeePct(element) => element.fmt(f),
                 BookSingleChainCalls::SetOwner(element) => element.fmt(f),
-                BookSingleChainCalls::SetSafeBlockThreshold(element) => element.fmt(f),
                 BookSingleChainCalls::SettleTrade(element) => element.fmt(f),
+                BookSingleChainCalls::TradeRebatePct(element) => element.fmt(f),
                 BookSingleChainCalls::UpdateFeeForTrade(element) => element.fmt(f),
                 BookSingleChainCalls::WhitelistToken(element) => element.fmt(f),
                 BookSingleChainCalls::WhitelistedTokens(element) => element.fmt(f),
             }
+        }
+    }
+    impl ::std::convert::From<DisputeBondPctCall> for BookSingleChainCalls {
+        fn from(var: DisputeBondPctCall) -> Self {
+            BookSingleChainCalls::DisputeBondPct(var)
         }
     }
     impl ::std::convert::From<DisputeTradeCall> for BookSingleChainCalls {
@@ -1146,11 +1205,6 @@ pub mod book_single_chain {
             BookSingleChainCalls::FillTradeWithUpdatedFee(var)
         }
     }
-    impl ::std::convert::From<FilledAmountCall> for BookSingleChainCalls {
-        fn from(var: FilledAmountCall) -> Self {
-            BookSingleChainCalls::FilledAmount(var)
-        }
-    }
     impl ::std::convert::From<FilledAtBlockCall> for BookSingleChainCalls {
         fn from(var: FilledAtBlockCall) -> Self {
             BookSingleChainCalls::FilledAtBlock(var)
@@ -1161,14 +1215,14 @@ pub mod book_single_chain {
             BookSingleChainCalls::FilledBy(var)
         }
     }
-    impl ::std::convert::From<MaxFeePctCall> for BookSingleChainCalls {
-        fn from(var: MaxFeePctCall) -> Self {
-            BookSingleChainCalls::MaxFeePct(var)
-        }
-    }
     impl ::std::convert::From<NumberOfTradesCall> for BookSingleChainCalls {
         fn from(var: NumberOfTradesCall) -> Self {
             BookSingleChainCalls::NumberOfTrades(var)
+        }
+    }
+    impl ::std::convert::From<OnPriceSettledCall> for BookSingleChainCalls {
+        fn from(var: OnPriceSettledCall) -> Self {
+            BookSingleChainCalls::OnPriceSettled(var)
         }
     }
     impl ::std::convert::From<OracleCall> for BookSingleChainCalls {
@@ -1181,6 +1235,11 @@ pub mod book_single_chain {
             BookSingleChainCalls::Owner(var)
         }
     }
+    impl ::std::convert::From<RelayerRefundPctCall> for BookSingleChainCalls {
+        fn from(var: RelayerRefundPctCall) -> Self {
+            BookSingleChainCalls::RelayerRefundPct(var)
+        }
+    }
     impl ::std::convert::From<RequestTradeCall> for BookSingleChainCalls {
         fn from(var: RequestTradeCall) -> Self {
             BookSingleChainCalls::RequestTrade(var)
@@ -1191,24 +1250,19 @@ pub mod book_single_chain {
             BookSingleChainCalls::SafeBlockThreshold(var)
         }
     }
-    impl ::std::convert::From<SetMaxFeePctCall> for BookSingleChainCalls {
-        fn from(var: SetMaxFeePctCall) -> Self {
-            BookSingleChainCalls::SetMaxFeePct(var)
-        }
-    }
     impl ::std::convert::From<SetOwnerCall> for BookSingleChainCalls {
         fn from(var: SetOwnerCall) -> Self {
             BookSingleChainCalls::SetOwner(var)
         }
     }
-    impl ::std::convert::From<SetSafeBlockThresholdCall> for BookSingleChainCalls {
-        fn from(var: SetSafeBlockThresholdCall) -> Self {
-            BookSingleChainCalls::SetSafeBlockThreshold(var)
-        }
-    }
     impl ::std::convert::From<SettleTradeCall> for BookSingleChainCalls {
         fn from(var: SettleTradeCall) -> Self {
             BookSingleChainCalls::SettleTrade(var)
+        }
+    }
+    impl ::std::convert::From<TradeRebatePctCall> for BookSingleChainCalls {
+        fn from(var: TradeRebatePctCall) -> Self {
+            BookSingleChainCalls::TradeRebatePct(var)
         }
     }
     impl ::std::convert::From<UpdateFeeForTradeCall> for BookSingleChainCalls {
@@ -1226,7 +1280,7 @@ pub mod book_single_chain {
             BookSingleChainCalls::WhitelistedTokens(var)
         }
     }
-    #[doc = "Container type for all return fields from the `filledAmount` function with signature `filledAmount(bytes32)` and selector `[11, 32, 183, 188]`"]
+    #[doc = "Container type for all return fields from the `disputeBondPct` function with signature `disputeBondPct()` and selector `[57, 31, 228, 226]`"]
     #[derive(
         Clone,
         Debug,
@@ -1236,7 +1290,7 @@ pub mod book_single_chain {
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
     )]
-    pub struct FilledAmountReturn(pub ethers::core::types::U256);
+    pub struct DisputeBondPctReturn(pub ethers::core::types::U256);
     #[doc = "Container type for all return fields from the `filledAtBlock` function with signature `filledAtBlock(bytes32)` and selector `[149, 1, 50, 95]`"]
     #[derive(
         Clone,
@@ -1247,7 +1301,7 @@ pub mod book_single_chain {
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
     )]
-    pub struct FilledAtBlockReturn(pub ethers::core::types::U256);
+    pub struct FilledAtBlockReturn(pub I256);
     #[doc = "Container type for all return fields from the `filledBy` function with signature `filledBy(bytes32)` and selector `[215, 14, 61, 253]`"]
     #[derive(
         Clone,
@@ -1259,17 +1313,6 @@ pub mod book_single_chain {
         ethers :: contract :: EthAbiCodec,
     )]
     pub struct FilledByReturn(pub ethers::core::types::Address);
-    #[doc = "Container type for all return fields from the `maxFeePct` function with signature `maxFeePct()` and selector `[252, 113, 28, 58]`"]
-    #[derive(
-        Clone,
-        Debug,
-        Default,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-    )]
-    pub struct MaxFeePctReturn(pub ethers::core::types::U256);
     #[doc = "Container type for all return fields from the `numberOfTrades` function with signature `numberOfTrades()` and selector `[205, 128, 93, 94]`"]
     #[derive(
         Clone,
@@ -1303,6 +1346,17 @@ pub mod book_single_chain {
         ethers :: contract :: EthAbiCodec,
     )]
     pub struct OwnerReturn(pub ethers::core::types::Address);
+    #[doc = "Container type for all return fields from the `relayerRefundPct` function with signature `relayerRefundPct()` and selector `[83, 144, 106, 89]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthAbiType,
+        ethers :: contract :: EthAbiCodec,
+    )]
+    pub struct RelayerRefundPctReturn(pub ethers::core::types::U256);
     #[doc = "Container type for all return fields from the `safeBlockThreshold` function with signature `safeBlockThreshold()` and selector `[15, 240, 192, 14]`"]
     #[derive(
         Clone,
@@ -1314,6 +1368,17 @@ pub mod book_single_chain {
         ethers :: contract :: EthAbiCodec,
     )]
     pub struct SafeBlockThresholdReturn(pub ethers::core::types::U256);
+    #[doc = "Container type for all return fields from the `tradeRebatePct` function with signature `tradeRebatePct()` and selector `[193, 100, 2, 187]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthAbiType,
+        ethers :: contract :: EthAbiCodec,
+    )]
+    pub struct TradeRebatePctReturn(pub ethers::core::types::U256);
     #[doc = "Container type for all return fields from the `whitelistedTokens` function with signature `whitelistedTokens(address)` and selector `[218, 249, 194, 16]`"]
     #[derive(
         Clone,
