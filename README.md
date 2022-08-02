@@ -31,4 +31,4 @@ contract ContractTest is Test {
 
 If it is the first time you're using slither, follow the steps in the [foundry book](https://book.getfoundry.sh/config/static-analyzers.html) to set up your environment.
 
-To run slither do `slither ./src` from the root of the project.
+To run slither do `slither .` from the root of the project.

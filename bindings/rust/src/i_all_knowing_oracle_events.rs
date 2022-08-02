@@ -191,7 +191,9 @@ pub mod i_all_knowing_oracle_events {
         TokenWhitelistedFilter(TokenWhitelistedFilter),
     }
     impl ethers::contract::EthLogDecode for IAllKnowingOracleEventsEvents {
-        fn decode_log(log: &ethers::core::abi::RawLog) -> Result<Self, ethers::core::abi::Error>
+        fn decode_log(
+            log: &ethers::core::abi::RawLog,
+        ) -> ::std::result::Result<Self, ethers::core::abi::Error>
         where
             Self: Sized,
         {

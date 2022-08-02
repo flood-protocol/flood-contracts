@@ -130,7 +130,9 @@ pub mod owned {
         SetOwner(SetOwnerCall),
     }
     impl ethers::core::abi::AbiDecode for OwnedCalls {
-        fn decode(data: impl AsRef<[u8]>) -> Result<Self, ethers::core::abi::AbiError> {
+        fn decode(
+            data: impl AsRef<[u8]>,
+        ) -> ::std::result::Result<Self, ethers::core::abi::AbiError> {
             if let Ok(decoded) = <OwnerCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
             {
                 return Ok(OwnedCalls::Owner(decoded));

@@ -81,7 +81,7 @@ pub mod all_knowing_oracle {
         pub fn deploy<T: ethers::core::abi::Tokenize>(
             client: ::std::sync::Arc<M>,
             constructor_args: T,
-        ) -> Result<
+        ) -> ::std::result::Result<
             ethers::contract::builders::ContractDeployer<M, Self>,
             ethers::contract::ContractError<M>,
         > {
@@ -387,7 +387,9 @@ pub mod all_knowing_oracle {
         TokenWhitelistedFilter(TokenWhitelistedFilter),
     }
     impl ethers::contract::EthLogDecode for AllKnowingOracleEvents {
-        fn decode_log(log: &ethers::core::abi::RawLog) -> Result<Self, ethers::core::abi::Error>
+        fn decode_log(
+            log: &ethers::core::abi::RawLog,
+        ) -> ::std::result::Result<Self, ethers::core::abi::Error>
         where
             Self: Sized,
         {
@@ -613,7 +615,9 @@ pub mod all_knowing_oracle {
         WhitelistedTokens(WhitelistedTokensCall),
     }
     impl ethers::core::abi::AbiDecode for AllKnowingOracleCalls {
-        fn decode(data: impl AsRef<[u8]>) -> Result<Self, ethers::core::abi::AbiError> {
+        fn decode(
+            data: impl AsRef<[u8]>,
+        ) -> ::std::result::Result<Self, ethers::core::abi::AbiError> {
             if let Ok(decoded) = <AskCall as ethers::core::abi::AbiDecode>::decode(data.as_ref()) {
                 return Ok(AllKnowingOracleCalls::Ask(decoded));
             }

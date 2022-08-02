@@ -216,7 +216,9 @@ pub mod erc20 {
         TransferFilter(TransferFilter),
     }
     impl ethers::contract::EthLogDecode for ERC20Events {
-        fn decode_log(log: &ethers::core::abi::RawLog) -> Result<Self, ethers::core::abi::Error>
+        fn decode_log(
+            log: &ethers::core::abi::RawLog,
+        ) -> ::std::result::Result<Self, ethers::core::abi::Error>
         where
             Self: Sized,
         {
@@ -421,7 +423,9 @@ pub mod erc20 {
         TransferFrom(TransferFromCall),
     }
     impl ethers::core::abi::AbiDecode for ERC20Calls {
-        fn decode(data: impl AsRef<[u8]>) -> Result<Self, ethers::core::abi::AbiError> {
+        fn decode(
+            data: impl AsRef<[u8]>,
+        ) -> ::std::result::Result<Self, ethers::core::abi::AbiError> {
             if let Ok(decoded) =
                 <DomainSeparatorCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
             {

@@ -306,7 +306,9 @@ pub mod i_book_single_chain_events {
         UpdatedFeeForTradeFilter(UpdatedFeeForTradeFilter),
     }
     impl ethers::contract::EthLogDecode for IBookSingleChainEventsEvents {
-        fn decode_log(log: &ethers::core::abi::RawLog) -> Result<Self, ethers::core::abi::Error>
+        fn decode_log(
+            log: &ethers::core::abi::RawLog,
+        ) -> ::std::result::Result<Self, ethers::core::abi::Error>
         where
             Self: Sized,
         {

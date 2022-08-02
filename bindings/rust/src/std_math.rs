@@ -23,7 +23,7 @@ pub mod std_math {
     #[doc = r" Bytecode of the #name contract"]
     pub static STDMATH_BYTECODE: ethers::contract::Lazy<ethers::core::types::Bytes> =
         ethers::contract::Lazy::new(|| {
-            "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220c952b8d11dcee9a74bad585aeeb3a63c6bd2d7bde0affc59d47b410ec4e2bbe764736f6c634300080f0033" . parse () . expect ("invalid bytecode")
+            "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122024b0bd84dbacbaa193c1a06c45bcb4e2b440256a79cc3e1abff183610f5f0f6f64736f6c634300080f0033" . parse () . expect ("invalid bytecode")
         });
     pub struct stdMath<M>(ethers::contract::Contract<M>);
     impl<M> Clone for stdMath<M> {
@@ -80,7 +80,7 @@ pub mod std_math {
         pub fn deploy<T: ethers::core::abi::Tokenize>(
             client: ::std::sync::Arc<M>,
             constructor_args: T,
-        ) -> Result<
+        ) -> ::std::result::Result<
             ethers::contract::builders::ContractDeployer<M, Self>,
             ethers::contract::ContractError<M>,
         > {

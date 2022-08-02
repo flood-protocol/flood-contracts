@@ -13,9 +13,8 @@ contract SettlementTest is DisputeFixture {
     }
 
     function testSettlement() public {
-        uint256 relayerBalanceBeforeSettle = ERC20(testTokenIn).balanceOf(
-            relayer
-        );
+        uint256 relayerBalanceBeforeSettle =
+            ERC20(testTokenIn).balanceOf(relayer);
         // move to the end of the dispute period
         skipBlocks(book.safeBlockThreshold());
         bytes32 id = _getTradeId(
@@ -41,32 +40,24 @@ contract SettlementTest is DisputeFixture {
         );
 
         // check that the storage variables have been reset
-        address filledByInStorageAfter = stdstore
-            .target(address(book))
-            .sig(book.filledBy.selector)
-            .with_key(tradeId)
-            .read_address();
+        address filledByInStorageAfter = stdstore.target(address(book)).sig(
+            book.filledBy.selector
+        ).with_key(tradeId).read_address();
 
         assertEq(
-            filledByInStorageAfter,
-            address(0),
-            "Filled by should be equal to 0"
+            filledByInStorageAfter, address(0), "Filled by should be equal to 0"
         );
-        uint256 filledAtBlockInStorageAfter = stdstore
-            .target(address(book))
-            .sig(book.filledAtBlock.selector)
-            .with_key(tradeId)
-            .read_uint();
+        uint256 filledAtBlockInStorageAfter = stdstore.target(address(book)).sig(
+            book.filledAtBlock.selector
+        ).with_key(tradeId).read_uint();
 
         assertEq(
-            filledAtBlockInStorageAfter,
-            0,
-            "Filled at block should be equal to 0"
+            filledAtBlockInStorageAfter, 0, "Filled at block should be equal to 0"
         );
 
         // check that the trade was settled correctly
-        uint256 relayerPenalty = (testAmountIn * (100 - testRelayerRefundPct)) /
-            100;
+        uint256 relayerPenalty =
+            (testAmountIn * (100 - testRelayerRefundPct)) / 100;
 
         assertEq(
             ERC20(testTokenIn).balanceOf(relayer),
@@ -83,8 +74,7 @@ contract SettlementTest is DisputeFixture {
     function testCannotSettleBeforeThreshold() public {
         vm.expectRevert(
             abi.encodeWithSelector(
-                BookSingleChain__DisputePeriodNotOver.selector,
-                testSafeBlockThreashold
+                BookSingleChain__DisputePeriodNotOver.selector, testSafeBlockThreashold
             )
         );
         book.settleTrade(

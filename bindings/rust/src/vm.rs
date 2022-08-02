@@ -18,7 +18,7 @@ pub mod vm {
     use std::sync::Arc;
     pub static VM_ABI: ethers::contract::Lazy<ethers::core::abi::Abi> = ethers::contract::Lazy::new(
         || {
-            ethers :: core :: utils :: __serde_json :: from_str ("[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"accesses\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"reads\",\"type\":\"bytes32[]\",\"components\":[]},{\"internalType\":\"bytes32[]\",\"name\":\"writes\",\"type\":\"bytes32[]\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"addr\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"assume\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"broadcast\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"broadcast\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"chainId\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"clearMockedCalls\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"coinbase\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"deal\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"envAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"envAddress\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"envBool\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"envBool\",\"outputs\":[{\"internalType\":\"bool[]\",\"name\":\"\",\"type\":\"bool[]\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"envBytes\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"envBytes\",\"outputs\":[{\"internalType\":\"bytes[]\",\"name\":\"\",\"type\":\"bytes[]\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"envBytes32\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"envBytes32\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"envInt\",\"outputs\":[{\"internalType\":\"int256[]\",\"name\":\"\",\"type\":\"int256[]\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"envInt\",\"outputs\":[{\"internalType\":\"int256\",\"name\":\"\",\"type\":\"int256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"envString\",\"outputs\":[{\"internalType\":\"string[]\",\"name\":\"\",\"type\":\"string[]\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"envString\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"envUint\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"envUint\",\"outputs\":[{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"etch\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"expectCall\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"expectCall\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]},{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]},{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]},{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"expectEmit\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]},{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]},{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]},{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"expectEmit\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"expectRevert\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"expectRevert\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"expectRevert\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"fee\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string[]\",\"name\":\"\",\"type\":\"string[]\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"ffi\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"getCode\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"getNonce\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"label\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"load\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"mockCall\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"mockCall\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"prank\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"prank\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"record\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"roll\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setEnv\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setNonce\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"sign\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\",\"components\":[]},{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"startBroadcast\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"startBroadcast\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"startPrank\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"startPrank\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"stopBroadcast\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"stopPrank\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"store\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"warp\",\"outputs\":[]}]") . expect ("invalid abi")
+            ethers :: core :: utils :: __serde_json :: from_str ("[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"accesses\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"reads\",\"type\":\"bytes32[]\",\"components\":[]},{\"internalType\":\"bytes32[]\",\"name\":\"writes\",\"type\":\"bytes32[]\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"activeFork\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"addr\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"assume\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"broadcast\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"broadcast\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"chainId\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"clearMockedCalls\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"closeFile\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"coinbase\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"createFork\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"createFork\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"createSelectFork\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"createSelectFork\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"deal\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"deriveKey\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"deriveKey\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"envAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"envAddress\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"envBool\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"envBool\",\"outputs\":[{\"internalType\":\"bool[]\",\"name\":\"\",\"type\":\"bool[]\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"envBytes\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"envBytes\",\"outputs\":[{\"internalType\":\"bytes[]\",\"name\":\"\",\"type\":\"bytes[]\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"envBytes32\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"envBytes32\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"envInt\",\"outputs\":[{\"internalType\":\"int256[]\",\"name\":\"\",\"type\":\"int256[]\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"envInt\",\"outputs\":[{\"internalType\":\"int256\",\"name\":\"\",\"type\":\"int256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"envString\",\"outputs\":[{\"internalType\":\"string[]\",\"name\":\"\",\"type\":\"string[]\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"envString\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"envUint\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"envUint\",\"outputs\":[{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"etch\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"expectCall\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"expectCall\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]},{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]},{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]},{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"expectEmit\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]},{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]},{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]},{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"expectEmit\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"expectRevert\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"expectRevert\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"expectRevert\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"fee\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string[]\",\"name\":\"\",\"type\":\"string[]\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"ffi\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"getCode\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"getNonce\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"getRecordedLogs\",\"outputs\":[{\"internalType\":\"struct Vm.Log[]\",\"name\":\"\",\"type\":\"tuple[]\",\"components\":[{\"internalType\":\"bytes32[]\",\"name\":\"topics\",\"type\":\"bytes32[]\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\",\"components\":[]}]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"label\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"load\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"mockCall\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"mockCall\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"prank\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"prank\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"readFile\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"readLine\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"record\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"recordLogs\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"removeFile\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"revertTo\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"roll\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"forkId\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"blockNumber\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"rollFork\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"rollFork\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"rpcUrl\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"rpcUrls\",\"outputs\":[{\"internalType\":\"string[2][]\",\"name\":\"\",\"type\":\"string[2][]\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"selectFork\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setEnv\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setNonce\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"sign\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\",\"components\":[]},{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"snapshot\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"startBroadcast\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"startBroadcast\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"startPrank\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"startPrank\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"stopBroadcast\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"stopPrank\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"store\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"toString\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"toString\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"toString\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"toString\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"int256\",\"name\":\"\",\"type\":\"int256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"toString\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"toString\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"warp\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"writeFile\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"writeLine\",\"outputs\":[]}]") . expect ("invalid abi")
         },
     );
     pub struct Vm<M>(ethers::contract::Contract<M>);
@@ -60,6 +60,14 @@ pub mod vm {
         > {
             self.0
                 .method_hash([101, 188, 148, 129], p0)
+                .expect("method not found (this should never happen)")
+        }
+        #[doc = "Calls the contract's `activeFork` (0x2f103f22) function"]
+        pub fn active_fork(
+            &self,
+        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::U256> {
+            self.0
+                .method_hash([47, 16, 63, 34], ())
                 .expect("method not found (this should never happen)")
         }
         #[doc = "Calls the contract's `addr` (0xffa18649) function"]
@@ -107,6 +115,12 @@ pub mod vm {
                 .method_hash([63, 223, 78, 21], ())
                 .expect("method not found (this should never happen)")
         }
+        #[doc = "Calls the contract's `closeFile` (0x48c3241f) function"]
+        pub fn close_file(&self, p0: String) -> ethers::contract::builders::ContractCall<M, ()> {
+            self.0
+                .method_hash([72, 195, 36, 31], p0)
+                .expect("method not found (this should never happen)")
+        }
         #[doc = "Calls the contract's `coinbase` (0xff483c54) function"]
         pub fn coinbase(
             &self,
@@ -114,6 +128,44 @@ pub mod vm {
         ) -> ethers::contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([255, 72, 60, 84], p0)
+                .expect("method not found (this should never happen)")
+        }
+        #[doc = "Calls the contract's `createFork` (0x31ba3498) function"]
+        pub fn create_fork_0(
+            &self,
+            p0: String,
+        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::U256> {
+            self.0
+                .method_hash([49, 186, 52, 152], p0)
+                .expect("method not found (this should never happen)")
+        }
+        #[doc = "Calls the contract's `createFork` (0x6ba3ba2b) function"]
+        pub fn create_fork_1(
+            &self,
+            p0: String,
+            p1: ethers::core::types::U256,
+        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::U256> {
+            self.0
+                .method_hash([107, 163, 186, 43], (p0, p1))
+                .expect("method not found (this should never happen)")
+        }
+        #[doc = "Calls the contract's `createSelectFork` (0x71ee464d) function"]
+        pub fn create_select_fork_1(
+            &self,
+            p0: String,
+            p1: ethers::core::types::U256,
+        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::U256> {
+            self.0
+                .method_hash([113, 238, 70, 77], (p0, p1))
+                .expect("method not found (this should never happen)")
+        }
+        #[doc = "Calls the contract's `createSelectFork` (0x98680034) function"]
+        pub fn create_select_fork_0(
+            &self,
+            p0: String,
+        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::U256> {
+            self.0
+                .method_hash([152, 104, 0, 52], p0)
                 .expect("method not found (this should never happen)")
         }
         #[doc = "Calls the contract's `deal` (0xc88a5e6d) function"]
@@ -124,6 +176,27 @@ pub mod vm {
         ) -> ethers::contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([200, 138, 94, 109], (p0, p1))
+                .expect("method not found (this should never happen)")
+        }
+        #[doc = "Calls the contract's `deriveKey` (0x6229498b) function"]
+        pub fn derive_key_0(
+            &self,
+            p0: String,
+            p1: u32,
+        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::U256> {
+            self.0
+                .method_hash([98, 41, 73, 139], (p0, p1))
+                .expect("method not found (this should never happen)")
+        }
+        #[doc = "Calls the contract's `deriveKey` (0x6bcb2c1b) function"]
+        pub fn derive_key_1(
+            &self,
+            p0: String,
+            p1: String,
+            p2: u32,
+        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::U256> {
+            self.0
+                .method_hash([107, 203, 44, 27], (p0, p1, p2))
                 .expect("method not found (this should never happen)")
         }
         #[doc = "Calls the contract's `envAddress` (0x350d56bf) function"]
@@ -374,6 +447,14 @@ pub mod vm {
                 .method_hash([45, 3, 53, 171], p0)
                 .expect("method not found (this should never happen)")
         }
+        #[doc = "Calls the contract's `getRecordedLogs` (0x191553a4) function"]
+        pub fn get_recorded_logs(
+            &self,
+        ) -> ethers::contract::builders::ContractCall<M, ::std::vec::Vec<Log>> {
+            self.0
+                .method_hash([25, 21, 83, 164], ())
+                .expect("method not found (this should never happen)")
+        }
         #[doc = "Calls the contract's `label` (0xc657c718) function"]
         pub fn label(
             &self,
@@ -436,10 +517,43 @@ pub mod vm {
                 .method_hash([202, 102, 159, 167], p0)
                 .expect("method not found (this should never happen)")
         }
+        #[doc = "Calls the contract's `readFile` (0x60f9bb11) function"]
+        pub fn read_file(&self, p0: String) -> ethers::contract::builders::ContractCall<M, String> {
+            self.0
+                .method_hash([96, 249, 187, 17], p0)
+                .expect("method not found (this should never happen)")
+        }
+        #[doc = "Calls the contract's `readLine` (0x70f55728) function"]
+        pub fn read_line(&self, p0: String) -> ethers::contract::builders::ContractCall<M, String> {
+            self.0
+                .method_hash([112, 245, 87, 40], p0)
+                .expect("method not found (this should never happen)")
+        }
         #[doc = "Calls the contract's `record` (0x266cf109) function"]
         pub fn record(&self) -> ethers::contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([38, 108, 241, 9], ())
+                .expect("method not found (this should never happen)")
+        }
+        #[doc = "Calls the contract's `recordLogs` (0x41af2f52) function"]
+        pub fn record_logs(&self) -> ethers::contract::builders::ContractCall<M, ()> {
+            self.0
+                .method_hash([65, 175, 47, 82], ())
+                .expect("method not found (this should never happen)")
+        }
+        #[doc = "Calls the contract's `removeFile` (0xf1afe04d) function"]
+        pub fn remove_file(&self, p0: String) -> ethers::contract::builders::ContractCall<M, ()> {
+            self.0
+                .method_hash([241, 175, 224, 77], p0)
+                .expect("method not found (this should never happen)")
+        }
+        #[doc = "Calls the contract's `revertTo` (0x44d7f0a4) function"]
+        pub fn revert_to(
+            &self,
+            p0: ethers::core::types::U256,
+        ) -> ethers::contract::builders::ContractCall<M, bool> {
+            self.0
+                .method_hash([68, 215, 240, 164], p0)
                 .expect("method not found (this should never happen)")
         }
         #[doc = "Calls the contract's `roll` (0x1f7b4f30) function"]
@@ -449,6 +563,49 @@ pub mod vm {
         ) -> ethers::contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([31, 123, 79, 48], p0)
+                .expect("method not found (this should never happen)")
+        }
+        #[doc = "Calls the contract's `rollFork` (0xd74c83a4) function"]
+        pub fn roll_fork_with_fork_id_and_block_number(
+            &self,
+            fork_id: ethers::core::types::U256,
+            block_number: ethers::core::types::U256,
+        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            self.0
+                .method_hash([215, 76, 131, 164], (fork_id, block_number))
+                .expect("method not found (this should never happen)")
+        }
+        #[doc = "Calls the contract's `rollFork` (0xd9bbf3a1) function"]
+        pub fn roll_fork(
+            &self,
+            p0: ethers::core::types::U256,
+        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            self.0
+                .method_hash([217, 187, 243, 161], p0)
+                .expect("method not found (this should never happen)")
+        }
+        #[doc = "Calls the contract's `rpcUrl` (0x975a6ce9) function"]
+        pub fn rpc_url(&self, p0: String) -> ethers::contract::builders::ContractCall<M, String> {
+            self.0
+                .method_hash([151, 90, 108, 233], p0)
+                .expect("method not found (this should never happen)")
+        }
+        #[doc = "Calls the contract's `rpcUrls` (0xa85a8418) function"]
+        pub fn rpc_urls(
+            &self,
+        ) -> ethers::contract::builders::ContractCall<M, ::std::vec::Vec<[String; 2usize]>>
+        {
+            self.0
+                .method_hash([168, 90, 132, 24], ())
+                .expect("method not found (this should never happen)")
+        }
+        #[doc = "Calls the contract's `selectFork` (0x9ebf6827) function"]
+        pub fn select_fork(
+            &self,
+            p0: ethers::core::types::U256,
+        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            self.0
+                .method_hash([158, 191, 104, 39], p0)
                 .expect("method not found (this should never happen)")
         }
         #[doc = "Calls the contract's `setEnv` (0x3d5923ee) function"]
@@ -479,6 +636,14 @@ pub mod vm {
         ) -> ethers::contract::builders::ContractCall<M, (u8, [u8; 32], [u8; 32])> {
             self.0
                 .method_hash([227, 65, 234, 164], (p0, p1))
+                .expect("method not found (this should never happen)")
+        }
+        #[doc = "Calls the contract's `snapshot` (0x9711715a) function"]
+        pub fn snapshot(
+            &self,
+        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::U256> {
+            self.0
+                .method_hash([151, 17, 113, 90], ())
                 .expect("method not found (this should never happen)")
         }
         #[doc = "Calls the contract's `startBroadcast` (0x7fb5297f) function"]
@@ -538,6 +703,54 @@ pub mod vm {
                 .method_hash([112, 202, 16, 187], (p0, p1, p2))
                 .expect("method not found (this should never happen)")
         }
+        #[doc = "Calls the contract's `toString` (0x56ca623e) function"]
+        pub fn to_string_0(
+            &self,
+            p0: ethers::core::types::Address,
+        ) -> ethers::contract::builders::ContractCall<M, String> {
+            self.0
+                .method_hash([86, 202, 98, 62], p0)
+                .expect("method not found (this should never happen)")
+        }
+        #[doc = "Calls the contract's `toString` (0x6900a3ae) function"]
+        pub fn to_string_1(
+            &self,
+            p0: ethers::core::types::U256,
+        ) -> ethers::contract::builders::ContractCall<M, String> {
+            self.0
+                .method_hash([105, 0, 163, 174], p0)
+                .expect("method not found (this should never happen)")
+        }
+        #[doc = "Calls the contract's `toString` (0x71aad10d) function"]
+        pub fn to_string_2(
+            &self,
+            p0: ethers::core::types::Bytes,
+        ) -> ethers::contract::builders::ContractCall<M, String> {
+            self.0
+                .method_hash([113, 170, 209, 13], p0)
+                .expect("method not found (this should never happen)")
+        }
+        #[doc = "Calls the contract's `toString` (0x71dce7da) function"]
+        pub fn to_string_3(&self, p0: bool) -> ethers::contract::builders::ContractCall<M, String> {
+            self.0
+                .method_hash([113, 220, 231, 218], p0)
+                .expect("method not found (this should never happen)")
+        }
+        #[doc = "Calls the contract's `toString` (0xa322c40e) function"]
+        pub fn to_string_4(&self, p0: I256) -> ethers::contract::builders::ContractCall<M, String> {
+            self.0
+                .method_hash([163, 34, 196, 14], p0)
+                .expect("method not found (this should never happen)")
+        }
+        #[doc = "Calls the contract's `toString` (0xb11a19e8) function"]
+        pub fn to_string_5(
+            &self,
+            p0: [u8; 32],
+        ) -> ethers::contract::builders::ContractCall<M, String> {
+            self.0
+                .method_hash([177, 26, 25, 232], p0)
+                .expect("method not found (this should never happen)")
+        }
         #[doc = "Calls the contract's `warp` (0xe5d6bf02) function"]
         pub fn warp(
             &self,
@@ -545,6 +758,26 @@ pub mod vm {
         ) -> ethers::contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([229, 214, 191, 2], p0)
+                .expect("method not found (this should never happen)")
+        }
+        #[doc = "Calls the contract's `writeFile` (0x897e0a97) function"]
+        pub fn write_file(
+            &self,
+            p0: String,
+            p1: String,
+        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            self.0
+                .method_hash([137, 126, 10, 151], (p0, p1))
+                .expect("method not found (this should never happen)")
+        }
+        #[doc = "Calls the contract's `writeLine` (0x619d897f) function"]
+        pub fn write_line(
+            &self,
+            p0: String,
+            p1: String,
+        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            self.0
+                .method_hash([97, 157, 137, 127], (p0, p1))
                 .expect("method not found (this should never happen)")
         }
     }
@@ -565,6 +798,18 @@ pub mod vm {
     )]
     #[ethcall(name = "accesses", abi = "accesses(address)")]
     pub struct AccessesCall(pub ethers::core::types::Address);
+    #[doc = "Container type for all input parameters for the `activeFork` function with signature `activeFork()` and selector `[47, 16, 63, 34]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethcall(name = "activeFork", abi = "activeFork()")]
+    pub struct ActiveForkCall;
     #[doc = "Container type for all input parameters for the `addr` function with signature `addr(uint256)` and selector `[255, 161, 134, 73]`"]
     #[derive(
         Clone,
@@ -637,6 +882,18 @@ pub mod vm {
     )]
     #[ethcall(name = "clearMockedCalls", abi = "clearMockedCalls()")]
     pub struct ClearMockedCallsCall;
+    #[doc = "Container type for all input parameters for the `closeFile` function with signature `closeFile(string)` and selector `[72, 195, 36, 31]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethcall(name = "closeFile", abi = "closeFile(string)")]
+    pub struct CloseFileCall(pub String);
     #[doc = "Container type for all input parameters for the `coinbase` function with signature `coinbase(address)` and selector `[255, 72, 60, 84]`"]
     #[derive(
         Clone,
@@ -649,6 +906,54 @@ pub mod vm {
     )]
     #[ethcall(name = "coinbase", abi = "coinbase(address)")]
     pub struct CoinbaseCall(pub ethers::core::types::Address);
+    #[doc = "Container type for all input parameters for the `createFork` function with signature `createFork(string)` and selector `[49, 186, 52, 152]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethcall(name = "createFork", abi = "createFork(string)")]
+    pub struct CreateFork0Call(pub String);
+    #[doc = "Container type for all input parameters for the `createFork` function with signature `createFork(string,uint256)` and selector `[107, 163, 186, 43]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethcall(name = "createFork", abi = "createFork(string,uint256)")]
+    pub struct CreateFork1Call(pub String, pub ethers::core::types::U256);
+    #[doc = "Container type for all input parameters for the `createSelectFork` function with signature `createSelectFork(string,uint256)` and selector `[113, 238, 70, 77]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethcall(name = "createSelectFork", abi = "createSelectFork(string,uint256)")]
+    pub struct CreateSelectFork1Call(pub String, pub ethers::core::types::U256);
+    #[doc = "Container type for all input parameters for the `createSelectFork` function with signature `createSelectFork(string)` and selector `[152, 104, 0, 52]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethcall(name = "createSelectFork", abi = "createSelectFork(string)")]
+    pub struct CreateSelectFork0Call(pub String);
     #[doc = "Container type for all input parameters for the `deal` function with signature `deal(address,uint256)` and selector `[200, 138, 94, 109]`"]
     #[derive(
         Clone,
@@ -664,6 +969,30 @@ pub mod vm {
         pub ethers::core::types::Address,
         pub ethers::core::types::U256,
     );
+    #[doc = "Container type for all input parameters for the `deriveKey` function with signature `deriveKey(string,uint32)` and selector `[98, 41, 73, 139]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethcall(name = "deriveKey", abi = "deriveKey(string,uint32)")]
+    pub struct DeriveKey0Call(pub String, pub u32);
+    #[doc = "Container type for all input parameters for the `deriveKey` function with signature `deriveKey(string,string,uint32)` and selector `[107, 203, 44, 27]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethcall(name = "deriveKey", abi = "deriveKey(string,string,uint32)")]
+    pub struct DeriveKey1Call(pub String, pub String, pub u32);
     #[doc = "Container type for all input parameters for the `envAddress` function with signature `envAddress(string)` and selector `[53, 13, 86, 191]`"]
     #[derive(
         Clone,
@@ -992,6 +1321,18 @@ pub mod vm {
     )]
     #[ethcall(name = "getNonce", abi = "getNonce(address)")]
     pub struct GetNonceCall(pub ethers::core::types::Address);
+    #[doc = "Container type for all input parameters for the `getRecordedLogs` function with signature `getRecordedLogs()` and selector `[25, 21, 83, 164]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethcall(name = "getRecordedLogs", abi = "getRecordedLogs()")]
+    pub struct GetRecordedLogsCall;
     #[doc = "Container type for all input parameters for the `label` function with signature `label(address,string)` and selector `[198, 87, 199, 24]`"]
     #[derive(
         Clone,
@@ -1076,6 +1417,30 @@ pub mod vm {
     )]
     #[ethcall(name = "prank", abi = "prank(address)")]
     pub struct Prank0Call(pub ethers::core::types::Address);
+    #[doc = "Container type for all input parameters for the `readFile` function with signature `readFile(string)` and selector `[96, 249, 187, 17]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethcall(name = "readFile", abi = "readFile(string)")]
+    pub struct ReadFileCall(pub String);
+    #[doc = "Container type for all input parameters for the `readLine` function with signature `readLine(string)` and selector `[112, 245, 87, 40]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethcall(name = "readLine", abi = "readLine(string)")]
+    pub struct ReadLineCall(pub String);
     #[doc = "Container type for all input parameters for the `record` function with signature `record()` and selector `[38, 108, 241, 9]`"]
     #[derive(
         Clone,
@@ -1088,6 +1453,42 @@ pub mod vm {
     )]
     #[ethcall(name = "record", abi = "record()")]
     pub struct RecordCall;
+    #[doc = "Container type for all input parameters for the `recordLogs` function with signature `recordLogs()` and selector `[65, 175, 47, 82]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethcall(name = "recordLogs", abi = "recordLogs()")]
+    pub struct RecordLogsCall;
+    #[doc = "Container type for all input parameters for the `removeFile` function with signature `removeFile(string)` and selector `[241, 175, 224, 77]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethcall(name = "removeFile", abi = "removeFile(string)")]
+    pub struct RemoveFileCall(pub String);
+    #[doc = "Container type for all input parameters for the `revertTo` function with signature `revertTo(uint256)` and selector `[68, 215, 240, 164]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethcall(name = "revertTo", abi = "revertTo(uint256)")]
+    pub struct RevertToCall(pub ethers::core::types::U256);
     #[doc = "Container type for all input parameters for the `roll` function with signature `roll(uint256)` and selector `[31, 123, 79, 48]`"]
     #[derive(
         Clone,
@@ -1100,6 +1501,69 @@ pub mod vm {
     )]
     #[ethcall(name = "roll", abi = "roll(uint256)")]
     pub struct RollCall(pub ethers::core::types::U256);
+    #[doc = "Container type for all input parameters for the `rollFork` function with signature `rollFork(uint256,uint256)` and selector `[215, 76, 131, 164]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethcall(name = "rollFork", abi = "rollFork(uint256,uint256)")]
+    pub struct RollForkWithForkIdAndBlockNumberCall {
+        pub fork_id: ethers::core::types::U256,
+        pub block_number: ethers::core::types::U256,
+    }
+    #[doc = "Container type for all input parameters for the `rollFork` function with signature `rollFork(uint256)` and selector `[217, 187, 243, 161]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethcall(name = "rollFork", abi = "rollFork(uint256)")]
+    pub struct RollForkCall(pub ethers::core::types::U256);
+    #[doc = "Container type for all input parameters for the `rpcUrl` function with signature `rpcUrl(string)` and selector `[151, 90, 108, 233]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethcall(name = "rpcUrl", abi = "rpcUrl(string)")]
+    pub struct RpcUrlCall(pub String);
+    #[doc = "Container type for all input parameters for the `rpcUrls` function with signature `rpcUrls()` and selector `[168, 90, 132, 24]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethcall(name = "rpcUrls", abi = "rpcUrls()")]
+    pub struct RpcUrlsCall;
+    #[doc = "Container type for all input parameters for the `selectFork` function with signature `selectFork(uint256)` and selector `[158, 191, 104, 39]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethcall(name = "selectFork", abi = "selectFork(uint256)")]
+    pub struct SelectForkCall(pub ethers::core::types::U256);
     #[doc = "Container type for all input parameters for the `setEnv` function with signature `setEnv(string,string)` and selector `[61, 89, 35, 238]`"]
     #[derive(
         Clone,
@@ -1136,6 +1600,18 @@ pub mod vm {
     )]
     #[ethcall(name = "sign", abi = "sign(uint256,bytes32)")]
     pub struct SignCall(pub ethers::core::types::U256, pub [u8; 32]);
+    #[doc = "Container type for all input parameters for the `snapshot` function with signature `snapshot()` and selector `[151, 17, 113, 90]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethcall(name = "snapshot", abi = "snapshot()")]
+    pub struct SnapshotCall;
     #[doc = "Container type for all input parameters for the `startBroadcast` function with signature `startBroadcast()` and selector `[127, 181, 41, 127]`"]
     #[derive(
         Clone,
@@ -1223,6 +1699,78 @@ pub mod vm {
     )]
     #[ethcall(name = "store", abi = "store(address,bytes32,bytes32)")]
     pub struct StoreCall(pub ethers::core::types::Address, pub [u8; 32], pub [u8; 32]);
+    #[doc = "Container type for all input parameters for the `toString` function with signature `toString(address)` and selector `[86, 202, 98, 62]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethcall(name = "toString", abi = "toString(address)")]
+    pub struct ToString0Call(pub ethers::core::types::Address);
+    #[doc = "Container type for all input parameters for the `toString` function with signature `toString(uint256)` and selector `[105, 0, 163, 174]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethcall(name = "toString", abi = "toString(uint256)")]
+    pub struct ToString1Call(pub ethers::core::types::U256);
+    #[doc = "Container type for all input parameters for the `toString` function with signature `toString(bytes)` and selector `[113, 170, 209, 13]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethcall(name = "toString", abi = "toString(bytes)")]
+    pub struct ToString2Call(pub ethers::core::types::Bytes);
+    #[doc = "Container type for all input parameters for the `toString` function with signature `toString(bool)` and selector `[113, 220, 231, 218]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethcall(name = "toString", abi = "toString(bool)")]
+    pub struct ToString3Call(pub bool);
+    #[doc = "Container type for all input parameters for the `toString` function with signature `toString(int256)` and selector `[163, 34, 196, 14]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethcall(name = "toString", abi = "toString(int256)")]
+    pub struct ToString4Call(pub I256);
+    #[doc = "Container type for all input parameters for the `toString` function with signature `toString(bytes32)` and selector `[177, 26, 25, 232]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethcall(name = "toString", abi = "toString(bytes32)")]
+    pub struct ToString5Call(pub [u8; 32]);
     #[doc = "Container type for all input parameters for the `warp` function with signature `warp(uint256)` and selector `[229, 214, 191, 2]`"]
     #[derive(
         Clone,
@@ -1235,17 +1783,49 @@ pub mod vm {
     )]
     #[ethcall(name = "warp", abi = "warp(uint256)")]
     pub struct WarpCall(pub ethers::core::types::U256);
+    #[doc = "Container type for all input parameters for the `writeFile` function with signature `writeFile(string,string)` and selector `[137, 126, 10, 151]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethcall(name = "writeFile", abi = "writeFile(string,string)")]
+    pub struct WriteFileCall(pub String, pub String);
+    #[doc = "Container type for all input parameters for the `writeLine` function with signature `writeLine(string,string)` and selector `[97, 157, 137, 127]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethcall(name = "writeLine", abi = "writeLine(string,string)")]
+    pub struct WriteLineCall(pub String, pub String);
     #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
     pub enum VmCalls {
         Accesses(AccessesCall),
+        ActiveFork(ActiveForkCall),
         Addr(AddrCall),
         Assume(AssumeCall),
         Broadcast0(Broadcast0Call),
         Broadcast1(Broadcast1Call),
         ChainId(ChainIdCall),
         ClearMockedCalls(ClearMockedCallsCall),
+        CloseFile(CloseFileCall),
         Coinbase(CoinbaseCall),
+        CreateFork0(CreateFork0Call),
+        CreateFork1(CreateFork1Call),
+        CreateSelectFork1(CreateSelectFork1Call),
+        CreateSelectFork0(CreateSelectFork0Call),
         Deal(DealCall),
+        DeriveKey0(DeriveKey0Call),
+        DeriveKey1(DeriveKey1Call),
         EnvAddress0(EnvAddress0Call),
         EnvAddress1(EnvAddress1Call),
         EnvBool0(EnvBool0Call),
@@ -1272,17 +1852,29 @@ pub mod vm {
         Ffi(FfiCall),
         GetCode(GetCodeCall),
         GetNonce(GetNonceCall),
+        GetRecordedLogs(GetRecordedLogsCall),
         Label(LabelCall),
         Load(LoadCall),
         MockCall1(MockCall1Call),
         MockCall0(MockCall0Call),
         Prank1(Prank1Call),
         Prank0(Prank0Call),
+        ReadFile(ReadFileCall),
+        ReadLine(ReadLineCall),
         Record(RecordCall),
+        RecordLogs(RecordLogsCall),
+        RemoveFile(RemoveFileCall),
+        RevertTo(RevertToCall),
         Roll(RollCall),
+        RollForkWithForkIdAndBlockNumber(RollForkWithForkIdAndBlockNumberCall),
+        RollFork(RollForkCall),
+        RpcUrl(RpcUrlCall),
+        RpcUrls(RpcUrlsCall),
+        SelectFork(SelectForkCall),
         SetEnv(SetEnvCall),
         SetNonce(SetNonceCall),
         Sign(SignCall),
+        Snapshot(SnapshotCall),
         StartBroadcast0(StartBroadcast0Call),
         StartBroadcast1(StartBroadcast1Call),
         StartPrank0(StartPrank0Call),
@@ -1290,14 +1882,29 @@ pub mod vm {
         StopBroadcast(StopBroadcastCall),
         StopPrank(StopPrankCall),
         Store(StoreCall),
+        ToString0(ToString0Call),
+        ToString1(ToString1Call),
+        ToString2(ToString2Call),
+        ToString3(ToString3Call),
+        ToString4(ToString4Call),
+        ToString5(ToString5Call),
         Warp(WarpCall),
+        WriteFile(WriteFileCall),
+        WriteLine(WriteLineCall),
     }
     impl ethers::core::abi::AbiDecode for VmCalls {
-        fn decode(data: impl AsRef<[u8]>) -> Result<Self, ethers::core::abi::AbiError> {
+        fn decode(
+            data: impl AsRef<[u8]>,
+        ) -> ::std::result::Result<Self, ethers::core::abi::AbiError> {
             if let Ok(decoded) =
                 <AccessesCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
             {
                 return Ok(VmCalls::Accesses(decoded));
+            }
+            if let Ok(decoded) =
+                <ActiveForkCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(VmCalls::ActiveFork(decoded));
             }
             if let Ok(decoded) = <AddrCall as ethers::core::abi::AbiDecode>::decode(data.as_ref()) {
                 return Ok(VmCalls::Addr(decoded));
@@ -1327,12 +1934,47 @@ pub mod vm {
                 return Ok(VmCalls::ClearMockedCalls(decoded));
             }
             if let Ok(decoded) =
+                <CloseFileCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(VmCalls::CloseFile(decoded));
+            }
+            if let Ok(decoded) =
                 <CoinbaseCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
             {
                 return Ok(VmCalls::Coinbase(decoded));
             }
+            if let Ok(decoded) =
+                <CreateFork0Call as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(VmCalls::CreateFork0(decoded));
+            }
+            if let Ok(decoded) =
+                <CreateFork1Call as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(VmCalls::CreateFork1(decoded));
+            }
+            if let Ok(decoded) =
+                <CreateSelectFork1Call as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(VmCalls::CreateSelectFork1(decoded));
+            }
+            if let Ok(decoded) =
+                <CreateSelectFork0Call as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(VmCalls::CreateSelectFork0(decoded));
+            }
             if let Ok(decoded) = <DealCall as ethers::core::abi::AbiDecode>::decode(data.as_ref()) {
                 return Ok(VmCalls::Deal(decoded));
+            }
+            if let Ok(decoded) =
+                <DeriveKey0Call as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(VmCalls::DeriveKey0(decoded));
+            }
+            if let Ok(decoded) =
+                <DeriveKey1Call as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(VmCalls::DeriveKey1(decoded));
             }
             if let Ok(decoded) =
                 <EnvAddress0Call as ethers::core::abi::AbiDecode>::decode(data.as_ref())
@@ -1458,6 +2100,11 @@ pub mod vm {
             {
                 return Ok(VmCalls::GetNonce(decoded));
             }
+            if let Ok(decoded) =
+                <GetRecordedLogsCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(VmCalls::GetRecordedLogs(decoded));
+            }
             if let Ok(decoded) = <LabelCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
             {
                 return Ok(VmCalls::Label(decoded));
@@ -1483,12 +2130,63 @@ pub mod vm {
             {
                 return Ok(VmCalls::Prank0(decoded));
             }
+            if let Ok(decoded) =
+                <ReadFileCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(VmCalls::ReadFile(decoded));
+            }
+            if let Ok(decoded) =
+                <ReadLineCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(VmCalls::ReadLine(decoded));
+            }
             if let Ok(decoded) = <RecordCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
             {
                 return Ok(VmCalls::Record(decoded));
             }
+            if let Ok(decoded) =
+                <RecordLogsCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(VmCalls::RecordLogs(decoded));
+            }
+            if let Ok(decoded) =
+                <RemoveFileCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(VmCalls::RemoveFile(decoded));
+            }
+            if let Ok(decoded) =
+                <RevertToCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(VmCalls::RevertTo(decoded));
+            }
             if let Ok(decoded) = <RollCall as ethers::core::abi::AbiDecode>::decode(data.as_ref()) {
                 return Ok(VmCalls::Roll(decoded));
+            }
+            if let Ok(decoded) =
+                <RollForkWithForkIdAndBlockNumberCall as ethers::core::abi::AbiDecode>::decode(
+                    data.as_ref(),
+                )
+            {
+                return Ok(VmCalls::RollForkWithForkIdAndBlockNumber(decoded));
+            }
+            if let Ok(decoded) =
+                <RollForkCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(VmCalls::RollFork(decoded));
+            }
+            if let Ok(decoded) = <RpcUrlCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(VmCalls::RpcUrl(decoded));
+            }
+            if let Ok(decoded) =
+                <RpcUrlsCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(VmCalls::RpcUrls(decoded));
+            }
+            if let Ok(decoded) =
+                <SelectForkCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(VmCalls::SelectFork(decoded));
             }
             if let Ok(decoded) = <SetEnvCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
             {
@@ -1501,6 +2199,11 @@ pub mod vm {
             }
             if let Ok(decoded) = <SignCall as ethers::core::abi::AbiDecode>::decode(data.as_ref()) {
                 return Ok(VmCalls::Sign(decoded));
+            }
+            if let Ok(decoded) =
+                <SnapshotCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(VmCalls::Snapshot(decoded));
             }
             if let Ok(decoded) =
                 <StartBroadcast0Call as ethers::core::abi::AbiDecode>::decode(data.as_ref())
@@ -1536,8 +2239,48 @@ pub mod vm {
             {
                 return Ok(VmCalls::Store(decoded));
             }
+            if let Ok(decoded) =
+                <ToString0Call as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(VmCalls::ToString0(decoded));
+            }
+            if let Ok(decoded) =
+                <ToString1Call as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(VmCalls::ToString1(decoded));
+            }
+            if let Ok(decoded) =
+                <ToString2Call as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(VmCalls::ToString2(decoded));
+            }
+            if let Ok(decoded) =
+                <ToString3Call as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(VmCalls::ToString3(decoded));
+            }
+            if let Ok(decoded) =
+                <ToString4Call as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(VmCalls::ToString4(decoded));
+            }
+            if let Ok(decoded) =
+                <ToString5Call as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(VmCalls::ToString5(decoded));
+            }
             if let Ok(decoded) = <WarpCall as ethers::core::abi::AbiDecode>::decode(data.as_ref()) {
                 return Ok(VmCalls::Warp(decoded));
+            }
+            if let Ok(decoded) =
+                <WriteFileCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(VmCalls::WriteFile(decoded));
+            }
+            if let Ok(decoded) =
+                <WriteLineCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(VmCalls::WriteLine(decoded));
             }
             Err(ethers::core::abi::Error::InvalidData.into())
         }
@@ -1546,14 +2289,22 @@ pub mod vm {
         fn encode(self) -> Vec<u8> {
             match self {
                 VmCalls::Accesses(element) => element.encode(),
+                VmCalls::ActiveFork(element) => element.encode(),
                 VmCalls::Addr(element) => element.encode(),
                 VmCalls::Assume(element) => element.encode(),
                 VmCalls::Broadcast0(element) => element.encode(),
                 VmCalls::Broadcast1(element) => element.encode(),
                 VmCalls::ChainId(element) => element.encode(),
                 VmCalls::ClearMockedCalls(element) => element.encode(),
+                VmCalls::CloseFile(element) => element.encode(),
                 VmCalls::Coinbase(element) => element.encode(),
+                VmCalls::CreateFork0(element) => element.encode(),
+                VmCalls::CreateFork1(element) => element.encode(),
+                VmCalls::CreateSelectFork1(element) => element.encode(),
+                VmCalls::CreateSelectFork0(element) => element.encode(),
                 VmCalls::Deal(element) => element.encode(),
+                VmCalls::DeriveKey0(element) => element.encode(),
+                VmCalls::DeriveKey1(element) => element.encode(),
                 VmCalls::EnvAddress0(element) => element.encode(),
                 VmCalls::EnvAddress1(element) => element.encode(),
                 VmCalls::EnvBool0(element) => element.encode(),
@@ -1580,17 +2331,29 @@ pub mod vm {
                 VmCalls::Ffi(element) => element.encode(),
                 VmCalls::GetCode(element) => element.encode(),
                 VmCalls::GetNonce(element) => element.encode(),
+                VmCalls::GetRecordedLogs(element) => element.encode(),
                 VmCalls::Label(element) => element.encode(),
                 VmCalls::Load(element) => element.encode(),
                 VmCalls::MockCall1(element) => element.encode(),
                 VmCalls::MockCall0(element) => element.encode(),
                 VmCalls::Prank1(element) => element.encode(),
                 VmCalls::Prank0(element) => element.encode(),
+                VmCalls::ReadFile(element) => element.encode(),
+                VmCalls::ReadLine(element) => element.encode(),
                 VmCalls::Record(element) => element.encode(),
+                VmCalls::RecordLogs(element) => element.encode(),
+                VmCalls::RemoveFile(element) => element.encode(),
+                VmCalls::RevertTo(element) => element.encode(),
                 VmCalls::Roll(element) => element.encode(),
+                VmCalls::RollForkWithForkIdAndBlockNumber(element) => element.encode(),
+                VmCalls::RollFork(element) => element.encode(),
+                VmCalls::RpcUrl(element) => element.encode(),
+                VmCalls::RpcUrls(element) => element.encode(),
+                VmCalls::SelectFork(element) => element.encode(),
                 VmCalls::SetEnv(element) => element.encode(),
                 VmCalls::SetNonce(element) => element.encode(),
                 VmCalls::Sign(element) => element.encode(),
+                VmCalls::Snapshot(element) => element.encode(),
                 VmCalls::StartBroadcast0(element) => element.encode(),
                 VmCalls::StartBroadcast1(element) => element.encode(),
                 VmCalls::StartPrank0(element) => element.encode(),
@@ -1598,7 +2361,15 @@ pub mod vm {
                 VmCalls::StopBroadcast(element) => element.encode(),
                 VmCalls::StopPrank(element) => element.encode(),
                 VmCalls::Store(element) => element.encode(),
+                VmCalls::ToString0(element) => element.encode(),
+                VmCalls::ToString1(element) => element.encode(),
+                VmCalls::ToString2(element) => element.encode(),
+                VmCalls::ToString3(element) => element.encode(),
+                VmCalls::ToString4(element) => element.encode(),
+                VmCalls::ToString5(element) => element.encode(),
                 VmCalls::Warp(element) => element.encode(),
+                VmCalls::WriteFile(element) => element.encode(),
+                VmCalls::WriteLine(element) => element.encode(),
             }
         }
     }
@@ -1606,14 +2377,22 @@ pub mod vm {
         fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
             match self {
                 VmCalls::Accesses(element) => element.fmt(f),
+                VmCalls::ActiveFork(element) => element.fmt(f),
                 VmCalls::Addr(element) => element.fmt(f),
                 VmCalls::Assume(element) => element.fmt(f),
                 VmCalls::Broadcast0(element) => element.fmt(f),
                 VmCalls::Broadcast1(element) => element.fmt(f),
                 VmCalls::ChainId(element) => element.fmt(f),
                 VmCalls::ClearMockedCalls(element) => element.fmt(f),
+                VmCalls::CloseFile(element) => element.fmt(f),
                 VmCalls::Coinbase(element) => element.fmt(f),
+                VmCalls::CreateFork0(element) => element.fmt(f),
+                VmCalls::CreateFork1(element) => element.fmt(f),
+                VmCalls::CreateSelectFork1(element) => element.fmt(f),
+                VmCalls::CreateSelectFork0(element) => element.fmt(f),
                 VmCalls::Deal(element) => element.fmt(f),
+                VmCalls::DeriveKey0(element) => element.fmt(f),
+                VmCalls::DeriveKey1(element) => element.fmt(f),
                 VmCalls::EnvAddress0(element) => element.fmt(f),
                 VmCalls::EnvAddress1(element) => element.fmt(f),
                 VmCalls::EnvBool0(element) => element.fmt(f),
@@ -1640,17 +2419,29 @@ pub mod vm {
                 VmCalls::Ffi(element) => element.fmt(f),
                 VmCalls::GetCode(element) => element.fmt(f),
                 VmCalls::GetNonce(element) => element.fmt(f),
+                VmCalls::GetRecordedLogs(element) => element.fmt(f),
                 VmCalls::Label(element) => element.fmt(f),
                 VmCalls::Load(element) => element.fmt(f),
                 VmCalls::MockCall1(element) => element.fmt(f),
                 VmCalls::MockCall0(element) => element.fmt(f),
                 VmCalls::Prank1(element) => element.fmt(f),
                 VmCalls::Prank0(element) => element.fmt(f),
+                VmCalls::ReadFile(element) => element.fmt(f),
+                VmCalls::ReadLine(element) => element.fmt(f),
                 VmCalls::Record(element) => element.fmt(f),
+                VmCalls::RecordLogs(element) => element.fmt(f),
+                VmCalls::RemoveFile(element) => element.fmt(f),
+                VmCalls::RevertTo(element) => element.fmt(f),
                 VmCalls::Roll(element) => element.fmt(f),
+                VmCalls::RollForkWithForkIdAndBlockNumber(element) => element.fmt(f),
+                VmCalls::RollFork(element) => element.fmt(f),
+                VmCalls::RpcUrl(element) => element.fmt(f),
+                VmCalls::RpcUrls(element) => element.fmt(f),
+                VmCalls::SelectFork(element) => element.fmt(f),
                 VmCalls::SetEnv(element) => element.fmt(f),
                 VmCalls::SetNonce(element) => element.fmt(f),
                 VmCalls::Sign(element) => element.fmt(f),
+                VmCalls::Snapshot(element) => element.fmt(f),
                 VmCalls::StartBroadcast0(element) => element.fmt(f),
                 VmCalls::StartBroadcast1(element) => element.fmt(f),
                 VmCalls::StartPrank0(element) => element.fmt(f),
@@ -1658,13 +2449,26 @@ pub mod vm {
                 VmCalls::StopBroadcast(element) => element.fmt(f),
                 VmCalls::StopPrank(element) => element.fmt(f),
                 VmCalls::Store(element) => element.fmt(f),
+                VmCalls::ToString0(element) => element.fmt(f),
+                VmCalls::ToString1(element) => element.fmt(f),
+                VmCalls::ToString2(element) => element.fmt(f),
+                VmCalls::ToString3(element) => element.fmt(f),
+                VmCalls::ToString4(element) => element.fmt(f),
+                VmCalls::ToString5(element) => element.fmt(f),
                 VmCalls::Warp(element) => element.fmt(f),
+                VmCalls::WriteFile(element) => element.fmt(f),
+                VmCalls::WriteLine(element) => element.fmt(f),
             }
         }
     }
     impl ::std::convert::From<AccessesCall> for VmCalls {
         fn from(var: AccessesCall) -> Self {
             VmCalls::Accesses(var)
+        }
+    }
+    impl ::std::convert::From<ActiveForkCall> for VmCalls {
+        fn from(var: ActiveForkCall) -> Self {
+            VmCalls::ActiveFork(var)
         }
     }
     impl ::std::convert::From<AddrCall> for VmCalls {
@@ -1697,14 +2501,49 @@ pub mod vm {
             VmCalls::ClearMockedCalls(var)
         }
     }
+    impl ::std::convert::From<CloseFileCall> for VmCalls {
+        fn from(var: CloseFileCall) -> Self {
+            VmCalls::CloseFile(var)
+        }
+    }
     impl ::std::convert::From<CoinbaseCall> for VmCalls {
         fn from(var: CoinbaseCall) -> Self {
             VmCalls::Coinbase(var)
         }
     }
+    impl ::std::convert::From<CreateFork0Call> for VmCalls {
+        fn from(var: CreateFork0Call) -> Self {
+            VmCalls::CreateFork0(var)
+        }
+    }
+    impl ::std::convert::From<CreateFork1Call> for VmCalls {
+        fn from(var: CreateFork1Call) -> Self {
+            VmCalls::CreateFork1(var)
+        }
+    }
+    impl ::std::convert::From<CreateSelectFork1Call> for VmCalls {
+        fn from(var: CreateSelectFork1Call) -> Self {
+            VmCalls::CreateSelectFork1(var)
+        }
+    }
+    impl ::std::convert::From<CreateSelectFork0Call> for VmCalls {
+        fn from(var: CreateSelectFork0Call) -> Self {
+            VmCalls::CreateSelectFork0(var)
+        }
+    }
     impl ::std::convert::From<DealCall> for VmCalls {
         fn from(var: DealCall) -> Self {
             VmCalls::Deal(var)
+        }
+    }
+    impl ::std::convert::From<DeriveKey0Call> for VmCalls {
+        fn from(var: DeriveKey0Call) -> Self {
+            VmCalls::DeriveKey0(var)
+        }
+    }
+    impl ::std::convert::From<DeriveKey1Call> for VmCalls {
+        fn from(var: DeriveKey1Call) -> Self {
+            VmCalls::DeriveKey1(var)
         }
     }
     impl ::std::convert::From<EnvAddress0Call> for VmCalls {
@@ -1837,6 +2676,11 @@ pub mod vm {
             VmCalls::GetNonce(var)
         }
     }
+    impl ::std::convert::From<GetRecordedLogsCall> for VmCalls {
+        fn from(var: GetRecordedLogsCall) -> Self {
+            VmCalls::GetRecordedLogs(var)
+        }
+    }
     impl ::std::convert::From<LabelCall> for VmCalls {
         fn from(var: LabelCall) -> Self {
             VmCalls::Label(var)
@@ -1867,14 +2711,64 @@ pub mod vm {
             VmCalls::Prank0(var)
         }
     }
+    impl ::std::convert::From<ReadFileCall> for VmCalls {
+        fn from(var: ReadFileCall) -> Self {
+            VmCalls::ReadFile(var)
+        }
+    }
+    impl ::std::convert::From<ReadLineCall> for VmCalls {
+        fn from(var: ReadLineCall) -> Self {
+            VmCalls::ReadLine(var)
+        }
+    }
     impl ::std::convert::From<RecordCall> for VmCalls {
         fn from(var: RecordCall) -> Self {
             VmCalls::Record(var)
         }
     }
+    impl ::std::convert::From<RecordLogsCall> for VmCalls {
+        fn from(var: RecordLogsCall) -> Self {
+            VmCalls::RecordLogs(var)
+        }
+    }
+    impl ::std::convert::From<RemoveFileCall> for VmCalls {
+        fn from(var: RemoveFileCall) -> Self {
+            VmCalls::RemoveFile(var)
+        }
+    }
+    impl ::std::convert::From<RevertToCall> for VmCalls {
+        fn from(var: RevertToCall) -> Self {
+            VmCalls::RevertTo(var)
+        }
+    }
     impl ::std::convert::From<RollCall> for VmCalls {
         fn from(var: RollCall) -> Self {
             VmCalls::Roll(var)
+        }
+    }
+    impl ::std::convert::From<RollForkWithForkIdAndBlockNumberCall> for VmCalls {
+        fn from(var: RollForkWithForkIdAndBlockNumberCall) -> Self {
+            VmCalls::RollForkWithForkIdAndBlockNumber(var)
+        }
+    }
+    impl ::std::convert::From<RollForkCall> for VmCalls {
+        fn from(var: RollForkCall) -> Self {
+            VmCalls::RollFork(var)
+        }
+    }
+    impl ::std::convert::From<RpcUrlCall> for VmCalls {
+        fn from(var: RpcUrlCall) -> Self {
+            VmCalls::RpcUrl(var)
+        }
+    }
+    impl ::std::convert::From<RpcUrlsCall> for VmCalls {
+        fn from(var: RpcUrlsCall) -> Self {
+            VmCalls::RpcUrls(var)
+        }
+    }
+    impl ::std::convert::From<SelectForkCall> for VmCalls {
+        fn from(var: SelectForkCall) -> Self {
+            VmCalls::SelectFork(var)
         }
     }
     impl ::std::convert::From<SetEnvCall> for VmCalls {
@@ -1890,6 +2784,11 @@ pub mod vm {
     impl ::std::convert::From<SignCall> for VmCalls {
         fn from(var: SignCall) -> Self {
             VmCalls::Sign(var)
+        }
+    }
+    impl ::std::convert::From<SnapshotCall> for VmCalls {
+        fn from(var: SnapshotCall) -> Self {
+            VmCalls::Snapshot(var)
         }
     }
     impl ::std::convert::From<StartBroadcast0Call> for VmCalls {
@@ -1927,9 +2826,49 @@ pub mod vm {
             VmCalls::Store(var)
         }
     }
+    impl ::std::convert::From<ToString0Call> for VmCalls {
+        fn from(var: ToString0Call) -> Self {
+            VmCalls::ToString0(var)
+        }
+    }
+    impl ::std::convert::From<ToString1Call> for VmCalls {
+        fn from(var: ToString1Call) -> Self {
+            VmCalls::ToString1(var)
+        }
+    }
+    impl ::std::convert::From<ToString2Call> for VmCalls {
+        fn from(var: ToString2Call) -> Self {
+            VmCalls::ToString2(var)
+        }
+    }
+    impl ::std::convert::From<ToString3Call> for VmCalls {
+        fn from(var: ToString3Call) -> Self {
+            VmCalls::ToString3(var)
+        }
+    }
+    impl ::std::convert::From<ToString4Call> for VmCalls {
+        fn from(var: ToString4Call) -> Self {
+            VmCalls::ToString4(var)
+        }
+    }
+    impl ::std::convert::From<ToString5Call> for VmCalls {
+        fn from(var: ToString5Call) -> Self {
+            VmCalls::ToString5(var)
+        }
+    }
     impl ::std::convert::From<WarpCall> for VmCalls {
         fn from(var: WarpCall) -> Self {
             VmCalls::Warp(var)
+        }
+    }
+    impl ::std::convert::From<WriteFileCall> for VmCalls {
+        fn from(var: WriteFileCall) -> Self {
+            VmCalls::WriteFile(var)
+        }
+    }
+    impl ::std::convert::From<WriteLineCall> for VmCalls {
+        fn from(var: WriteLineCall) -> Self {
+            VmCalls::WriteLine(var)
         }
     }
     #[doc = "Container type for all return fields from the `accesses` function with signature `accesses(address)` and selector `[101, 188, 148, 129]`"]
@@ -1946,6 +2885,17 @@ pub mod vm {
         pub reads: ::std::vec::Vec<[u8; 32]>,
         pub writes: ::std::vec::Vec<[u8; 32]>,
     }
+    #[doc = "Container type for all return fields from the `activeFork` function with signature `activeFork()` and selector `[47, 16, 63, 34]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthAbiType,
+        ethers :: contract :: EthAbiCodec,
+    )]
+    pub struct ActiveForkReturn(pub ethers::core::types::U256);
     #[doc = "Container type for all return fields from the `addr` function with signature `addr(uint256)` and selector `[255, 161, 134, 73]`"]
     #[derive(
         Clone,
@@ -1957,6 +2907,72 @@ pub mod vm {
         ethers :: contract :: EthAbiCodec,
     )]
     pub struct AddrReturn(pub ethers::core::types::Address);
+    #[doc = "Container type for all return fields from the `createFork` function with signature `createFork(string)` and selector `[49, 186, 52, 152]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthAbiType,
+        ethers :: contract :: EthAbiCodec,
+    )]
+    pub struct CreateFork0Return(pub ethers::core::types::U256);
+    #[doc = "Container type for all return fields from the `createFork` function with signature `createFork(string,uint256)` and selector `[107, 163, 186, 43]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthAbiType,
+        ethers :: contract :: EthAbiCodec,
+    )]
+    pub struct CreateFork1Return(pub ethers::core::types::U256);
+    #[doc = "Container type for all return fields from the `createSelectFork` function with signature `createSelectFork(string,uint256)` and selector `[113, 238, 70, 77]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthAbiType,
+        ethers :: contract :: EthAbiCodec,
+    )]
+    pub struct CreateSelectFork1Return(pub ethers::core::types::U256);
+    #[doc = "Container type for all return fields from the `createSelectFork` function with signature `createSelectFork(string)` and selector `[152, 104, 0, 52]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthAbiType,
+        ethers :: contract :: EthAbiCodec,
+    )]
+    pub struct CreateSelectFork0Return(pub ethers::core::types::U256);
+    #[doc = "Container type for all return fields from the `deriveKey` function with signature `deriveKey(string,uint32)` and selector `[98, 41, 73, 139]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthAbiType,
+        ethers :: contract :: EthAbiCodec,
+    )]
+    pub struct DeriveKey0Return(pub ethers::core::types::U256);
+    #[doc = "Container type for all return fields from the `deriveKey` function with signature `deriveKey(string,string,uint32)` and selector `[107, 203, 44, 27]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthAbiType,
+        ethers :: contract :: EthAbiCodec,
+    )]
+    pub struct DeriveKey1Return(pub ethers::core::types::U256);
     #[doc = "Container type for all return fields from the `envAddress` function with signature `envAddress(string)` and selector `[53, 13, 86, 191]`"]
     #[derive(
         Clone,
@@ -2144,6 +3160,17 @@ pub mod vm {
         ethers :: contract :: EthAbiCodec,
     )]
     pub struct GetNonceReturn(pub u64);
+    #[doc = "Container type for all return fields from the `getRecordedLogs` function with signature `getRecordedLogs()` and selector `[25, 21, 83, 164]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthAbiType,
+        ethers :: contract :: EthAbiCodec,
+    )]
+    pub struct GetRecordedLogsReturn(pub ::std::vec::Vec<Log>);
     #[doc = "Container type for all return fields from the `load` function with signature `load(address,bytes32)` and selector `[102, 127, 157, 112]`"]
     #[derive(
         Clone,
@@ -2155,6 +3182,61 @@ pub mod vm {
         ethers :: contract :: EthAbiCodec,
     )]
     pub struct LoadReturn(pub [u8; 32]);
+    #[doc = "Container type for all return fields from the `readFile` function with signature `readFile(string)` and selector `[96, 249, 187, 17]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthAbiType,
+        ethers :: contract :: EthAbiCodec,
+    )]
+    pub struct ReadFileReturn(pub String);
+    #[doc = "Container type for all return fields from the `readLine` function with signature `readLine(string)` and selector `[112, 245, 87, 40]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthAbiType,
+        ethers :: contract :: EthAbiCodec,
+    )]
+    pub struct ReadLineReturn(pub String);
+    #[doc = "Container type for all return fields from the `revertTo` function with signature `revertTo(uint256)` and selector `[68, 215, 240, 164]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthAbiType,
+        ethers :: contract :: EthAbiCodec,
+    )]
+    pub struct RevertToReturn(pub bool);
+    #[doc = "Container type for all return fields from the `rpcUrl` function with signature `rpcUrl(string)` and selector `[151, 90, 108, 233]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthAbiType,
+        ethers :: contract :: EthAbiCodec,
+    )]
+    pub struct RpcUrlReturn(pub String);
+    #[doc = "Container type for all return fields from the `rpcUrls` function with signature `rpcUrls()` and selector `[168, 90, 132, 24]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthAbiType,
+        ethers :: contract :: EthAbiCodec,
+    )]
+    pub struct RpcUrlsReturn(pub ::std::vec::Vec<[String; 2usize]>);
     #[doc = "Container type for all return fields from the `sign` function with signature `sign(uint256,bytes32)` and selector `[227, 65, 234, 164]`"]
     #[derive(
         Clone,
@@ -2166,4 +3248,95 @@ pub mod vm {
         ethers :: contract :: EthAbiCodec,
     )]
     pub struct SignReturn(pub u8, pub [u8; 32], pub [u8; 32]);
+    #[doc = "Container type for all return fields from the `snapshot` function with signature `snapshot()` and selector `[151, 17, 113, 90]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthAbiType,
+        ethers :: contract :: EthAbiCodec,
+    )]
+    pub struct SnapshotReturn(pub ethers::core::types::U256);
+    #[doc = "Container type for all return fields from the `toString` function with signature `toString(address)` and selector `[86, 202, 98, 62]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthAbiType,
+        ethers :: contract :: EthAbiCodec,
+    )]
+    pub struct ToString0Return(pub String);
+    #[doc = "Container type for all return fields from the `toString` function with signature `toString(uint256)` and selector `[105, 0, 163, 174]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthAbiType,
+        ethers :: contract :: EthAbiCodec,
+    )]
+    pub struct ToString1Return(pub String);
+    #[doc = "Container type for all return fields from the `toString` function with signature `toString(bytes)` and selector `[113, 170, 209, 13]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthAbiType,
+        ethers :: contract :: EthAbiCodec,
+    )]
+    pub struct ToString2Return(pub String);
+    #[doc = "Container type for all return fields from the `toString` function with signature `toString(bool)` and selector `[113, 220, 231, 218]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthAbiType,
+        ethers :: contract :: EthAbiCodec,
+    )]
+    pub struct ToString3Return(pub String);
+    #[doc = "Container type for all return fields from the `toString` function with signature `toString(int256)` and selector `[163, 34, 196, 14]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthAbiType,
+        ethers :: contract :: EthAbiCodec,
+    )]
+    pub struct ToString4Return(pub String);
+    #[doc = "Container type for all return fields from the `toString` function with signature `toString(bytes32)` and selector `[177, 26, 25, 232]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthAbiType,
+        ethers :: contract :: EthAbiCodec,
+    )]
+    pub struct ToString5Return(pub String);
+    #[doc = "`Log(bytes32[],bytes)`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthAbiType,
+        ethers :: contract :: EthAbiCodec,
+    )]
+    pub struct Log {
+        pub topics: Vec<[u8; 32]>,
+        pub data: ethers::core::types::Bytes,
+    }
 }

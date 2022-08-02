@@ -18,7 +18,7 @@ pub mod script {
     use std::sync::Arc;
     pub static SCRIPT_ABI: ethers::contract::Lazy<ethers::core::abi::Abi> =
         ethers::contract::Lazy::new(|| {
-            ethers :: core :: utils :: __serde_json :: from_str ("[{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"vm\",\"outputs\":[{\"internalType\":\"contract Vm\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]}]") . expect ("invalid abi")
+            ethers :: core :: utils :: __serde_json :: from_str ("[{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"IS_SCRIPT\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"vm\",\"outputs\":[{\"internalType\":\"contract Vm\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]}]") . expect ("invalid abi")
         });
     pub struct Script<M>(ethers::contract::Contract<M>);
     impl<M> Clone for Script<M> {
@@ -49,6 +49,12 @@ pub mod script {
         ) -> Self {
             ethers::contract::Contract::new(address.into(), SCRIPT_ABI.clone(), client).into()
         }
+        #[doc = "Calls the contract's `IS_SCRIPT` (0xf8ccbf47) function"]
+        pub fn is_script(&self) -> ethers::contract::builders::ContractCall<M, bool> {
+            self.0
+                .method_hash([248, 204, 191, 71], ())
+                .expect("method not found (this should never happen)")
+        }
         #[doc = "Calls the contract's `vm` (0x3a768463) function"]
         pub fn vm(
             &self,
@@ -63,6 +69,18 @@ pub mod script {
             Self(contract)
         }
     }
+    #[doc = "Container type for all input parameters for the `IS_SCRIPT` function with signature `IS_SCRIPT()` and selector `[248, 204, 191, 71]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[ethcall(name = "IS_SCRIPT", abi = "IS_SCRIPT()")]
+    pub struct IsScriptCall;
     #[doc = "Container type for all input parameters for the `vm` function with signature `vm()` and selector `[58, 118, 132, 99]`"]
     #[derive(
         Clone,
@@ -75,6 +93,63 @@ pub mod script {
     )]
     #[ethcall(name = "vm", abi = "vm()")]
     pub struct VmCall;
+    #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
+    pub enum ScriptCalls {
+        IsScript(IsScriptCall),
+        Vm(VmCall),
+    }
+    impl ethers::core::abi::AbiDecode for ScriptCalls {
+        fn decode(
+            data: impl AsRef<[u8]>,
+        ) -> ::std::result::Result<Self, ethers::core::abi::AbiError> {
+            if let Ok(decoded) =
+                <IsScriptCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(ScriptCalls::IsScript(decoded));
+            }
+            if let Ok(decoded) = <VmCall as ethers::core::abi::AbiDecode>::decode(data.as_ref()) {
+                return Ok(ScriptCalls::Vm(decoded));
+            }
+            Err(ethers::core::abi::Error::InvalidData.into())
+        }
+    }
+    impl ethers::core::abi::AbiEncode for ScriptCalls {
+        fn encode(self) -> Vec<u8> {
+            match self {
+                ScriptCalls::IsScript(element) => element.encode(),
+                ScriptCalls::Vm(element) => element.encode(),
+            }
+        }
+    }
+    impl ::std::fmt::Display for ScriptCalls {
+        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+            match self {
+                ScriptCalls::IsScript(element) => element.fmt(f),
+                ScriptCalls::Vm(element) => element.fmt(f),
+            }
+        }
+    }
+    impl ::std::convert::From<IsScriptCall> for ScriptCalls {
+        fn from(var: IsScriptCall) -> Self {
+            ScriptCalls::IsScript(var)
+        }
+    }
+    impl ::std::convert::From<VmCall> for ScriptCalls {
+        fn from(var: VmCall) -> Self {
+            ScriptCalls::Vm(var)
+        }
+    }
+    #[doc = "Container type for all return fields from the `IS_SCRIPT` function with signature `IS_SCRIPT()` and selector `[248, 204, 191, 71]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthAbiType,
+        ethers :: contract :: EthAbiCodec,
+    )]
+    pub struct IsScriptReturn(pub bool);
     #[doc = "Container type for all return fields from the `vm` function with signature `vm()` and selector `[58, 118, 132, 99]`"]
     #[derive(
         Clone,
