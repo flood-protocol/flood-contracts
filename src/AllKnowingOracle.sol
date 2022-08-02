@@ -139,11 +139,7 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Owned {
         address disputer,
         address currency,
         uint256 bond
-    )
-        external
-        pure
-        returns (bytes32)
-    {
+    ) external pure returns (bytes32) {
         return _getRequestId(sender, proposer, disputer, currency, bond);
     }
 
@@ -162,16 +158,12 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Owned {
         address currency,
         uint256 bond,
         bytes calldata data
-    )
-        external
-        onlyRequester
-    {
+    ) external onlyRequester returns (bytes32 id) {
         if (!whitelistedTokens[currency]) {
             revert AllKnowingOracle__TokenNotWhitelisted(currency);
         }
 
-        bytes32 id =
-            _getRequestId(msg.sender, proposer, disputer, currency, bond);
+        id = _getRequestId(msg.sender, proposer, disputer, currency, bond);
         if (requests[id].state != RequestState.Uninitialized) {
             revert AllKnowingOracle__RequestAlreadyExists(id);
         }
@@ -237,13 +229,10 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Owned {
         address disputer,
         address currency,
         uint256 bond
-    )
-        internal
-        pure
-        returns (bytes32)
-    {
-        return keccak256(
-            abi.encodePacked(requester, proposer, disputer, currency, bond)
-        );
+    ) internal pure returns (bytes32) {
+        return
+            keccak256(
+                abi.encodePacked(requester, proposer, disputer, currency, bond)
+            );
     }
 }
