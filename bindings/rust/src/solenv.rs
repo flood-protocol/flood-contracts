@@ -1,6 +1,6 @@
-pub use std_math::*;
+pub use solenv::*;
 #[allow(clippy::too_many_arguments, non_camel_case_types)]
-pub mod std_math {
+pub mod solenv {
     #![allow(clippy::enum_variant_names)]
     #![allow(dead_code)]
     #![allow(clippy::type_complexity)]
@@ -14,37 +14,37 @@ pub mod std_math {
         types::*,
     };
     use ethers::providers::Middleware;
-    #[doc = "stdMath was auto-generated with ethers-rs Abigen. More information at: https://github.com/gakonst/ethers-rs"]
+    #[doc = "Solenv was auto-generated with ethers-rs Abigen. More information at: https://github.com/gakonst/ethers-rs"]
     use std::sync::Arc;
-    pub static STDMATH_ABI: ethers::contract::Lazy<ethers::core::abi::Abi> =
+    pub static SOLENV_ABI: ethers::contract::Lazy<ethers::core::abi::Abi> =
         ethers::contract::Lazy::new(|| {
             ethers::core::utils::__serde_json::from_str("[]").expect("invalid abi")
         });
     #[doc = r" Bytecode of the #name contract"]
-    pub static STDMATH_BYTECODE: ethers::contract::Lazy<ethers::core::types::Bytes> =
+    pub static SOLENV_BYTECODE: ethers::contract::Lazy<ethers::core::types::Bytes> =
         ethers::contract::Lazy::new(|| {
-            "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220414f39962447a7e230baf89b5b30c7018f7b195c73073ff120153496802a317364736f6c634300080f0033" . parse () . expect ("invalid bytecode")
+            "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212202c27492db35dde28fc8cb1e4f83c34dbe0e599797e1ffe14da672f88596dbf6964736f6c634300080f0033" . parse () . expect ("invalid bytecode")
         });
-    pub struct stdMath<M>(ethers::contract::Contract<M>);
-    impl<M> Clone for stdMath<M> {
+    pub struct Solenv<M>(ethers::contract::Contract<M>);
+    impl<M> Clone for Solenv<M> {
         fn clone(&self) -> Self {
-            stdMath(self.0.clone())
+            Solenv(self.0.clone())
         }
     }
-    impl<M> std::ops::Deref for stdMath<M> {
+    impl<M> std::ops::Deref for Solenv<M> {
         type Target = ethers::contract::Contract<M>;
         fn deref(&self) -> &Self::Target {
             &self.0
         }
     }
-    impl<M: ethers::providers::Middleware> std::fmt::Debug for stdMath<M> {
+    impl<M: ethers::providers::Middleware> std::fmt::Debug for Solenv<M> {
         fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-            f.debug_tuple(stringify!(stdMath))
+            f.debug_tuple(stringify!(Solenv))
                 .field(&self.address())
                 .finish()
         }
     }
-    impl<M: ethers::providers::Middleware> stdMath<M> {
+    impl<M: ethers::providers::Middleware> Solenv<M> {
         #[doc = r" Creates a new contract instance with the specified `ethers`"]
         #[doc = r" client at the given `Address`. The contract derefs to a `ethers::Contract`"]
         #[doc = r" object"]
@@ -52,7 +52,7 @@ pub mod std_math {
             address: T,
             client: ::std::sync::Arc<M>,
         ) -> Self {
-            ethers::contract::Contract::new(address.into(), STDMATH_ABI.clone(), client).into()
+            ethers::contract::Contract::new(address.into(), SOLENV_ABI.clone(), client).into()
         }
         #[doc = r" Constructs the general purpose `Deployer` instance based on the provided constructor arguments and sends it."]
         #[doc = r" Returns a new instance of a deployer that returns an instance of this contract after sending the transaction"]
@@ -85,8 +85,8 @@ pub mod std_math {
             ethers::contract::ContractError<M>,
         > {
             let factory = ethers::contract::ContractFactory::new(
-                STDMATH_ABI.clone(),
-                STDMATH_BYTECODE.clone().into(),
+                SOLENV_ABI.clone(),
+                SOLENV_BYTECODE.clone().into(),
                 client,
             );
             let deployer = factory.deploy(constructor_args)?;
@@ -94,7 +94,7 @@ pub mod std_math {
             Ok(deployer)
         }
     }
-    impl<M: ethers::providers::Middleware> From<ethers::contract::Contract<M>> for stdMath<M> {
+    impl<M: ethers::providers::Middleware> From<ethers::contract::Contract<M>> for Solenv<M> {
         fn from(contract: ethers::contract::Contract<M>) -> Self {
             Self(contract)
         }

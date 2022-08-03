@@ -30,6 +30,7 @@ pub mod safe_transfer_lib;
 pub mod script;
 pub mod settlement_test;
 pub mod shared_types;
+pub mod solenv;
 pub mod std_error;
 pub mod std_math;
 pub mod std_storage;
