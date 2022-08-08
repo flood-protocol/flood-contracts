@@ -11,7 +11,9 @@ import "./AllKnowingOracle.sol";
 interface IBookSingleChainEvents {
     event SafeBlockThresholdSet(uint256 newSafeBlockThreshold);
     event FeeCombinationSet(
-        uint256 disputeBondPct, uint256 tradeRebatePct, uint256 relayerRefundPct
+        uint256 disputeBondPct,
+        uint256 tradeRebatePct,
+        uint256 relayerRefundPct
     );
     event TokenWhitelisted(address indexed token, bool whitelisted);
     event TradeRequested(
@@ -20,11 +22,13 @@ interface IBookSingleChainEvents {
         uint256 amountIn,
         uint256 minAmountOut,
         uint256 feePct,
-        address to,
+        address recipient,
         uint256 indexed tradeIndex
     );
     event UpdatedFeeForTrade(
-        address indexed trader, uint256 indexed tradeIndex, uint256 newFeePct
+        address indexed trader,
+        uint256 indexed tradeIndex,
+        uint256 newFeePct
     );
     event TradeFilled(
         address indexed relayer,
@@ -61,8 +65,8 @@ error BookSingleChain__ZeroAmount();
 error BookSingleChain__SentToBlackHole();
 error BookSingleChain__InvalidFeeCombination();
 // The trade is not filled yet, doesn't exist or was disputed
-error BookSingleChain__TradeNotInFilledState(bytes32 tradeId);
-error BookSingleChain__TradeAlreadyFilled(bytes32 tradeId);
+error BookSingleChain__TradeNotInFillableState(bytes32 tradeId);
+error BookSingleChain__TradeNotFilled(bytes32 tradeId);
 error BookSingleChain__AmountOutTooLow();
 error BookSingleChain__InvalidSignature();
 error BookSingleChain__DisputePeriodNotOver(uint256 blocksLeft);
@@ -72,7 +76,11 @@ error BookSingleChain__MaliciousCaller(address caller);
 bytes32 constant SIGNATURE_DELIMITER = keccak256("FLOOD-V1");
 uint256 constant MAX_FEE_PCT = 0.25 * 1e18;
 
-contract BookSingleChain is IOptimisticRequester, IBookSingleChainEvents, Owned {
+contract BookSingleChain is
+    IOptimisticRequester,
+    IBookSingleChainEvents,
+    Owned
+{
     using SafeTransferLib for ERC20;
 
     uint256 public immutable safeBlockThreshold;
@@ -84,10 +92,12 @@ contract BookSingleChain is IOptimisticRequester, IBookSingleChainEvents, Owned 
 
     uint256 public numberOfTrades = 0;
     mapping(address => bool) public whitelistedTokens;
-    // Maps each trade id to the block it was filled at. A value of 0 means it was not filled yet. A value < 0 means it was disputed and the absolute value is the block it was filled at. A value > 0 means it was filled and has not been disputed yet.
-    mapping(bytes32 => int256) public filledAtBlock;
+    // Maps each trade id to the block it was filled at. A value of 0 means it was not filled yet.
+    mapping(bytes32 => uint256) public filledAtBlock;
     // A mapping from a trade id to the relayer filling it.
     mapping(bytes32 => address) public filledBy;
+    // A mapping from trade id to an enum representing the state of the trade.
+    mapping(bytes32 => bool) public isInitialized;
 
     constructor(
         address _oracle,
@@ -95,9 +105,7 @@ contract BookSingleChain is IOptimisticRequester, IBookSingleChainEvents, Owned 
         uint256 _disputeBondPct,
         uint256 _tradeRebatePct,
         uint256 _relayerRefundPct
-    )
-        Owned(msg.sender)
-    {
+    ) Owned(msg.sender) {
         oracle = AllKnowingOracle(_oracle);
         safeBlockThreshold = _safeBlockThreshold;
         emit SafeBlockThresholdSet(safeBlockThreshold);
@@ -110,8 +118,10 @@ contract BookSingleChain is IOptimisticRequester, IBookSingleChainEvents, Owned 
         relayerRefundPct = _relayerRefundPct;
 
         emit FeeCombinationSet(
-            _disputeBondPct, _tradeRebatePct, _relayerRefundPct
-            );
+            _disputeBondPct,
+            _tradeRebatePct,
+            _relayerRefundPct
+        );
     }
 
     /**
@@ -147,9 +157,7 @@ contract BookSingleChain is IOptimisticRequester, IBookSingleChainEvents, Owned 
         uint256 minAmountOut,
         uint256 feePct,
         address recipient
-    )
-        external
-    {
+    ) external {
         if (!whitelistedTokens[tokenIn]) {
             revert BookSingleChain__InvalidToken(tokenIn);
         }
@@ -177,8 +185,18 @@ contract BookSingleChain is IOptimisticRequester, IBookSingleChainEvents, Owned 
             feePct,
             recipient,
             numberOfTrades
-            );
+        );
 
+        bytes32 tradeId = _getTradeId(
+            tokenIn,
+            tokenOut,
+            amountIn,
+            minAmountOut,
+            feePct,
+            recipient,
+            numberOfTrades
+        );
+        isInitialized[tradeId] = true;
         numberOfTrades++;
 
         ERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
@@ -210,9 +228,7 @@ contract BookSingleChain is IOptimisticRequester, IBookSingleChainEvents, Owned 
         address trader,
         uint256 newFeePct,
         bytes calldata traderSignature
-    )
-        external
-    {
+    ) external {
         bytes32 tradeId = _getTradeId(
             tokenIn,
             tokenOut,
@@ -222,18 +238,8 @@ contract BookSingleChain is IOptimisticRequester, IBookSingleChainEvents, Owned 
             recipient,
             tradeIndex
         );
-        if (newFeePct > MAX_FEE_PCT) {
-            revert BookSingleChain__FeePctTooHigh(newFeePct);
-        }
-        if (filledAtBlock[tradeId] < 0) {
-            revert BookSingleChain__TradeNotInFilledState(tradeId);
-        }
-        if (filledAtBlock[tradeId] > 0) {
-            revert BookSingleChain__TradeAlreadyFilled(tradeId);
-        }
 
         _verifyFeeUpdateSignature(trader, tradeId, newFeePct, traderSignature);
-
         emit UpdatedFeeForTrade(trader, tradeIndex, newFeePct);
     }
 
@@ -246,9 +252,7 @@ contract BookSingleChain is IOptimisticRequester, IBookSingleChainEvents, Owned 
         address recipient,
         uint256 tradeIndex,
         uint256 amountToSend
-    )
-        external
-    {
+    ) external {
         bytes32 tradeId = _getTradeId(
             tokenIn,
             tokenOut,
@@ -300,9 +304,7 @@ contract BookSingleChain is IOptimisticRequester, IBookSingleChainEvents, Owned 
         address trader,
         uint256 newFeePct,
         bytes calldata traderSignature
-    )
-        external
-    {
+    ) external {
         bytes32 tradeId = _getTradeId(
             tokenIn,
             tokenOut,
@@ -315,6 +317,7 @@ contract BookSingleChain is IOptimisticRequester, IBookSingleChainEvents, Owned 
 
         // We delegate checking if the trade is already filled to `_verifyFeeUpdateSignature`
         _verifyFeeUpdateSignature(trader, tradeId, newFeePct, traderSignature);
+        emit UpdatedFeeForTrade(trader, tradeIndex, newFeePct);
         _fillTrade(
             tokenIn,
             tokenOut,
@@ -348,9 +351,7 @@ contract BookSingleChain is IOptimisticRequester, IBookSingleChainEvents, Owned 
         uint256 feePct,
         address recipient,
         uint256 tradeIndex
-    )
-        external
-    {
+    ) external {
         bytes32 tradeId = _getTradeId(
             tokenIn,
             tokenOut,
@@ -360,16 +361,16 @@ contract BookSingleChain is IOptimisticRequester, IBookSingleChainEvents, Owned 
             recipient,
             tradeIndex
         );
-        int256 filledHeight = filledAtBlock[tradeId];
+        uint256 filledHeight = filledAtBlock[tradeId];
         // Check if the trade has already been settled, is not filled or does not exist.
-        if (filledHeight <= 0) {
-            revert BookSingleChain__TradeNotInFilledState(tradeId);
+        if (filledHeight == 0) {
+            revert BookSingleChain__TradeNotFilled(tradeId);
         }
         // safe cast as for the check above we know that filledAtBlock[tradeId] > 0.
-        if (block.number - uint256(filledHeight) < safeBlockThreshold) {
+        if (block.number - filledHeight < safeBlockThreshold) {
             // Always > 0 for the check above
-            uint256 blocksLeft = safeBlockThreshold
-                - (block.number - uint256(filledAtBlock[tradeId]));
+            uint256 blocksLeft = safeBlockThreshold -
+                (block.number - filledAtBlock[tradeId]);
             revert BookSingleChain__DisputePeriodNotOver(blocksLeft);
         }
 
@@ -377,13 +378,14 @@ contract BookSingleChain is IOptimisticRequester, IBookSingleChainEvents, Owned 
 
         delete filledAtBlock[tradeId];
         delete filledBy[tradeId];
+        delete isInitialized[tradeId];
 
         // Since the trade is valid, the relayer can now receive all the tokens.
         uint256 amountInToRelayer = (amountIn * (100 - relayerRefundPct)) / 100;
 
         ERC20(tokenIn).safeTransfer(relayer, amountInToRelayer);
 
-        emit TradeSettled(relayer, tradeIndex, uint256(filledHeight));
+        emit TradeSettled(relayer, tradeIndex, filledHeight);
     }
 
     /**
@@ -407,9 +409,7 @@ contract BookSingleChain is IOptimisticRequester, IBookSingleChainEvents, Owned 
         uint256 feePct,
         address recipient,
         uint256 tradeIndex
-    )
-        external
-    {
+    ) external {
         bytes32 tradeId = _getTradeId(
             tokenIn,
             tokenOut,
@@ -419,23 +419,25 @@ contract BookSingleChain is IOptimisticRequester, IBookSingleChainEvents, Owned 
             recipient,
             tradeIndex
         );
-        // nest to avoid stack too deep, yes this is still a thing in 2022
-        int256 filledHeight = filledAtBlock[tradeId];
+
+        uint256 filledHeight = filledAtBlock[tradeId];
 
         // Check that the trade exist and has not been disputed already.
-        if (filledHeight <= 0) {
-            revert BookSingleChain__TradeNotInFilledState(tradeId);
+        if (filledHeight == 0) {
+            revert BookSingleChain__TradeNotFilled(tradeId);
         }
+
         // Check that the dispute period has not yet ended. Cast is safe for the check above.
-        if (block.number - uint256(filledHeight) >= safeBlockThreshold) {
+        if (block.number - filledHeight >= safeBlockThreshold) {
             revert BookSingleChain__DisputePeriodOver();
         }
-        // Change sign of the filledAtBlock to indicate that the trade is disputed.
-        filledAtBlock[tradeId] = -filledHeight;
 
         address relayer = filledBy[tradeId];
-
         uint256 bondAmount = (amountIn * (disputeBondPct)) / 100;
+
+        delete filledAtBlock[tradeId];
+        delete filledBy[tradeId];
+        delete isInitialized[tradeId];
 
         ERC20(tokenIn).safeApprove(address(oracle), bondAmount);
         bytes32 disputeId = oracle.ask(
@@ -448,16 +450,21 @@ contract BookSingleChain is IOptimisticRequester, IBookSingleChainEvents, Owned 
         ERC20(tokenIn).safeApprove(address(oracle), 0);
 
         emit TradeDisputed(
-            relayer, tradeIndex, disputeId, uint256(filledHeight)
-            );
+            relayer,
+            tradeIndex,
+            disputeId,
+            uint256(filledHeight)
+        );
     }
 
     function onPriceSettled(bytes32 id, Request calldata request) external {
         if (msg.sender != address(oracle)) {
             revert BookSingleChain__MaliciousCaller(msg.sender);
         }
-        (uint256 amountIn, address recipient, uint256 tradeIndex) =
-            abi.decode(request.data, (uint256, address, uint256));
+        (uint256 amountIn, address recipient, uint256 tradeIndex) = abi.decode(
+            request.data,
+            (uint256, address, uint256)
+        );
         // If answer is true, it means the relayer was truthful, so he gets the tradeRebatePct of the trade as no rebate is necessary.
         uint256 rebate = (amountIn * tradeRebatePct) / 100;
         if (request.answer) {
@@ -467,8 +474,11 @@ contract BookSingleChain is IOptimisticRequester, IBookSingleChainEvents, Owned 
         }
 
         emit TradeDisputeSettled(
-            request.proposer, tradeIndex, id, request.answer
-            );
+            request.proposer,
+            tradeIndex,
+            id,
+            request.answer
+        );
     }
 
     /**
@@ -482,27 +492,25 @@ contract BookSingleChain is IOptimisticRequester, IBookSingleChainEvents, Owned 
         bytes32 tradeId,
         uint256 newFeePct,
         bytes calldata traderSignature
-    )
-        internal
-        view
-    {
+    ) internal view {
         if (newFeePct > MAX_FEE_PCT) {
             revert BookSingleChain__FeePctTooHigh(newFeePct);
         }
-        if (filledAtBlock[tradeId] < 0) {
-            revert BookSingleChain__TradeNotInFilledState(tradeId);
-        }
         if (filledAtBlock[tradeId] > 0) {
-            revert BookSingleChain__TradeAlreadyFilled(tradeId);
+            revert BookSingleChain__TradeNotInFillableState(tradeId);
         }
 
-        bytes32 expectedMessageHash =
-            keccak256(abi.encodePacked(SIGNATURE_DELIMITER, tradeId, newFeePct));
+        bytes32 expectedMessageHash = keccak256(
+            abi.encodePacked(SIGNATURE_DELIMITER, tradeId, newFeePct)
+        );
 
-        bytes32 ethSignedMessageHash =
-            ECDSA.toEthSignedMessageHash(expectedMessageHash);
-        address maybeTrader =
-            ECDSA.recover(ethSignedMessageHash, traderSignature);
+        bytes32 ethSignedMessageHash = ECDSA.toEthSignedMessageHash(
+            expectedMessageHash
+        );
+        address maybeTrader = ECDSA.recover(
+            ethSignedMessageHash,
+            traderSignature
+        );
         if (maybeTrader != trader) {
             revert BookSingleChain__InvalidSignature();
         }
@@ -525,19 +533,18 @@ contract BookSingleChain is IOptimisticRequester, IBookSingleChainEvents, Owned 
         bytes32 tradeId,
         uint256 amountToSend,
         address relayer
-    )
-        internal
-    {
-        if (filledAtBlock[tradeId] < 0) {
-            revert BookSingleChain__TradeNotInFilledState(tradeId);
+    ) internal {
+        if (!isInitialized[tradeId]) {
+            revert BookSingleChain__TradeNotInFillableState(tradeId);
         }
-        if (filledAtBlock[tradeId] > 0) {
-            revert BookSingleChain__TradeAlreadyFilled(tradeId);
+        if (filledAtBlock[tradeId] != 0) {
+            revert BookSingleChain__TradeNotInFillableState(tradeId);
         }
+
         if (amountToSend < minAmountOut) {
             revert BookSingleChain__AmountOutTooLow();
         }
-        filledAtBlock[tradeId] = int256(block.number);
+        filledAtBlock[tradeId] = block.number;
         filledBy[tradeId] = relayer;
 
         emit TradeFilled(relayer, tradeIndex, feePct, amountToSend);
@@ -568,15 +575,18 @@ contract BookSingleChain is IOptimisticRequester, IBookSingleChainEvents, Owned 
         uint256 feePct,
         address recipient,
         uint256 tradeIndex
-    )
-        internal
-        pure
-        returns (bytes32)
-    {
-        return keccak256(
-            abi.encodePacked(
-                tokenIn, tokenOut, amountIn, minAmountOut, feePct, recipient, tradeIndex
-            )
-        );
+    ) internal pure returns (bytes32) {
+        return
+            keccak256(
+                abi.encodePacked(
+                    tokenIn,
+                    tokenOut,
+                    amountIn,
+                    minAmountOut,
+                    feePct,
+                    recipient,
+                    tradeIndex
+                )
+            );
     }
 }
