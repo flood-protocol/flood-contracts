@@ -275,6 +275,200 @@ pub mod all_knowing_oracle {
             Self(contract)
         }
     }
+    #[doc = "Custom Error type `AllKnowingOracle__AlreadySettled` with signature `AllKnowingOracle__AlreadySettled(bytes32)` and selector `[182, 119, 22, 119]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthError,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[etherror(
+        name = "AllKnowingOracle__AlreadySettled",
+        abi = "AllKnowingOracle__AlreadySettled(bytes32)"
+    )]
+    pub struct AllKnowingOracle__AlreadySettled {
+        pub id: [u8; 32],
+    }
+    #[doc = "Custom Error type `AllKnowingOracle__NonRequester` with signature `AllKnowingOracle__NonRequester()` and selector `[75, 129, 150, 242]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthError,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[etherror(
+        name = "AllKnowingOracle__NonRequester",
+        abi = "AllKnowingOracle__NonRequester()"
+    )]
+    pub struct AllKnowingOracle__NonRequester;
+    #[doc = "Custom Error type `AllKnowingOracle__NonSettler` with signature `AllKnowingOracle__NonSettler()` and selector `[167, 78, 233, 200]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthError,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[etherror(
+        name = "AllKnowingOracle__NonSettler",
+        abi = "AllKnowingOracle__NonSettler()"
+    )]
+    pub struct AllKnowingOracle__NonSettler;
+    #[doc = "Custom Error type `AllKnowingOracle__RequestAlreadyExists` with signature `AllKnowingOracle__RequestAlreadyExists(bytes32)` and selector `[213, 232, 128, 233]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthError,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[etherror(
+        name = "AllKnowingOracle__RequestAlreadyExists",
+        abi = "AllKnowingOracle__RequestAlreadyExists(bytes32)"
+    )]
+    pub struct AllKnowingOracle__RequestAlreadyExists {
+        pub id: [u8; 32],
+    }
+    #[doc = "Custom Error type `AllKnowingOracle__TokenNotWhitelisted` with signature `AllKnowingOracle__TokenNotWhitelisted(address)` and selector `[80, 162, 58, 32]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthError,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[etherror(
+        name = "AllKnowingOracle__TokenNotWhitelisted",
+        abi = "AllKnowingOracle__TokenNotWhitelisted(address)"
+    )]
+    pub struct AllKnowingOracle__TokenNotWhitelisted {
+        pub token: ethers::core::types::Address,
+    }
+    #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
+    pub enum AllKnowingOracleErrors {
+        AllKnowingOracle__AlreadySettled(AllKnowingOracle__AlreadySettled),
+        AllKnowingOracle__NonRequester(AllKnowingOracle__NonRequester),
+        AllKnowingOracle__NonSettler(AllKnowingOracle__NonSettler),
+        AllKnowingOracle__RequestAlreadyExists(AllKnowingOracle__RequestAlreadyExists),
+        AllKnowingOracle__TokenNotWhitelisted(AllKnowingOracle__TokenNotWhitelisted),
+    }
+    impl ethers::core::abi::AbiDecode for AllKnowingOracleErrors {
+        fn decode(
+            data: impl AsRef<[u8]>,
+        ) -> ::std::result::Result<Self, ethers::core::abi::AbiError> {
+            if let Ok(decoded) =
+                <AllKnowingOracle__AlreadySettled as ethers::core::abi::AbiDecode>::decode(
+                    data.as_ref(),
+                )
+            {
+                return Ok(AllKnowingOracleErrors::AllKnowingOracle__AlreadySettled(
+                    decoded,
+                ));
+            }
+            if let Ok(decoded) =
+                <AllKnowingOracle__NonRequester as ethers::core::abi::AbiDecode>::decode(
+                    data.as_ref(),
+                )
+            {
+                return Ok(AllKnowingOracleErrors::AllKnowingOracle__NonRequester(
+                    decoded,
+                ));
+            }
+            if let Ok(decoded) =
+                <AllKnowingOracle__NonSettler as ethers::core::abi::AbiDecode>::decode(
+                    data.as_ref(),
+                )
+            {
+                return Ok(AllKnowingOracleErrors::AllKnowingOracle__NonSettler(
+                    decoded,
+                ));
+            }
+            if let Ok(decoded) =
+                <AllKnowingOracle__RequestAlreadyExists as ethers::core::abi::AbiDecode>::decode(
+                    data.as_ref(),
+                )
+            {
+                return Ok(AllKnowingOracleErrors::AllKnowingOracle__RequestAlreadyExists(decoded));
+            }
+            if let Ok(decoded) =
+                <AllKnowingOracle__TokenNotWhitelisted as ethers::core::abi::AbiDecode>::decode(
+                    data.as_ref(),
+                )
+            {
+                return Ok(AllKnowingOracleErrors::AllKnowingOracle__TokenNotWhitelisted(decoded));
+            }
+            Err(ethers::core::abi::Error::InvalidData.into())
+        }
+    }
+    impl ethers::core::abi::AbiEncode for AllKnowingOracleErrors {
+        fn encode(self) -> Vec<u8> {
+            match self {
+                AllKnowingOracleErrors::AllKnowingOracle__AlreadySettled(element) => {
+                    element.encode()
+                }
+                AllKnowingOracleErrors::AllKnowingOracle__NonRequester(element) => element.encode(),
+                AllKnowingOracleErrors::AllKnowingOracle__NonSettler(element) => element.encode(),
+                AllKnowingOracleErrors::AllKnowingOracle__RequestAlreadyExists(element) => {
+                    element.encode()
+                }
+                AllKnowingOracleErrors::AllKnowingOracle__TokenNotWhitelisted(element) => {
+                    element.encode()
+                }
+            }
+        }
+    }
+    impl ::std::fmt::Display for AllKnowingOracleErrors {
+        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+            match self {
+                AllKnowingOracleErrors::AllKnowingOracle__AlreadySettled(element) => element.fmt(f),
+                AllKnowingOracleErrors::AllKnowingOracle__NonRequester(element) => element.fmt(f),
+                AllKnowingOracleErrors::AllKnowingOracle__NonSettler(element) => element.fmt(f),
+                AllKnowingOracleErrors::AllKnowingOracle__RequestAlreadyExists(element) => {
+                    element.fmt(f)
+                }
+                AllKnowingOracleErrors::AllKnowingOracle__TokenNotWhitelisted(element) => {
+                    element.fmt(f)
+                }
+            }
+        }
+    }
+    impl ::std::convert::From<AllKnowingOracle__AlreadySettled> for AllKnowingOracleErrors {
+        fn from(var: AllKnowingOracle__AlreadySettled) -> Self {
+            AllKnowingOracleErrors::AllKnowingOracle__AlreadySettled(var)
+        }
+    }
+    impl ::std::convert::From<AllKnowingOracle__NonRequester> for AllKnowingOracleErrors {
+        fn from(var: AllKnowingOracle__NonRequester) -> Self {
+            AllKnowingOracleErrors::AllKnowingOracle__NonRequester(var)
+        }
+    }
+    impl ::std::convert::From<AllKnowingOracle__NonSettler> for AllKnowingOracleErrors {
+        fn from(var: AllKnowingOracle__NonSettler) -> Self {
+            AllKnowingOracleErrors::AllKnowingOracle__NonSettler(var)
+        }
+    }
+    impl ::std::convert::From<AllKnowingOracle__RequestAlreadyExists> for AllKnowingOracleErrors {
+        fn from(var: AllKnowingOracle__RequestAlreadyExists) -> Self {
+            AllKnowingOracleErrors::AllKnowingOracle__RequestAlreadyExists(var)
+        }
+    }
+    impl ::std::convert::From<AllKnowingOracle__TokenNotWhitelisted> for AllKnowingOracleErrors {
+        fn from(var: AllKnowingOracle__TokenNotWhitelisted) -> Self {
+            AllKnowingOracleErrors::AllKnowingOracle__TokenNotWhitelisted(var)
+        }
+    }
     #[derive(
         Clone,
         Debug,
