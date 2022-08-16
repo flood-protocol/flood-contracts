@@ -127,7 +127,7 @@ export interface TradeRequestedEventObject {
   amountIn: BigNumber;
   minAmountOut: BigNumber;
   feePct: BigNumber;
-  to: string;
+  recipient: string;
   tradeIndex: BigNumber;
 }
 export type TradeRequestedEvent = TypedEvent<
@@ -265,7 +265,7 @@ export interface IBookSingleChainEvents extends BaseContract {
       amountIn?: null,
       minAmountOut?: null,
       feePct?: null,
-      to?: null,
+      recipient?: null,
       tradeIndex?: PromiseOrValue<BigNumberish> | null
     ): TradeRequestedEventFilter;
     TradeRequested(
@@ -274,7 +274,7 @@ export interface IBookSingleChainEvents extends BaseContract {
       amountIn?: null,
       minAmountOut?: null,
       feePct?: null,
-      to?: null,
+      recipient?: null,
       tradeIndex?: PromiseOrValue<BigNumberish> | null
     ): TradeRequestedEventFilter;
 

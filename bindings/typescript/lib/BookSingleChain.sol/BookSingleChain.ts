@@ -66,6 +66,7 @@ export interface BookSingleChainInterface extends utils.Interface {
     "fillTradeWithUpdatedFee(address,address,uint256,uint256,uint256,address,uint256,uint256,address,uint256,bytes)": FunctionFragment;
     "filledAtBlock(bytes32)": FunctionFragment;
     "filledBy(bytes32)": FunctionFragment;
+    "isInitialized(bytes32)": FunctionFragment;
     "numberOfTrades()": FunctionFragment;
     "onPriceSettled(bytes32,(address,address,address,address,uint256,uint8,bool,bytes))": FunctionFragment;
     "oracle()": FunctionFragment;
@@ -89,6 +90,7 @@ export interface BookSingleChainInterface extends utils.Interface {
       | "fillTradeWithUpdatedFee"
       | "filledAtBlock"
       | "filledBy"
+      | "isInitialized"
       | "numberOfTrades"
       | "onPriceSettled"
       | "oracle"
@@ -155,6 +157,10 @@ export interface BookSingleChainInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "filledBy",
+    values: [PromiseOrValue<BytesLike>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "isInitialized",
     values: [PromiseOrValue<BytesLike>]
   ): string;
   encodeFunctionData(
@@ -248,6 +254,10 @@ export interface BookSingleChainInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "filledBy", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "isInitialized",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "numberOfTrades",
     data: BytesLike
@@ -410,7 +420,7 @@ export interface TradeRequestedEventObject {
   amountIn: BigNumber;
   minAmountOut: BigNumber;
   feePct: BigNumber;
-  to: string;
+  recipient: string;
   tradeIndex: BigNumber;
 }
 export type TradeRequestedEvent = TypedEvent<
@@ -521,6 +531,11 @@ export interface BookSingleChain extends BaseContract {
       arg0: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<[string]>;
+
+    isInitialized(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
 
     numberOfTrades(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -642,6 +657,11 @@ export interface BookSingleChain extends BaseContract {
     overrides?: CallOverrides
   ): Promise<string>;
 
+  isInitialized(
+    arg0: PromiseOrValue<BytesLike>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
   numberOfTrades(overrides?: CallOverrides): Promise<BigNumber>;
 
   onPriceSettled(
@@ -761,6 +781,11 @@ export interface BookSingleChain extends BaseContract {
       arg0: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<string>;
+
+    isInitialized(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
 
     numberOfTrades(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -914,7 +939,7 @@ export interface BookSingleChain extends BaseContract {
       amountIn?: null,
       minAmountOut?: null,
       feePct?: null,
-      to?: null,
+      recipient?: null,
       tradeIndex?: PromiseOrValue<BigNumberish> | null
     ): TradeRequestedEventFilter;
     TradeRequested(
@@ -923,7 +948,7 @@ export interface BookSingleChain extends BaseContract {
       amountIn?: null,
       minAmountOut?: null,
       feePct?: null,
-      to?: null,
+      recipient?: null,
       tradeIndex?: PromiseOrValue<BigNumberish> | null
     ): TradeRequestedEventFilter;
 
@@ -997,6 +1022,11 @@ export interface BookSingleChain extends BaseContract {
     ): Promise<BigNumber>;
 
     filledBy(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    isInitialized(
       arg0: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -1118,6 +1148,11 @@ export interface BookSingleChain extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     filledBy(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    isInitialized(
       arg0: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
