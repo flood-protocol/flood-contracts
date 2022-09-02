@@ -17,6 +17,7 @@ contract DeployScript is Script, Test {
         uint256 disputeBondPct = vm.envUint("DISPUTE_BOND_PCT");
         uint256 tradeRebatePct = vm.envUint("TRADE_REBATE_PCT");
         uint256 relayerRefundPct = vm.envUint("RELAYER_REFUND_PCT");
+        uint256 feePct = vm.envUint("FEE_PCT");
         address USDC = vm.envAddress("USDC_ADDRESS");
         address WETH = vm.envAddress("WETH_ADDRESS");
         string memory RPC_URL = vm.envString("DEPLOY_RPC_URL");
@@ -28,7 +29,8 @@ contract DeployScript is Script, Test {
             safeBlockThreshold,
             disputeBondPct,
             tradeRebatePct,
-            relayerRefundPct
+            relayerRefundPct,
+            feePct
         );
         whitelistTokenForBookAndOracle(
             address(oracle),
@@ -54,13 +56,15 @@ contract DeployScript is Script, Test {
         uint256 _safeBlockThreshold,
         uint256 _disputeBondPct,
         uint256 _tradeRebatePct,
-        uint256 _relayerRefundPct
+        uint256 _relayerRefundPct,
+        uint256 _feePct
     ) public {
         assertEq(
             _disputeBondPct + _tradeRebatePct + _relayerRefundPct,
             100,
             "invalid invariant"
         );
+        assertLe(_feePct, 2500, "feePct above 25%");
         assert(_disputeBondPct > 0);
         assert(_tradeRebatePct > 0);
         assert(_relayerRefundPct > 0);
@@ -71,7 +75,8 @@ contract DeployScript is Script, Test {
             _safeBlockThreshold,
             _disputeBondPct,
             _tradeRebatePct,
-            _relayerRefundPct
+            _relayerRefundPct,
+            _feePct
         );
         AllKnowingOracle(_oracle).whitelistRequester(address(book), true);
     }

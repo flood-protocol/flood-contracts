@@ -12,6 +12,7 @@ contract BaseBookFixture is IBookEvents, OracleFixture {
     uint256 testDisputeBondPct = 20;
     uint256 testTradeRebatePct = 20;
     uint256 testRelayerRefundPct = 60;
+    uint256 testFeePct = 100;
 
     function setUp() public virtual override {
         super.setUp();
@@ -20,7 +21,8 @@ contract BaseBookFixture is IBookEvents, OracleFixture {
             testSafeBlockThreashold,
             testDisputeBondPct,
             testTradeRebatePct,
-            testRelayerRefundPct
+            testRelayerRefundPct,
+            testFeePct
         );
         vm.label(address(book), "Book");
     }
@@ -31,7 +33,6 @@ contract TradeFixture is BaseBookFixture {
 
     address internal testTokenIn = WETH;
     address internal testTokenOut = USDC;
-    uint256 internal testFeePct = 0.01e18;
     uint256 internal testAmountIn = 1 ether;
     uint256 internal testAmountOutMin = 900 * 10**6;
     address internal testRecipient = alice;
@@ -62,7 +63,6 @@ contract TradeFixture is BaseBookFixture {
         address tokenOut,
         uint256 amountIn,
         uint256 amountOutMin,
-        uint256 feePct,
         address recipient,
         address who
     ) internal returns (uint256, bytes32) {
@@ -72,34 +72,12 @@ contract TradeFixture is BaseBookFixture {
             tokenOut,
             amountIn,
             amountOutMin,
-            feePct,
             recipient,
             tradeIndex
         );
         vm.prank(who);
-        book.requestTrade(
-            tokenIn,
-            tokenOut,
-            amountIn,
-            amountOutMin,
-            feePct,
-            recipient
-        );
+        book.requestTrade(tokenIn, tokenOut, amountIn, amountOutMin, recipient);
         return (tradeIndex, tradeId);
-    }
-
-    function _signFeeUpdate(
-        uint256 pk,
-        bytes32 tradeId,
-        uint256 newFeePct
-    ) internal returns (bytes memory) {
-        bytes32 messageHash = keccak256(
-            abi.encodePacked(SIGNATURE_DELIMITER, tradeId, newFeePct)
-        );
-        bytes32 ethSignedMessageHash = ECDSA.toEthSignedMessageHash(
-            messageHash
-        );
-        return sign(pk, ethSignedMessageHash);
     }
 
     function _getTradeId(
@@ -107,7 +85,6 @@ contract TradeFixture is BaseBookFixture {
         address _tokenOut,
         uint256 _amountIn,
         uint256 _amountOutMin,
-        uint256 _feePct,
         address _recipient,
         uint256 _tradeIndex
     ) internal pure returns (bytes32) {
@@ -118,7 +95,6 @@ contract TradeFixture is BaseBookFixture {
                     _tokenOut,
                     _amountIn,
                     _amountOutMin,
-                    _feePct,
                     _recipient,
                     _tradeIndex
                 )
@@ -130,7 +106,6 @@ contract TradeFixture is BaseBookFixture {
         address _tokenOut,
         uint256 _amountIn,
         uint256 _amountOutMin,
-        uint256 _feePct,
         address _to,
         uint256 _tradeIndex,
         uint256 _amountToSend
@@ -140,7 +115,6 @@ contract TradeFixture is BaseBookFixture {
             _tokenOut,
             _amountIn,
             _amountOutMin,
-            _feePct,
             _to,
             _tradeIndex,
             _amountToSend
@@ -188,7 +162,6 @@ contract DisputeFixture is TradeFixture {
             testTokenOut,
             testAmountIn,
             testAmountOutMin,
-            testFeePct,
             testRecipient,
             alice
         );
@@ -200,7 +173,6 @@ contract DisputeFixture is TradeFixture {
             testTokenOut,
             testAmountIn,
             testAmountOutMin,
-            testFeePct,
             testRecipient,
             tradeIndex,
             testAmountToSend
@@ -216,7 +188,6 @@ contract DisputeFixture is TradeFixture {
         address _tokenOut,
         uint256 _amountIn,
         uint256 _amountOutMin,
-        uint256 _feePct,
         address _recipient,
         uint256 _tradeIndex
     ) internal {
@@ -226,7 +197,6 @@ contract DisputeFixture is TradeFixture {
             _tokenOut,
             _amountIn,
             _amountOutMin,
-            _feePct,
             _recipient,
             _tradeIndex
         );
