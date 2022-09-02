@@ -5,7 +5,6 @@ import "solmate/tokens/ERC20.sol";
 import "solmate/auth/Owned.sol";
 import "solmate/utils/SafeTransferLib.sol";
 import "solmate/utils/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "./AllKnowingOracle.sol";
 
 interface IBookEvents {
@@ -15,25 +14,19 @@ interface IBookEvents {
         uint256 tradeRebatePct,
         uint256 relayerRefundPct
     );
+    event FeePctSet(uint256 feePct);
     event TokenWhitelisted(address indexed token, bool whitelisted);
     event TradeRequested(
         address indexed tokenIn,
         address indexed tokenOut,
         uint256 amountIn,
         uint256 minAmountOut,
-        uint256 feePct,
         address recipient,
         uint256 indexed tradeIndex
-    );
-    event UpdatedFeeForTrade(
-        address indexed trader,
-        uint256 indexed tradeIndex,
-        uint256 newFeePct
     );
     event TradeFilled(
         address indexed relayer,
         uint256 indexed tradeIndex,
-        uint256 feePct,
         uint256 amountOut
     );
     event TradeSettled(
@@ -56,25 +49,20 @@ interface IBookEvents {
 }
 
 error Book__InvalidToken(address token);
-error Book__FeePctTooHigh(uint256 fee);
 error Book__SameToken();
-error Book__NewFeePctTooHigh();
 error Book__UnsafeTokenToWhitelist(address token);
 error Book__ZeroAmount();
 // the recipient of a transfer was the 0 address
 error Book__SentToBlackHole();
 error Book__InvalidFeeCombination();
+error Book__FeePctTooHigh();
 // The trade is not filled yet, doesn't exist or was disputed
 error Book__TradeNotInFillableState(bytes32 tradeId);
 error Book__TradeNotFilled(bytes32 tradeId);
 error Book__AmountOutTooLow();
-error Book__InvalidSignature();
 error Book__DisputePeriodNotOver(uint256 blocksLeft);
 error Book__DisputePeriodOver();
 error Book__MaliciousCaller(address caller);
-
-bytes32 constant SIGNATURE_DELIMITER = keccak256("FLOOD-V1");
-uint256 constant MAX_FEE_PCT = 0.25 * 1e18;
 
 contract Book is IOptimisticRequester, IBookEvents, Owned {
     using SafeTransferLib for ERC20;
@@ -83,6 +71,8 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
     uint256 public immutable disputeBondPct;
     uint256 public immutable tradeRebatePct;
     uint256 public immutable relayerRefundPct;
+    // The fee taken on each trade by relayers, expressed in basis points (so 100% = 10000)
+    uint256 public immutable feePct;
 
     AllKnowingOracle public immutable oracle;
 
@@ -100,7 +90,8 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
         uint256 _safeBlockThreshold,
         uint256 _disputeBondPct,
         uint256 _tradeRebatePct,
-        uint256 _relayerRefundPct
+        uint256 _relayerRefundPct,
+        uint256 _feePct
     ) Owned(msg.sender) {
         oracle = AllKnowingOracle(_oracle);
         safeBlockThreshold = _safeBlockThreshold;
@@ -118,6 +109,13 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
             _tradeRebatePct,
             _relayerRefundPct
         );
+
+        if (_feePct > 2500) {
+            revert Book__FeePctTooHigh();
+        }
+
+        feePct = _feePct;
+        emit FeePctSet(_feePct);
     }
 
     /**
@@ -143,7 +141,6 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
      * @param tokenOut The token to be bought.
      * @param amountIn The amount of `tokenIn` to be sold.
      * @param minAmountOut The minimum amount of `tokenOut` to be bought. This should be set offchain based on `feeCombination.tradeRebatePct`, for example, if `feeCombination.tradeRebatePct` is 20%, then `minAmountOut` could be 90% of optimal at the time of request.
-     * @param feePct The fee percentage. This is to be interpreted as a "distance" from the optimal execution price.
      * @param recipient The address to receive the tokens bought.
      */
     function requestTrade(
@@ -151,7 +148,6 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
         address tokenOut,
         uint256 amountIn,
         uint256 minAmountOut,
-        uint256 feePct,
         address recipient
     ) external {
         if (!whitelistedTokens[tokenIn]) {
@@ -162,9 +158,6 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
         }
         if (tokenIn == tokenOut) {
             revert Book__SameToken();
-        }
-        if (feePct > MAX_FEE_PCT) {
-            revert Book__FeePctTooHigh(feePct);
         }
         if (amountIn == 0 || minAmountOut == 0) {
             revert Book__ZeroAmount();
@@ -178,7 +171,6 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
             tokenOut,
             amountIn,
             minAmountOut,
-            feePct,
             recipient,
             numberOfTrades
         );
@@ -188,7 +180,6 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
             tokenOut,
             amountIn,
             minAmountOut,
-            feePct,
             recipient,
             numberOfTrades
         );
@@ -198,53 +189,11 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
         ERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
     }
 
-    /**
-     * @notice Updates the `feePct` for the trade with the `tradeId` ID. 
-        It's possible to update the fee for a trade that does not exist, but it is safe to do so, as relayers trying to fill would get disputed as if they submitted an incorrect trade.
-        However, it is never possible to update the fee for a trade on behalf of another trader without their signature.
-     * @param tokenIn The token to be sold.
-     * @param tokenOut The token to be bought.
-     * @param amountIn The amount of `tokenIn` to be sold.
-     * @param minAmountOut The minimum amount of `tokenOut` to be bought.
-     * @param feePct The fee percentage. This is to be interpreted as a "distance" from the optimal execution price.
-     * @param recipient The address to receive the tokens bought.
-     * @param tradeIndex The index of the trade to update.
-     * @param trader The address of the trader who initially requested the trade.
-     * @param newFeePct The updated fee percentage.
-     * @param traderSignature A signed message by the trader that first requested the trade.
-     */
-    function updateFeeForTrade(
-        address tokenIn,
-        address tokenOut,
-        uint256 amountIn,
-        uint256 minAmountOut,
-        uint256 feePct,
-        address recipient,
-        uint256 tradeIndex,
-        address trader,
-        uint256 newFeePct,
-        bytes calldata traderSignature
-    ) external {
-        bytes32 tradeId = _getTradeId(
-            tokenIn,
-            tokenOut,
-            amountIn,
-            minAmountOut,
-            feePct,
-            recipient,
-            tradeIndex
-        );
-
-        _verifyFeeUpdateSignature(trader, tradeId, newFeePct, traderSignature);
-        emit UpdatedFeeForTrade(trader, tradeIndex, newFeePct);
-    }
-
     function fillTrade(
         address tokenIn,
         address tokenOut,
         uint256 amountIn,
         uint256 minAmountOut,
-        uint256 feePct,
         address recipient,
         uint256 tradeIndex,
         uint256 amountToSend
@@ -254,7 +203,6 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
             tokenOut,
             amountIn,
             minAmountOut,
-            feePct,
             recipient,
             tradeIndex
         );
@@ -263,64 +211,6 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
             tokenOut,
             amountIn,
             minAmountOut,
-            feePct,
-            recipient,
-            tradeIndex,
-            tradeId,
-            amountToSend,
-            msg.sender
-        );
-    }
-
-    /**
-     * @notice Called by relayers to execute the same logic as `fillTrade` but with `updatedFeePct` instead of `feePct`.
-     * This updated fee must have been requested by the `trader` that initiated the trade, by cryptographically signing a message `updatedFeePct`.
-     * A trader will usually call `updateFeeForTrade` to signal to relayers the new fee and make its signature available.
-     * @param tokenIn The token to be sold.
-     * @param tokenOut The token to be bought.
-     * @param amountIn The amount of `tokenIn` to be sold.
-     * @param minAmountOut The minimum amount of `tokenOut` to be bought.
-     * @param feePct The fee percentage. This is to be interpreted as a "distance" from the optimal execution price.
-     * @param recipient The address to receive the tokens bought.
-     * @param tradeIndex The index of the trade to fill.
-     * @param amountToSend The amount of `tokenOut` to send to the requestor.
-     * @param trader The address of the trader who initially requested the trade.
-     * @param newFeePct The updated fee percentage.
-     * @param traderSignature A signed message by the trader that first requested the trade.
-     */
-    function fillTradeWithUpdatedFee(
-        address tokenIn,
-        address tokenOut,
-        uint256 amountIn,
-        uint256 minAmountOut,
-        uint256 feePct,
-        address recipient,
-        uint256 tradeIndex,
-        uint256 amountToSend,
-        address trader,
-        uint256 newFeePct,
-        bytes calldata traderSignature
-    ) external {
-        bytes32 tradeId = _getTradeId(
-            tokenIn,
-            tokenOut,
-            amountIn,
-            minAmountOut,
-            feePct,
-            recipient,
-            tradeIndex
-        );
-
-        // We delegate checking if the trade is already filled to `_verifyFeeUpdateSignature`
-        _verifyFeeUpdateSignature(trader, tradeId, newFeePct, traderSignature);
-        emit UpdatedFeeForTrade(trader, tradeIndex, newFeePct);
-        _fillTrade(
-            tokenIn,
-            tokenOut,
-            amountIn,
-            minAmountOut,
-            // Emit a TradeFilled event with the new fee percentage.
-            newFeePct,
             recipient,
             tradeIndex,
             tradeId,
@@ -335,7 +225,6 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
     @param tokenOut The token that was bought.
     @param amountIn The amount of `tokenIn` that was sold.
     @param minAmountOut The minimum amount of `tokenOut` that was bought.
-    @param feePct The fee percentage. This is to be interpreted as a "distance" from the optimal execution price.
     @param recipient The address to receive the tokens bought.
     @param tradeIndex The index of the trade to settle.
     */
@@ -344,7 +233,6 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
         address tokenOut,
         uint256 amountIn,
         uint256 minAmountOut,
-        uint256 feePct,
         address recipient,
         uint256 tradeIndex
     ) external {
@@ -353,7 +241,6 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
             tokenOut,
             amountIn,
             minAmountOut,
-            feePct,
             recipient,
             tradeIndex
         );
@@ -393,7 +280,6 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
      * @param tokenOut The token that was bought.
      * @param amountIn The amount of `tokenIn` that was sold.
      * @param minAmountOut The minimum amount of `tokenOut` that was bought.
-     * @param feePct The fee percentage. This is to be interpreted as a "distance" from the optimal execution price.
      * @param recipient The address to receive the tokens bought.
      * @param tradeIndex The index of the trade to dispute.
      */
@@ -402,7 +288,6 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
         address tokenOut,
         uint256 amountIn,
         uint256 minAmountOut,
-        uint256 feePct,
         address recipient,
         uint256 tradeIndex
     ) external {
@@ -411,7 +296,6 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
             tokenOut,
             amountIn,
             minAmountOut,
-            feePct,
             recipient,
             tradeIndex
         );
@@ -482,36 +366,6 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
      *         INTERNAL FUNCTIONS         *
      *************************************
      */
-
-    function _verifyFeeUpdateSignature(
-        address trader,
-        bytes32 tradeId,
-        uint256 newFeePct,
-        bytes calldata traderSignature
-    ) internal view {
-        if (newFeePct > MAX_FEE_PCT) {
-            revert Book__FeePctTooHigh(newFeePct);
-        }
-        if (filledAtBlock[tradeId] > 0) {
-            revert Book__TradeNotInFillableState(tradeId);
-        }
-
-        bytes32 expectedMessageHash = keccak256(
-            abi.encodePacked(SIGNATURE_DELIMITER, tradeId, newFeePct)
-        );
-
-        bytes32 ethSignedMessageHash = ECDSA.toEthSignedMessageHash(
-            expectedMessageHash
-        );
-        address maybeTrader = ECDSA.recover(
-            ethSignedMessageHash,
-            traderSignature
-        );
-        if (maybeTrader != trader) {
-            revert Book__InvalidSignature();
-        }
-    }
-
     /**
      * @notice called internally for filling a trade.
      * All trade are accepted at face value, so no checks are performed. However, invalid trades can be disputed.
@@ -523,7 +377,6 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
         address tokenOut,
         uint256 amountIn,
         uint256 minAmountOut,
-        uint256 feePct,
         address recipient,
         uint256 tradeIndex,
         bytes32 tradeId,
@@ -543,7 +396,7 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
         filledAtBlock[tradeId] = block.number;
         filledBy[tradeId] = relayer;
 
-        emit TradeFilled(relayer, tradeIndex, feePct, amountToSend);
+        emit TradeFilled(relayer, tradeIndex, amountToSend);
         // Send the tokens to the recipient.
         ERC20(tokenOut).safeTransferFrom(relayer, recipient, amountToSend);
         // Send some of the tokens to the relayer.
@@ -558,7 +411,6 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
      * @param tokenOut The token to be bought.
      * @param amountIn The amount of `tokenIn` to be sold.
      * @param minAmountOut The minimum amount of `tokenOut` to be bought.
-     * @param feePct The fee percentage. This is to be interpreted as a "distance" from the optimal execution price.
      * @param recipient The address to receive the tokens bought.
      * @param tradeIndex The number of trades preceding this one.
      * @return The trade ID.
@@ -568,7 +420,6 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
         address tokenOut,
         uint256 amountIn,
         uint256 minAmountOut,
-        uint256 feePct,
         address recipient,
         uint256 tradeIndex
     ) internal pure returns (bytes32) {
@@ -579,7 +430,6 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
                     tokenOut,
                     amountIn,
                     minAmountOut,
-                    feePct,
                     recipient,
                     tradeIndex
                 )

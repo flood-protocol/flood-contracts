@@ -23,7 +23,6 @@ contract SettlementTest is DisputeFixture {
             testTokenOut,
             testAmountIn,
             testAmountOutMin,
-            testFeePct,
             testRecipient,
             tradeIndex
         );
@@ -35,7 +34,6 @@ contract SettlementTest is DisputeFixture {
             testTokenOut,
             testAmountIn,
             testAmountOutMin,
-            testFeePct,
             testRecipient,
             tradeIndex
         );
@@ -92,7 +90,6 @@ contract SettlementTest is DisputeFixture {
             testTokenOut,
             testAmountIn,
             testAmountOutMin,
-            testFeePct,
             testRecipient,
             tradeIndex
         );
@@ -107,7 +104,6 @@ contract SettlementTest is DisputeFixture {
                     testTokenOut,
                     testAmountIn + 1,
                     testAmountOutMin,
-                    testFeePct,
                     testRecipient,
                     tradeIndex + 1
                 )
@@ -118,7 +114,6 @@ contract SettlementTest is DisputeFixture {
             testTokenOut,
             testAmountIn + 1,
             testAmountOutMin,
-            testFeePct,
             testRecipient,
             tradeIndex + 1
         );
@@ -132,7 +127,6 @@ contract SettlementTest is DisputeFixture {
             testTokenOut,
             testAmountIn,
             testAmountOutMin,
-            testFeePct,
             testRecipient,
             tradeIndex
         );
@@ -144,7 +138,6 @@ contract SettlementTest is DisputeFixture {
                     testTokenOut,
                     testAmountIn,
                     testAmountOutMin,
-                    testFeePct,
                     testRecipient,
                     tradeIndex
                 )
@@ -155,7 +148,6 @@ contract SettlementTest is DisputeFixture {
             testTokenOut,
             testAmountIn,
             testAmountOutMin,
-            testFeePct,
             testRecipient,
             tradeIndex
         );
