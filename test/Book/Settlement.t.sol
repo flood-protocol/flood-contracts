@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.15;
 
-import "src/BookSingleChain.sol";
+import "src/Book.sol";
 import "forge-std/Test.sol";
 import "./Fixtures.sol";
 
@@ -83,7 +83,7 @@ contract SettlementTest is DisputeFixture {
     function testCannotSettleBeforeThreshold() public {
         vm.expectRevert(
             abi.encodeWithSelector(
-                BookSingleChain__DisputePeriodNotOver.selector,
+                Book__DisputePeriodNotOver.selector,
                 testSafeBlockThreashold
             )
         );
@@ -101,7 +101,7 @@ contract SettlementTest is DisputeFixture {
     function testCannotSettleIfNotFilled() public {
         vm.expectRevert(
             abi.encodeWithSelector(
-                BookSingleChain__TradeNotFilled.selector,
+                Book__TradeNotFilled.selector,
                 _getTradeId(
                     testTokenIn,
                     testTokenOut,
@@ -138,7 +138,7 @@ contract SettlementTest is DisputeFixture {
         );
         vm.expectRevert(
             abi.encodeWithSelector(
-                BookSingleChain__TradeNotFilled.selector,
+                Book__TradeNotFilled.selector,
                 _getTradeId(
                     testTokenIn,
                     testTokenOut,

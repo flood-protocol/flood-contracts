@@ -2,14 +2,14 @@
 pragma solidity ^0.8.15;
 
 import "src/AllKnowingOracle.sol";
-import "src/BookSingleChain.sol";
+import "src/Book.sol";
 import "forge-std/Script.sol";
 import "forge-std/Test.sol";
 import {Solenv} from "solenv/Solenv.sol";
 
 contract DeployScript is Script, Test {
     AllKnowingOracle internal oracle;
-    BookSingleChain internal book;
+    Book internal book;
 
     function run() public {
         Solenv.config();
@@ -66,7 +66,7 @@ contract DeployScript is Script, Test {
         assert(_relayerRefundPct > 0);
         assert(_safeBlockThreshold > 0);
 
-        book = new BookSingleChain(
+        book = new Book(
             _oracle,
             _safeBlockThreshold,
             _disputeBondPct,

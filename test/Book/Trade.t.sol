@@ -83,10 +83,7 @@ contract TradeTest is TradeFixture {
         // check that the random token is not whitelisted
         vm.assume(!book.whitelistedTokens(token));
         vm.expectRevert(
-            abi.encodeWithSelector(
-                BookSingleChain__InvalidToken.selector,
-                token
-            )
+            abi.encodeWithSelector(Book__InvalidToken.selector, token)
         );
         book.requestTrade(
             token,
@@ -97,10 +94,7 @@ contract TradeTest is TradeFixture {
             testRecipient
         );
         vm.expectRevert(
-            abi.encodeWithSelector(
-                BookSingleChain__InvalidToken.selector,
-                token
-            )
+            abi.encodeWithSelector(Book__InvalidToken.selector, token)
         );
         book.requestTrade(
             testTokenIn,
@@ -113,7 +107,7 @@ contract TradeTest is TradeFixture {
     }
 
     function testCannotTradeSameToken() public {
-        vm.expectRevert(BookSingleChain__SameToken.selector);
+        vm.expectRevert(Book__SameToken.selector);
         book.requestTrade(
             USDC,
             USDC,
@@ -125,7 +119,7 @@ contract TradeTest is TradeFixture {
     }
 
     function testCannotTradeZeroAmount() public {
-        vm.expectRevert(BookSingleChain__ZeroAmount.selector);
+        vm.expectRevert(Book__ZeroAmount.selector);
         book.requestTrade(
             testTokenIn,
             testTokenOut,
@@ -135,7 +129,7 @@ contract TradeTest is TradeFixture {
             testRecipient
         );
 
-        vm.expectRevert(BookSingleChain__ZeroAmount.selector);
+        vm.expectRevert(Book__ZeroAmount.selector);
         book.requestTrade(
             testTokenIn,
             testTokenOut,
@@ -149,10 +143,7 @@ contract TradeTest is TradeFixture {
     function testCannotTradeAboveMaxFee() public {
         uint256 maxFeePct = MAX_FEE_PCT + 1;
         vm.expectRevert(
-            abi.encodeWithSelector(
-                BookSingleChain__FeePctTooHigh.selector,
-                maxFeePct
-            )
+            abi.encodeWithSelector(Book__FeePctTooHigh.selector, maxFeePct)
         );
         book.requestTrade(
             testTokenIn,
@@ -167,7 +158,7 @@ contract TradeTest is TradeFixture {
     function testCannotTradeToBlackHole() public {
         address blackHole = address(0);
 
-        vm.expectRevert(BookSingleChain__SentToBlackHole.selector);
+        vm.expectRevert(Book__SentToBlackHole.selector);
         book.requestTrade(
             testTokenIn,
             testTokenOut,
@@ -231,7 +222,7 @@ contract TradeTest is TradeFixture {
         uint256 newFeePct = testFeePct + 1;
         // Sign a fee update with Bob's private key.
         bytes memory bobSignature = _signFeeUpdate(BOB_PK, tradeId, newFeePct);
-        vm.expectRevert(BookSingleChain__InvalidSignature.selector);
+        vm.expectRevert(Book__InvalidSignature.selector);
         book.updateFeeForTrade(
             testTokenIn,
             testTokenOut,
@@ -266,10 +257,7 @@ contract TradeTest is TradeFixture {
             newFeePct
         );
         vm.expectRevert(
-            abi.encodeWithSelector(
-                BookSingleChain__FeePctTooHigh.selector,
-                newFeePct
-            )
+            abi.encodeWithSelector(Book__FeePctTooHigh.selector, newFeePct)
         );
         book.updateFeeForTrade(
             testTokenIn,
@@ -314,7 +302,7 @@ contract TradeTest is TradeFixture {
         );
         vm.expectRevert(
             abi.encodeWithSelector(
-                BookSingleChain__TradeNotInFillableState.selector,
+                Book__TradeNotInFillableState.selector,
                 tradeId
             )
         );
@@ -417,7 +405,7 @@ contract TradeTest is TradeFixture {
         // This should fail as the trade has not been requested.
         vm.expectRevert(
             abi.encodeWithSelector(
-                BookSingleChain__TradeNotInFillableState.selector,
+                Book__TradeNotInFillableState.selector,
                 tradeId
             )
         );
@@ -454,7 +442,7 @@ contract TradeTest is TradeFixture {
             .checked_write(block.number);
         vm.expectRevert(
             abi.encodeWithSelector(
-                BookSingleChain__TradeNotInFillableState.selector,
+                Book__TradeNotInFillableState.selector,
                 tradeId
             )
         );
@@ -498,7 +486,7 @@ contract TradeTest is TradeFixture {
 
         vm.expectRevert(
             abi.encodeWithSelector(
-                BookSingleChain__TradeNotInFillableState.selector,
+                Book__TradeNotInFillableState.selector,
                 tradeId
             )
         );
@@ -566,7 +554,7 @@ contract TradeTest is TradeFixture {
             .checked_write(true);
         uint256 amountOut = minAmountOut - 1;
         vm.prank(bob);
-        vm.expectRevert(BookSingleChain__AmountOutTooLow.selector);
+        vm.expectRevert(Book__AmountOutTooLow.selector);
         book.fillTrade(
             testTokenIn,
             testTokenOut,
@@ -691,7 +679,7 @@ contract TradeTest is TradeFixture {
         );
         vm.expectRevert(
             abi.encodeWithSelector(
-                BookSingleChain__TradeNotInFillableState.selector,
+                Book__TradeNotInFillableState.selector,
                 tradeId
             )
         );
@@ -739,7 +727,7 @@ contract TradeTest is TradeFixture {
         );
         vm.expectRevert(
             abi.encodeWithSelector(
-                BookSingleChain__TradeNotInFillableState.selector,
+                Book__TradeNotInFillableState.selector,
                 tradeId
             )
         );
@@ -782,10 +770,7 @@ contract TradeTest is TradeFixture {
         );
 
         vm.expectRevert(
-            abi.encodeWithSelector(
-                BookSingleChain__FeePctTooHigh.selector,
-                newFeePct
-            )
+            abi.encodeWithSelector(Book__FeePctTooHigh.selector, newFeePct)
         );
         book.fillTradeWithUpdatedFee(
             testTokenIn,
@@ -818,7 +803,7 @@ contract TradeTest is TradeFixture {
         uint256 newFeePct = testFeePct + 1;
         // Bob signs the feeUpdate message for Alice trade
         bytes memory bobSignature = _signFeeUpdate(BOB_PK, tradeId, newFeePct);
-        vm.expectRevert(BookSingleChain__InvalidSignature.selector);
+        vm.expectRevert(Book__InvalidSignature.selector);
         book.fillTradeWithUpdatedFee(
             testTokenIn,
             testTokenOut,

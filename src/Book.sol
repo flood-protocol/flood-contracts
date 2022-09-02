@@ -8,7 +8,7 @@ import "solmate/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "./AllKnowingOracle.sol";
 
-interface IBookSingleChainEvents {
+interface IBookEvents {
     event SafeBlockThresholdSet(uint256 newSafeBlockThreshold);
     event FeeCombinationSet(
         uint256 disputeBondPct,
@@ -55,32 +55,28 @@ interface IBookSingleChainEvents {
     );
 }
 
-error BookSingleChain__InvalidToken(address token);
-error BookSingleChain__FeePctTooHigh(uint256 fee);
-error BookSingleChain__SameToken();
-error BookSingleChain__NewFeePctTooHigh();
-error BookSingleChain__UnsafeTokenToWhitelist(address token);
-error BookSingleChain__ZeroAmount();
+error Book__InvalidToken(address token);
+error Book__FeePctTooHigh(uint256 fee);
+error Book__SameToken();
+error Book__NewFeePctTooHigh();
+error Book__UnsafeTokenToWhitelist(address token);
+error Book__ZeroAmount();
 // the recipient of a transfer was the 0 address
-error BookSingleChain__SentToBlackHole();
-error BookSingleChain__InvalidFeeCombination();
+error Book__SentToBlackHole();
+error Book__InvalidFeeCombination();
 // The trade is not filled yet, doesn't exist or was disputed
-error BookSingleChain__TradeNotInFillableState(bytes32 tradeId);
-error BookSingleChain__TradeNotFilled(bytes32 tradeId);
-error BookSingleChain__AmountOutTooLow();
-error BookSingleChain__InvalidSignature();
-error BookSingleChain__DisputePeriodNotOver(uint256 blocksLeft);
-error BookSingleChain__DisputePeriodOver();
-error BookSingleChain__MaliciousCaller(address caller);
+error Book__TradeNotInFillableState(bytes32 tradeId);
+error Book__TradeNotFilled(bytes32 tradeId);
+error Book__AmountOutTooLow();
+error Book__InvalidSignature();
+error Book__DisputePeriodNotOver(uint256 blocksLeft);
+error Book__DisputePeriodOver();
+error Book__MaliciousCaller(address caller);
 
 bytes32 constant SIGNATURE_DELIMITER = keccak256("FLOOD-V1");
 uint256 constant MAX_FEE_PCT = 0.25 * 1e18;
 
-contract BookSingleChain is
-    IOptimisticRequester,
-    IBookSingleChainEvents,
-    Owned
-{
+contract Book is IOptimisticRequester, IBookEvents, Owned {
     using SafeTransferLib for ERC20;
 
     uint256 public immutable safeBlockThreshold;
@@ -111,7 +107,7 @@ contract BookSingleChain is
         emit SafeBlockThresholdSet(safeBlockThreshold);
 
         if (_disputeBondPct + _tradeRebatePct + _relayerRefundPct != 100) {
-            revert BookSingleChain__InvalidFeeCombination();
+            revert Book__InvalidFeeCombination();
         }
         disputeBondPct = _disputeBondPct;
         tradeRebatePct = _tradeRebatePct;
@@ -135,7 +131,7 @@ contract BookSingleChain is
         onlyOwner
     {
         if (whitelisted && !oracle.whitelistedTokens(token)) {
-            revert BookSingleChain__UnsafeTokenToWhitelist(token);
+            revert Book__UnsafeTokenToWhitelist(token);
         }
         whitelistedTokens[token] = whitelisted;
         emit TokenWhitelisted(token, whitelisted);
@@ -159,22 +155,22 @@ contract BookSingleChain is
         address recipient
     ) external {
         if (!whitelistedTokens[tokenIn]) {
-            revert BookSingleChain__InvalidToken(tokenIn);
+            revert Book__InvalidToken(tokenIn);
         }
         if (!whitelistedTokens[tokenOut]) {
-            revert BookSingleChain__InvalidToken(tokenOut);
+            revert Book__InvalidToken(tokenOut);
         }
         if (tokenIn == tokenOut) {
-            revert BookSingleChain__SameToken();
+            revert Book__SameToken();
         }
         if (feePct > MAX_FEE_PCT) {
-            revert BookSingleChain__FeePctTooHigh(feePct);
+            revert Book__FeePctTooHigh(feePct);
         }
         if (amountIn == 0 || minAmountOut == 0) {
-            revert BookSingleChain__ZeroAmount();
+            revert Book__ZeroAmount();
         }
         if (recipient == address(0)) {
-            revert BookSingleChain__SentToBlackHole();
+            revert Book__SentToBlackHole();
         }
 
         emit TradeRequested(
@@ -364,14 +360,14 @@ contract BookSingleChain is
         uint256 filledHeight = filledAtBlock[tradeId];
         // Check if the trade has already been settled, is not filled or does not exist.
         if (filledHeight == 0) {
-            revert BookSingleChain__TradeNotFilled(tradeId);
+            revert Book__TradeNotFilled(tradeId);
         }
         // safe cast as for the check above we know that filledAtBlock[tradeId] > 0.
         if (block.number - filledHeight < safeBlockThreshold) {
             // Always > 0 for the check above
             uint256 blocksLeft = safeBlockThreshold -
                 (block.number - filledAtBlock[tradeId]);
-            revert BookSingleChain__DisputePeriodNotOver(blocksLeft);
+            revert Book__DisputePeriodNotOver(blocksLeft);
         }
 
         address relayer = filledBy[tradeId];
@@ -424,12 +420,12 @@ contract BookSingleChain is
 
         // Check that the trade exist and has not been disputed already.
         if (filledHeight == 0) {
-            revert BookSingleChain__TradeNotFilled(tradeId);
+            revert Book__TradeNotFilled(tradeId);
         }
 
         // Check that the dispute period has not yet ended. Cast is safe for the check above.
         if (block.number - filledHeight >= safeBlockThreshold) {
-            revert BookSingleChain__DisputePeriodOver();
+            revert Book__DisputePeriodOver();
         }
 
         address relayer = filledBy[tradeId];
@@ -459,7 +455,7 @@ contract BookSingleChain is
 
     function onPriceSettled(bytes32 id, Request calldata request) external {
         if (msg.sender != address(oracle)) {
-            revert BookSingleChain__MaliciousCaller(msg.sender);
+            revert Book__MaliciousCaller(msg.sender);
         }
         (uint256 amountIn, address recipient, uint256 tradeIndex) = abi.decode(
             request.data,
@@ -494,10 +490,10 @@ contract BookSingleChain is
         bytes calldata traderSignature
     ) internal view {
         if (newFeePct > MAX_FEE_PCT) {
-            revert BookSingleChain__FeePctTooHigh(newFeePct);
+            revert Book__FeePctTooHigh(newFeePct);
         }
         if (filledAtBlock[tradeId] > 0) {
-            revert BookSingleChain__TradeNotInFillableState(tradeId);
+            revert Book__TradeNotInFillableState(tradeId);
         }
 
         bytes32 expectedMessageHash = keccak256(
@@ -512,7 +508,7 @@ contract BookSingleChain is
             traderSignature
         );
         if (maybeTrader != trader) {
-            revert BookSingleChain__InvalidSignature();
+            revert Book__InvalidSignature();
         }
     }
 
@@ -535,14 +531,14 @@ contract BookSingleChain is
         address relayer
     ) internal {
         if (!isInitialized[tradeId]) {
-            revert BookSingleChain__TradeNotInFillableState(tradeId);
+            revert Book__TradeNotInFillableState(tradeId);
         }
         if (filledAtBlock[tradeId] != 0) {
-            revert BookSingleChain__TradeNotInFillableState(tradeId);
+            revert Book__TradeNotInFillableState(tradeId);
         }
 
         if (amountToSend < minAmountOut) {
-            revert BookSingleChain__AmountOutTooLow();
+            revert Book__AmountOutTooLow();
         }
         filledAtBlock[tradeId] = block.number;
         filledBy[tradeId] = relayer;

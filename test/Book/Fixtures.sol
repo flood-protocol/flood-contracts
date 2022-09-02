@@ -4,10 +4,10 @@ pragma solidity ^0.8.15;
 import "../utils/BaseFixture.sol";
 import "../utils/TokenFixture.sol";
 import "../AllKnowingOracle/Fixtures.sol";
-import "src/BookSingleChain.sol";
+import "src/Book.sol";
 
-contract BaseBookFixture is IBookSingleChainEvents, OracleFixture {
-    BookSingleChain internal book;
+contract BaseBookFixture is IBookEvents, OracleFixture {
+    Book internal book;
     uint256 internal testSafeBlockThreashold = 100;
     uint256 testDisputeBondPct = 20;
     uint256 testTradeRebatePct = 20;
@@ -15,7 +15,7 @@ contract BaseBookFixture is IBookSingleChainEvents, OracleFixture {
 
     function setUp() public virtual override {
         super.setUp();
-        book = new BookSingleChain(
+        book = new Book(
             address(oracle),
             testSafeBlockThreashold,
             testDisputeBondPct,
@@ -33,7 +33,7 @@ contract TradeFixture is BaseBookFixture {
     address internal testTokenOut = USDC;
     uint256 internal testFeePct = 0.01e18;
     uint256 internal testAmountIn = 1 ether;
-    uint256 internal testAmountOutMin = 900 * 10 ** 6;
+    uint256 internal testAmountOutMin = 900 * 10**6;
     address internal testRecipient = alice;
 
     function setUp() public virtual override {
@@ -65,10 +65,7 @@ contract TradeFixture is BaseBookFixture {
         uint256 feePct,
         address recipient,
         address who
-    )
-        internal
-        returns (uint256, bytes32)
-    {
+    ) internal returns (uint256, bytes32) {
         uint256 tradeIndex = book.numberOfTrades();
         bytes32 tradeId = _getTradeId(
             tokenIn,
@@ -81,18 +78,27 @@ contract TradeFixture is BaseBookFixture {
         );
         vm.prank(who);
         book.requestTrade(
-            tokenIn, tokenOut, amountIn, amountOutMin, feePct, recipient
+            tokenIn,
+            tokenOut,
+            amountIn,
+            amountOutMin,
+            feePct,
+            recipient
         );
         return (tradeIndex, tradeId);
     }
 
-    function _signFeeUpdate(uint256 pk, bytes32 tradeId, uint256 newFeePct)
-        internal
-        returns (bytes memory)
-    {
-        bytes32 messageHash =
-            keccak256(abi.encodePacked(SIGNATURE_DELIMITER, tradeId, newFeePct));
-        bytes32 ethSignedMessageHash = ECDSA.toEthSignedMessageHash(messageHash);
+    function _signFeeUpdate(
+        uint256 pk,
+        bytes32 tradeId,
+        uint256 newFeePct
+    ) internal returns (bytes memory) {
+        bytes32 messageHash = keccak256(
+            abi.encodePacked(SIGNATURE_DELIMITER, tradeId, newFeePct)
+        );
+        bytes32 ethSignedMessageHash = ECDSA.toEthSignedMessageHash(
+            messageHash
+        );
         return sign(pk, ethSignedMessageHash);
     }
 
@@ -104,22 +110,19 @@ contract TradeFixture is BaseBookFixture {
         uint256 _feePct,
         address _recipient,
         uint256 _tradeIndex
-    )
-        internal
-        pure
-        returns (bytes32)
-    {
-        return keccak256(
-            abi.encodePacked(
-                _tokenIn,
-                _tokenOut,
-                _amountIn,
-                _amountOutMin,
-                _feePct,
-                _recipient,
-                _tradeIndex
-            )
-        );
+    ) internal pure returns (bytes32) {
+        return
+            keccak256(
+                abi.encodePacked(
+                    _tokenIn,
+                    _tokenOut,
+                    _amountIn,
+                    _amountOutMin,
+                    _feePct,
+                    _recipient,
+                    _tradeIndex
+                )
+            );
     }
 
     function _fillTrade(
@@ -131,9 +134,7 @@ contract TradeFixture is BaseBookFixture {
         address _to,
         uint256 _tradeIndex,
         uint256 _amountToSend
-    )
-        internal
-    {
+    ) internal {
         book.fillTrade(
             _tokenIn,
             _tokenOut,
@@ -150,19 +151,22 @@ contract TradeFixture is BaseBookFixture {
         bytes32 _tradeId,
         address _filledBy,
         int256 _filledAtBlock
-    )
-        internal
-    {
+    ) internal {
         assertEq(
             _filledBy,
-            stdstore.target(address(book)).sig(book.filledBy.selector).with_key(_tradeId)
+            stdstore
+                .target(address(book))
+                .sig(book.filledBy.selector)
+                .with_key(_tradeId)
                 .read_address()
         );
         assertEq(
             _filledAtBlock,
-            stdstore.target(address(book)).sig(book.filledAtBlock.selector).with_key(
-                _tradeId
-            ).read_int()
+            stdstore
+                .target(address(book))
+                .sig(book.filledAtBlock.selector)
+                .with_key(_tradeId)
+                .read_int()
         );
     }
 }
@@ -215,9 +219,7 @@ contract DisputeFixture is TradeFixture {
         uint256 _feePct,
         address _recipient,
         uint256 _tradeIndex
-    )
-        internal
-    {
+    ) internal {
         vm.prank(disputer);
         book.disputeTrade(
             _tokenIn,
