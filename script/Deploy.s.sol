@@ -5,14 +5,12 @@ import "src/AllKnowingOracle.sol";
 import "src/Book.sol";
 import "forge-std/Script.sol";
 import "forge-std/Test.sol";
-import {Solenv} from "solenv/Solenv.sol";
 
 contract DeployScript is Script, Test {
     AllKnowingOracle internal oracle;
     Book internal book;
 
     function run() public {
-        Solenv.config();
         uint256 safeBlockThreshold = vm.envUint("SAFE_BLOCK_THRESHOLD");
         uint256 disputeBondPct = vm.envUint("DISPUTE_BOND_PCT");
         uint256 tradeRebatePct = vm.envUint("TRADE_REBATE_PCT");
