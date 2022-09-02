@@ -219,10 +219,7 @@ contract DisputeTest is DisputeFixture {
         });
         vm.prank(caller);
         vm.expectRevert(
-            abi.encodeWithSelector(
-                BookSingleChain__MaliciousCaller.selector,
-                caller
-            )
+            abi.encodeWithSelector(Book__MaliciousCaller.selector, caller)
         );
         book.onPriceSettled(keccak256("id"), fakeRequest);
     }
@@ -246,10 +243,7 @@ contract DisputeTest is DisputeFixture {
         vm.prank(nextDisputer);
         ERC20(testTokenIn).approve(address(oracle), type(uint256).max);
         vm.expectRevert(
-            abi.encodeWithSelector(
-                BookSingleChain__TradeNotFilled.selector,
-                tradeId
-            )
+            abi.encodeWithSelector(Book__TradeNotFilled.selector, tradeId)
         );
         book.disputeTrade(
             testTokenIn,
@@ -264,7 +258,7 @@ contract DisputeTest is DisputeFixture {
 
     function testCannotDisputeIfPeriodIsOver() public {
         skipBlocks(testSafeBlockThreashold + 1);
-        vm.expectRevert(BookSingleChain__DisputePeriodOver.selector);
+        vm.expectRevert(Book__DisputePeriodOver.selector);
         _disputeTrade(
             testTokenIn,
             testTokenOut,
@@ -291,7 +285,7 @@ contract DisputeTest is DisputeFixture {
 
         vm.expectRevert(
             abi.encodeWithSelector(
-                BookSingleChain__TradeNotFilled.selector,
+                Book__TradeNotFilled.selector,
                 nonExistentTradeId
             )
         );
