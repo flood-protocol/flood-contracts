@@ -345,4 +345,135 @@ contract TradeTest is TradeFixture {
             amountOut
         );
     }
+
+    function testCancelTrade() public {
+        deal(testTokenIn, testTrader, testAmountIn);
+        uint256 balanceBefore = ERC20(testTokenIn).balanceOf(testTrader);
+        uint256 bookBalanceBefore = ERC20(testTokenIn).balanceOf(address(book));
+        // make a request
+        (uint256 tradeIndex, bytes32 tradeId) = _requestTrade(
+            testTokenIn,
+            testTokenOut,
+            testAmountIn,
+            1,
+            testRecipient,
+            testTrader
+        );
+
+        vm.prank(testTrader);
+        vm.expectEmit(true, true, true, true, address(book));
+        emit TradeCancelled(tradeIndex, tradeId);
+        book.cancelTrade(
+            testTokenIn,
+            testTokenOut,
+            testAmountIn,
+            1,
+            testRecipient,
+            tradeIndex,
+            testTrader
+        );
+
+        uint256 statusAfter = stdstore
+            .target(address(book))
+            .sig(book.status.selector)
+            .with_key(tradeId)
+            .read_uint();
+
+        uint256 balanceAfter = ERC20(testTokenIn).balanceOf(testTrader);
+        uint256 bookBalanceAfter = ERC20(testTokenIn).balanceOf(address(book));
+        assertEq(
+            balanceAfter,
+            balanceBefore,
+            "trader balance should be unchanged"
+        );
+        assertEq(
+            bookBalanceAfter,
+            bookBalanceBefore,
+            "book balance should be unchanged"
+        );
+        assertEq(statusAfter, uint256(TradeStatus.UNINITIALIZED));
+    }
+
+    function testCannotCancelTradeIfFilled() public {
+        deal(testTokenIn, testTrader, testAmountIn);
+        // simulate a request
+        (uint256 tradeIndex, bytes32 tradeId) = _requestTrade(
+            testTokenIn,
+            testTokenOut,
+            testAmountIn,
+            1,
+            testRecipient,
+            testTrader
+        );
+        // simulate a fill
+        stdstore
+            .target(address(book))
+            .sig(book.status.selector)
+            .with_key(tradeId)
+            .checked_write(uint256(TradeStatus.FILLED));
+        vm.expectRevert(
+            abi.encodeWithSelector(Book__TradeNotCancelable.selector, tradeId)
+        );
+        vm.prank(testTrader);
+        book.cancelTrade(
+            testTokenIn,
+            testTokenOut,
+            testAmountIn,
+            1,
+            testRecipient,
+            tradeIndex,
+            testTrader
+        );
+    }
+
+    function testCannotCancelIfUninitialized() public {
+        deal(testTokenIn, testTrader, testAmountIn);
+        // take the hash of an uninitialized trade
+        bytes32 tradeId = _getTradeId(
+            testTokenIn,
+            testTokenOut,
+            testAmountIn,
+            1,
+            testRecipient,
+            1,
+            testTrader
+        );
+        vm.expectRevert(
+            abi.encodeWithSelector(Book__TradeNotCancelable.selector, tradeId)
+        );
+        vm.prank(testTrader);
+        book.cancelTrade(
+            testTokenIn,
+            testTokenOut,
+            testAmountIn,
+            1,
+            testRecipient,
+            1,
+            testTrader
+        );
+    }
+
+    function testCannotCancelIfNotTrader() public {
+        deal(testTokenIn, testTrader, testAmountIn);
+        // simulate a request
+        (uint256 tradeIndex, ) = _requestTrade(
+            testTokenIn,
+            testTokenOut,
+            testAmountIn,
+            1,
+            testRecipient,
+            testTrader
+        );
+        vm.expectRevert(Book__NotTrader.selector);
+        vm.prank(bob);
+        book.cancelTrade(
+            testTokenIn,
+            testTokenOut,
+            testAmountIn,
+            1,
+            testRecipient,
+            tradeIndex,
+            testTrader
+        );
+    }
 }

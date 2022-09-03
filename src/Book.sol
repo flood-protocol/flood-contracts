@@ -41,6 +41,7 @@ interface IBookEvents {
         bytes32 indexed disputeId,
         uint256 filledAtBlock
     );
+    event TradeCancelled(uint256 indexed tradeIndex, bytes32 indexed tradeId);
     event TradeDisputeSettled(
         address indexed relayer,
         uint256 indexed tradeIndex,
@@ -60,10 +61,12 @@ error Book__FeePctTooHigh();
 // The trade is not filled yet, doesn't exist or was disputed
 error Book__TradeNotInFillableState(bytes32 tradeId);
 error Book__TradeNotFilled(bytes32 tradeId);
+error Book__TradeNotCancelable(bytes32 tradeId);
 error Book__AmountOutTooLow();
 error Book__DisputePeriodNotOver(uint256 blocksLeft);
 error Book__DisputePeriodOver();
 error Book__MaliciousCaller(address caller);
+error Book__NotTrader();
 
 enum TradeStatus {
     // The trade is not initialized, meaning it does not exist or was already settled/disputed
@@ -199,6 +202,48 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
         numberOfTrades++;
 
         ERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
+    }
+
+    /**
+     * @notice Fills a trade with the optimal quote at the time of execution.
+     * @param tokenIn The token to be sold.
+     * @param tokenOut The token to be bought.
+     * @param amountIn The amount of `tokenIn` to be sold.
+     * @param minAmountOut The minimum amount of `tokenOut` to be bought. This should be set offchain based on `feeCombination.tradeRebatePct`, for example, if `feeCombination.tradeRebatePct` is 20%, then `minAmountOut` could be 90% of optimal at the time of request.
+     * @param recipient The address to receive the tokens bought.
+     * @param tradeIndex The index of the trade.
+     * @param trader The address of the trader who originally requested the trade. Must equal msg.sender.
+     */
+    function cancelTrade(
+        address tokenIn,
+        address tokenOut,
+        uint256 amountIn,
+        uint256 minAmountOut,
+        address recipient,
+        uint256 tradeIndex,
+        address trader
+    ) external {
+        if (msg.sender != trader) {
+            revert Book__NotTrader();
+        }
+        bytes32 tradeId = _getTradeId(
+            tokenIn,
+            tokenOut,
+            amountIn,
+            minAmountOut,
+            recipient,
+            tradeIndex,
+            trader
+        );
+        if (status[tradeId] != TradeStatus.REQUESTED) {
+            revert Book__TradeNotCancelable(tradeId);
+        }
+
+        _deleteTrade(tradeId);
+
+        emit TradeCancelled(tradeIndex, tradeId);
+        // Refund the trader.
+        ERC20(tokenIn).safeTransfer(trader, amountIn);
     }
 
     /**
