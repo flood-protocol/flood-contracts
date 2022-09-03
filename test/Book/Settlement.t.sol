@@ -24,7 +24,8 @@ contract SettlementTest is DisputeFixture {
             testAmountIn,
             testAmountOutMin,
             testRecipient,
-            tradeIndex
+            tradeIndex,
+            testTrader
         );
         uint256 filledAtBlock = book.filledAtBlock(id);
         vm.expectEmit(true, true, true, true, address(book));
@@ -35,7 +36,8 @@ contract SettlementTest is DisputeFixture {
             testAmountIn,
             testAmountOutMin,
             testRecipient,
-            tradeIndex
+            tradeIndex,
+            testTrader
         );
 
         // check that the storage variables have been reset
@@ -91,7 +93,8 @@ contract SettlementTest is DisputeFixture {
             testAmountIn,
             testAmountOutMin,
             testRecipient,
-            tradeIndex
+            tradeIndex,
+            testTrader
         );
     }
 
@@ -105,7 +108,8 @@ contract SettlementTest is DisputeFixture {
                     testAmountIn + 1,
                     testAmountOutMin,
                     testRecipient,
-                    tradeIndex + 1
+                    tradeIndex + 1,
+                    testTrader
                 )
             )
         );
@@ -115,7 +119,8 @@ contract SettlementTest is DisputeFixture {
             testAmountIn + 1,
             testAmountOutMin,
             testRecipient,
-            tradeIndex + 1
+            tradeIndex + 1,
+            testTrader
         );
     }
 
@@ -128,7 +133,8 @@ contract SettlementTest is DisputeFixture {
             testAmountIn,
             testAmountOutMin,
             testRecipient,
-            tradeIndex
+            tradeIndex,
+            testTrader
         );
         vm.expectRevert(
             abi.encodeWithSelector(
@@ -139,7 +145,8 @@ contract SettlementTest is DisputeFixture {
                     testAmountIn,
                     testAmountOutMin,
                     testRecipient,
-                    tradeIndex
+                    tradeIndex,
+                    testTrader
                 )
             )
         );
@@ -149,7 +156,8 @@ contract SettlementTest is DisputeFixture {
             testAmountIn,
             testAmountOutMin,
             testRecipient,
-            tradeIndex
+            tradeIndex,
+            testTrader
         );
     }
 }

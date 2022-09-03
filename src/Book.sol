@@ -22,7 +22,8 @@ interface IBookEvents {
         uint256 amountIn,
         uint256 minAmountOut,
         address recipient,
-        uint256 indexed tradeIndex
+        uint256 indexed tradeIndex,
+        address trader
     );
     event TradeFilled(
         address indexed relayer,
@@ -64,6 +65,15 @@ error Book__DisputePeriodNotOver(uint256 blocksLeft);
 error Book__DisputePeriodOver();
 error Book__MaliciousCaller(address caller);
 
+enum TradeStatus {
+    // The trade is not initialized, meaning it does not exist or was already settled/disputed
+    UNINITIALIZED,
+    // The trade is initialized and can be filled
+    REQUESTED,
+    // The trade is filled but not settled/disputed
+    FILLED
+}
+
 contract Book is IOptimisticRequester, IBookEvents, Owned {
     using SafeTransferLib for ERC20;
 
@@ -83,7 +93,7 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
     // A mapping from a trade id to the relayer filling it.
     mapping(bytes32 => address) public filledBy;
     // A mapping from trade id to an enum representing the state of the trade.
-    mapping(bytes32 => bool) public isInitialized;
+    mapping(bytes32 => TradeStatus) public status;
 
     constructor(
         address _oracle,
@@ -172,7 +182,8 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
             amountIn,
             minAmountOut,
             recipient,
-            numberOfTrades
+            numberOfTrades,
+            msg.sender
         );
 
         bytes32 tradeId = _getTradeId(
@@ -181,14 +192,29 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
             amountIn,
             minAmountOut,
             recipient,
-            numberOfTrades
+            numberOfTrades,
+            msg.sender
         );
-        isInitialized[tradeId] = true;
+        status[tradeId] = TradeStatus.REQUESTED;
         numberOfTrades++;
 
         ERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
     }
 
+    /**
+     * @notice called internally for filling a trade.
+     * All trade are accepted at face value, so no checks are performed. However, invalid trades can be disputed.
+     * @dev Relayers are expected to correctly compute the Optimal Execution Price - feePct off-chain.
+     * Failing to do so will result in a dispute and the relayer losing tokens.
+     * @param tokenIn The token to be sold.
+     * @param tokenOut The token to be bought.
+     * @param amountIn The amount of `tokenIn` to be sold.
+     * @param minAmountOut The minimum amount of `tokenOut` to be bought. This should be set offchain based on `feeCombination.tradeRebatePct`, for example, if `feeCombination.tradeRebatePct` is 20%, then `minAmountOut` could be 90% of optimal at the time of request.
+     * @param recipient The address to receive the tokens bought.
+     * @param tradeIndex The index of the trade.
+     * @param trader The address of the trader who initiated the trade.
+     * @param amountToSend The amount of `tokenOut` given by the relayer to the trader.
+     */
     function fillTrade(
         address tokenIn,
         address tokenOut,
@@ -196,6 +222,7 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
         uint256 minAmountOut,
         address recipient,
         uint256 tradeIndex,
+        address trader,
         uint256 amountToSend
     ) external {
         bytes32 tradeId = _getTradeId(
@@ -204,19 +231,26 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
             amountIn,
             minAmountOut,
             recipient,
-            tradeIndex
-        );
-        _fillTrade(
-            tokenIn,
-            tokenOut,
-            amountIn,
-            minAmountOut,
-            recipient,
             tradeIndex,
-            tradeId,
-            amountToSend,
-            msg.sender
+            trader
         );
+        if (status[tradeId] != TradeStatus.REQUESTED) {
+            revert Book__TradeNotInFillableState(tradeId);
+        }
+        if (amountToSend < minAmountOut) {
+            revert Book__AmountOutTooLow();
+        }
+        filledAtBlock[tradeId] = block.number;
+        filledBy[tradeId] = msg.sender;
+        status[tradeId] = TradeStatus.FILLED;
+
+        emit TradeFilled(msg.sender, tradeIndex, amountToSend);
+        // Send the tokens to the recipient.
+        ERC20(tokenOut).safeTransferFrom(msg.sender, recipient, amountToSend);
+        // Send some of the tokens to the relayer.
+        uint256 amountInToRelayer = (amountIn * relayerRefundPct) / 100;
+
+        ERC20(tokenIn).safeTransfer(msg.sender, amountInToRelayer);
     }
 
     /**
@@ -227,6 +261,7 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
     @param minAmountOut The minimum amount of `tokenOut` that was bought.
     @param recipient The address to receive the tokens bought.
     @param tradeIndex The index of the trade to settle.
+    @param trader The address of the trader who initiated the trade.
     */
     function settleTrade(
         address tokenIn,
@@ -234,7 +269,8 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
         uint256 amountIn,
         uint256 minAmountOut,
         address recipient,
-        uint256 tradeIndex
+        uint256 tradeIndex,
+        address trader
     ) external {
         bytes32 tradeId = _getTradeId(
             tokenIn,
@@ -242,15 +278,16 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
             amountIn,
             minAmountOut,
             recipient,
-            tradeIndex
+            tradeIndex,
+            trader
         );
         uint256 filledHeight = filledAtBlock[tradeId];
-        // Check if the trade has already been settled, is not filled or does not exist.
+        // Check if the trade has already been settled, is not filled or does not exist. We do not use the status as we need to read the filledHeight anyway.
         if (filledHeight == 0) {
             revert Book__TradeNotFilled(tradeId);
         }
         // safe cast as for the check above we know that filledAtBlock[tradeId] > 0.
-        if (block.number - filledHeight < safeBlockThreshold) {
+        if (_isDisputable(filledHeight)) {
             // Always > 0 for the check above
             uint256 blocksLeft = safeBlockThreshold -
                 (block.number - filledAtBlock[tradeId]);
@@ -259,9 +296,7 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
 
         address relayer = filledBy[tradeId];
 
-        delete filledAtBlock[tradeId];
-        delete filledBy[tradeId];
-        delete isInitialized[tradeId];
+        _deleteTrade(tradeId);
 
         // Since the trade is valid, the relayer can now receive all the tokens.
         uint256 amountInToRelayer = (amountIn * (100 - relayerRefundPct)) / 100;
@@ -282,6 +317,7 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
      * @param minAmountOut The minimum amount of `tokenOut` that was bought.
      * @param recipient The address to receive the tokens bought.
      * @param tradeIndex The index of the trade to dispute.
+     * @param trader The address of the trader who initiated the trade.
      */
     function disputeTrade(
         address tokenIn,
@@ -289,7 +325,8 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
         uint256 amountIn,
         uint256 minAmountOut,
         address recipient,
-        uint256 tradeIndex
+        uint256 tradeIndex,
+        address trader
     ) external {
         bytes32 tradeId = _getTradeId(
             tokenIn,
@@ -297,27 +334,25 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
             amountIn,
             minAmountOut,
             recipient,
-            tradeIndex
+            tradeIndex,
+            trader
         );
 
         uint256 filledHeight = filledAtBlock[tradeId];
 
-        // Check that the trade exist and has not been disputed already.
+        // Check that the trade exist and has not been disputed already. We do not use the status as we need to read the filledHeight anyway and thus save a read.
         if (filledHeight == 0) {
             revert Book__TradeNotFilled(tradeId);
         }
 
-        // Check that the dispute period has not yet ended. Cast is safe for the check above.
-        if (block.number - filledHeight >= safeBlockThreshold) {
+        if (!_isDisputable(filledHeight)) {
             revert Book__DisputePeriodOver();
         }
 
         address relayer = filledBy[tradeId];
         uint256 bondAmount = (amountIn * (disputeBondPct)) / 100;
 
-        delete filledAtBlock[tradeId];
-        delete filledBy[tradeId];
-        delete isInitialized[tradeId];
+        _deleteTrade(tradeId);
 
         ERC20(tokenIn).safeApprove(address(oracle), bondAmount);
         bytes32 disputeId = oracle.ask(
@@ -329,12 +364,7 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
         );
         ERC20(tokenIn).safeApprove(address(oracle), 0);
 
-        emit TradeDisputed(
-            relayer,
-            tradeIndex,
-            disputeId,
-            uint256(filledHeight)
-        );
+        emit TradeDisputed(relayer, tradeIndex, disputeId, filledHeight);
     }
 
     function onPriceSettled(bytes32 id, Request calldata request) external {
@@ -366,43 +396,19 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
      *         INTERNAL FUNCTIONS         *
      *************************************
      */
+
     /**
-     * @notice called internally for filling a trade.
-     * All trade are accepted at face value, so no checks are performed. However, invalid trades can be disputed.
-     * @dev Relayers are expected to correctly compute the Optimal Execution Price - feePct off-chain.
-     * Failing to do so will result in a dispute and the relayer losing tokens.
+     * @notice Removes a trade with id `tradeId` from storage.
+     * @param tradeId The token that was sold.
      */
-    function _fillTrade(
-        address tokenIn,
-        address tokenOut,
-        uint256 amountIn,
-        uint256 minAmountOut,
-        address recipient,
-        uint256 tradeIndex,
-        bytes32 tradeId,
-        uint256 amountToSend,
-        address relayer
-    ) internal {
-        if (!isInitialized[tradeId]) {
-            revert Book__TradeNotInFillableState(tradeId);
-        }
-        if (filledAtBlock[tradeId] != 0) {
-            revert Book__TradeNotInFillableState(tradeId);
-        }
+    function _deleteTrade(bytes32 tradeId) internal {
+        delete filledAtBlock[tradeId];
+        delete filledBy[tradeId];
+        delete status[tradeId];
+    }
 
-        if (amountToSend < minAmountOut) {
-            revert Book__AmountOutTooLow();
-        }
-        filledAtBlock[tradeId] = block.number;
-        filledBy[tradeId] = relayer;
-
-        emit TradeFilled(relayer, tradeIndex, amountToSend);
-        // Send the tokens to the recipient.
-        ERC20(tokenOut).safeTransferFrom(relayer, recipient, amountToSend);
-        // Send some of the tokens to the relayer.
-        uint256 amountInToRelayer = (amountIn * relayerRefundPct) / 100;
-
-        ERC20(tokenIn).safeTransfer(relayer, amountInToRelayer);
+    function _isDisputable(uint256 filledHeight) internal view returns (bool) {
+        return block.number < safeBlockThreshold + filledHeight;
     }
 
     /**
@@ -421,7 +427,8 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
         uint256 amountIn,
         uint256 minAmountOut,
         address recipient,
-        uint256 tradeIndex
+        uint256 tradeIndex,
+        address trader
     ) internal pure returns (bytes32) {
         return
             keccak256(
@@ -431,7 +438,8 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
                     amountIn,
                     minAmountOut,
                     recipient,
-                    tradeIndex
+                    tradeIndex,
+                    trader
                 )
             );
     }

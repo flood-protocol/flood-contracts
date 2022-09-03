@@ -28,7 +28,8 @@ contract TradeTest is TradeFixture {
             amountIn,
             amountOutMin,
             testRecipient,
-            tradeIndex
+            tradeIndex,
+            alice
         );
         (, bytes32 id) = _requestTrade(
             testTokenIn,
@@ -43,12 +44,16 @@ contract TradeTest is TradeFixture {
         assertEq(ERC20(testTokenIn).balanceOf(alice), balanceBefore - amountIn);
 
         // Check that the trade has been initialized
-        bool isInitializedInStorage = stdstore
+        uint256 statusInStorage = stdstore
             .target(address(book))
-            .sig(book.isInitialized.selector)
+            .sig(book.status.selector)
             .with_key(id)
-            .read_bool();
-        assertTrue(isInitializedInStorage, "Trade not initialized");
+            .read_uint();
+        assertEq(
+            statusInStorage,
+            uint256(TradeStatus.REQUESTED),
+            "Trade not initialized"
+        );
 
         // Check that the trade number has been increased
         uint256 numberOfTradesInStorage = stdstore
@@ -171,6 +176,7 @@ contract TradeTest is TradeFixture {
             testAmountOutMin,
             testRecipient,
             tradeIndex,
+            alice,
             amountOut
         );
         // Check bob submitted amountOut tokens
@@ -209,14 +215,15 @@ contract TradeTest is TradeFixture {
         assertEq(filledByInStorage, bob);
     }
 
-    function testCannotFillIfNotRequested() public {
+    function testCannotFillUninitialized() public {
         bytes32 tradeId = _getTradeId(
             testTokenIn,
             testTokenOut,
             testAmountIn,
             testAmountOutMin,
             testRecipient,
-            1
+            1,
+            testTrader
         );
         // This should fail as the trade has not been requested.
         vm.expectRevert(
@@ -232,6 +239,7 @@ contract TradeTest is TradeFixture {
             testAmountOutMin,
             testRecipient,
             1,
+            testTrader,
             1
         );
     }
@@ -245,7 +253,8 @@ contract TradeTest is TradeFixture {
             testAmountIn,
             testAmountOutMin,
             testRecipient,
-            tradeIndex
+            tradeIndex,
+            testTrader
         );
 
         // Artificially fill&dispute the trade at the past block.
@@ -267,48 +276,7 @@ contract TradeTest is TradeFixture {
             testAmountOutMin,
             testRecipient,
             tradeIndex,
-            testAmountOutMin + 1
-        );
-    }
-
-    function testCannotFillIfDisputed() public {
-        // Simulate a trade request. We assume that the request is valid and executed correctly.
-        uint256 tradeIndex = book.numberOfTrades() + 1;
-        bytes32 tradeId = _getTradeId(
-            testTokenIn,
-            testTokenOut,
-            testAmountIn,
-            testAmountOutMin,
-            testRecipient,
-            tradeIndex
-        );
-        stdstore
-            .target(address(book))
-            .sig(book.isInitialized.selector)
-            .with_key(tradeId)
-            .checked_write(true);
-
-        // Artificially fill&dispute the trade at the past block.
-
-        stdstore
-            .target(address(book))
-            .sig(book.filledAtBlock.selector)
-            .with_key(tradeId)
-            .checked_write(uint256(-int256(block.number)));
-
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                Book__TradeNotInFillableState.selector,
-                tradeId
-            )
-        );
-        book.fillTrade(
-            testTokenIn,
-            testTokenOut,
-            testAmountIn,
-            testAmountOutMin,
-            testRecipient,
-            tradeIndex,
+            testTrader,
             testAmountOutMin + 1
         );
     }
@@ -321,14 +289,15 @@ contract TradeTest is TradeFixture {
             testAmountIn,
             0,
             testRecipient,
-            1
+            1,
+            testTrader
         );
         // simulate a request
         stdstore
             .target(address(book))
-            .sig(book.isInitialized.selector)
+            .sig(book.status.selector)
             .with_key(tradeId)
-            .checked_write(true);
+            .checked_write(uint256(TradeStatus.REQUESTED));
         vm.prank(bob);
         vm.expectRevert(bytes("TRANSFER_FROM_FAILED"));
         book.fillTrade(
@@ -338,6 +307,7 @@ contract TradeTest is TradeFixture {
             0,
             testRecipient,
             1,
+            testTrader,
             amountOut
         );
     }
@@ -352,14 +322,15 @@ contract TradeTest is TradeFixture {
             testAmountIn,
             minAmountOut,
             testRecipient,
-            1
+            1,
+            testTrader
         );
         // simulate a request
         stdstore
             .target(address(book))
-            .sig(book.isInitialized.selector)
+            .sig(book.status.selector)
             .with_key(tradeId)
-            .checked_write(true);
+            .checked_write(uint256(TradeStatus.REQUESTED));
         uint256 amountOut = minAmountOut - 1;
         vm.prank(bob);
         vm.expectRevert(Book__AmountOutTooLow.selector);
@@ -370,6 +341,7 @@ contract TradeTest is TradeFixture {
             minAmountOut,
             testRecipient,
             1,
+            testTrader,
             amountOut
         );
     }

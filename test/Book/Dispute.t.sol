@@ -46,7 +46,8 @@ contract DisputeTest is DisputeFixture {
             testAmountIn,
             testAmountOutMin,
             testRecipient,
-            tradeIndex
+            tradeIndex,
+            testTrader
         );
 
         // check that trade variables have been reset
@@ -63,15 +64,15 @@ contract DisputeTest is DisputeFixture {
                 .with_key(tradeId)
                 .read_address();
 
-            bool isInitializedAfterDispute = stdstore
+            uint256 statusAfterDispute = stdstore
                 .target(address(book))
-                .sig(book.isInitialized.selector)
+                .sig(book.status.selector)
                 .with_key(tradeId)
-                .read_bool();
+                .read_uint();
 
             assertEq(filledByAfterDispute, address(0));
             assertEq(filledAtAfterDispute, 0);
-            assertEq(isInitializedAfterDispute, false);
+            assertEq(statusAfterDispute, uint256(TradeStatus.UNINITIALIZED));
         }
 
         (
@@ -156,7 +157,8 @@ contract DisputeTest is DisputeFixture {
             testAmountIn,
             testAmountOutMin,
             testRecipient,
-            tradeIndex
+            tradeIndex,
+            testTrader
         );
 
         oracle.settle(reqId, answer);
@@ -233,7 +235,8 @@ contract DisputeTest is DisputeFixture {
             testAmountIn,
             testAmountOutMin,
             testRecipient,
-            tradeIndex
+            tradeIndex,
+            testTrader
         );
         address nextDisputer = generateUser("nextDisputer");
         deal(testTokenIn, nextDisputer, bond);
@@ -248,7 +251,8 @@ contract DisputeTest is DisputeFixture {
             testAmountIn,
             testAmountOutMin,
             testRecipient,
-            tradeIndex
+            tradeIndex,
+            testTrader
         );
     }
 
@@ -261,7 +265,8 @@ contract DisputeTest is DisputeFixture {
             testAmountIn,
             testAmountOutMin,
             testRecipient,
-            tradeIndex
+            tradeIndex,
+            testTrader
         );
     }
 
@@ -273,7 +278,8 @@ contract DisputeTest is DisputeFixture {
                 testAmountIn + 1,
                 testAmountOutMin,
                 testRecipient,
-                tradeIndex
+                tradeIndex,
+                testTrader
             )
         );
 
@@ -283,14 +289,15 @@ contract DisputeTest is DisputeFixture {
                 nonExistentTradeId
             )
         );
-        // dispute a trade which was never filled
+        // dispute a trade which was not filled
         book.disputeTrade(
             testTokenIn,
             testTokenOut,
             testAmountIn + 1,
             testAmountOutMin,
             testRecipient,
-            tradeIndex
+            tradeIndex,
+            testTrader
         );
     }
 }

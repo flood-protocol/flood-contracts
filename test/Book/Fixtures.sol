@@ -36,12 +36,14 @@ contract TradeFixture is BaseBookFixture {
     uint256 internal testAmountIn = 1 ether;
     uint256 internal testAmountOutMin = 900 * 10**6;
     address internal testRecipient = alice;
+    address internal testTrader = alice;
 
     function setUp() public virtual override {
         BaseBookFixture.setUp();
 
         book.whitelistToken(USDC, true);
         book.whitelistToken(WETH, true);
+
         vm.label(USDC, "USDC");
         vm.label(WETH, "WETH");
         vm.startPrank(alice);
@@ -73,7 +75,8 @@ contract TradeFixture is BaseBookFixture {
             amountIn,
             amountOutMin,
             recipient,
-            tradeIndex
+            tradeIndex,
+            who
         );
         vm.prank(who);
         book.requestTrade(tokenIn, tokenOut, amountIn, amountOutMin, recipient);
@@ -86,7 +89,8 @@ contract TradeFixture is BaseBookFixture {
         uint256 _amountIn,
         uint256 _amountOutMin,
         address _recipient,
-        uint256 _tradeIndex
+        uint256 _tradeIndex,
+        address _trader
     ) internal pure returns (bytes32) {
         return
             keccak256(
@@ -96,7 +100,8 @@ contract TradeFixture is BaseBookFixture {
                     _amountIn,
                     _amountOutMin,
                     _recipient,
-                    _tradeIndex
+                    _tradeIndex,
+                    _trader
                 )
             );
     }
@@ -106,8 +111,9 @@ contract TradeFixture is BaseBookFixture {
         address _tokenOut,
         uint256 _amountIn,
         uint256 _amountOutMin,
-        address _to,
+        address _recipient,
         uint256 _tradeIndex,
+        address _trader,
         uint256 _amountToSend
     ) internal {
         book.fillTrade(
@@ -115,8 +121,9 @@ contract TradeFixture is BaseBookFixture {
             _tokenOut,
             _amountIn,
             _amountOutMin,
-            _to,
+            _recipient,
             _tradeIndex,
+            _trader,
             _amountToSend
         );
     }
@@ -175,6 +182,7 @@ contract DisputeFixture is TradeFixture {
             testAmountOutMin,
             testRecipient,
             tradeIndex,
+            alice,
             testAmountToSend
         );
         _checkFill(tradeId, relayer, int256(block.number));
@@ -189,7 +197,8 @@ contract DisputeFixture is TradeFixture {
         uint256 _amountIn,
         uint256 _amountOutMin,
         address _recipient,
-        uint256 _tradeIndex
+        uint256 _tradeIndex,
+        address _trader
     ) internal {
         vm.prank(disputer);
         book.disputeTrade(
@@ -198,7 +207,8 @@ contract DisputeFixture is TradeFixture {
             _amountIn,
             _amountOutMin,
             _recipient,
-            _tradeIndex
+            _tradeIndex,
+            _trader
         );
     }
 }
