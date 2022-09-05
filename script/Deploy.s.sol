@@ -7,9 +7,6 @@ import "forge-std/Script.sol";
 import "forge-std/Test.sol";
 
 contract DeployScript is Script, Test {
-    AllKnowingOracle internal oracle;
-    Book internal book;
-
     function run() public {
         uint256 safeBlockThreshold = vm.envUint("SAFE_BLOCK_THRESHOLD");
         uint256 disputeBondPct = vm.envUint("DISPUTE_BOND_PCT");
@@ -21,8 +18,8 @@ contract DeployScript is Script, Test {
         string memory RPC_URL = vm.envString("DEPLOY_RPC_URL");
         vm.createSelectFork(RPC_URL);
         vm.startBroadcast();
-        deployOracle();
-        deployBook(
+        AllKnowingOracle oracle = deployOracle();
+        Book book = deployBook(
             address(oracle),
             safeBlockThreshold,
             disputeBondPct,
@@ -30,22 +27,12 @@ contract DeployScript is Script, Test {
             relayerRefundPct,
             feePct
         );
-        whitelistTokenForBookAndOracle(
-            address(oracle),
-            address(book),
-            USDC,
-            true
-        );
-        whitelistTokenForBookAndOracle(
-            address(oracle),
-            address(book),
-            WETH,
-            true
-        );
+        whitelistTokenForBookAndOracle(oracle, book, USDC, true);
+        whitelistTokenForBookAndOracle(oracle, book, WETH, true);
         vm.stopBroadcast();
     }
 
-    function deployOracle() public {
+    function deployOracle() public returns (AllKnowingOracle oracle) {
         oracle = new AllKnowingOracle();
     }
 
@@ -56,13 +43,13 @@ contract DeployScript is Script, Test {
         uint256 _tradeRebatePct,
         uint256 _relayerRefundPct,
         uint256 _feePct
-    ) public {
+    ) public returns (Book book) {
         assertEq(
             _disputeBondPct + _tradeRebatePct + _relayerRefundPct,
             100,
             "invalid invariant"
         );
-        assertLe(_feePct, 2500, "feePct above 25%");
+        assert(_feePct < 2500);
         assert(_disputeBondPct > 0);
         assert(_tradeRebatePct > 0);
         assert(_relayerRefundPct > 0);
@@ -80,12 +67,13 @@ contract DeployScript is Script, Test {
     }
 
     function whitelistTokenForBookAndOracle(
-        address _oracle,
-        address _book,
+        AllKnowingOracle _oracle,
+        Book _book,
         address _token,
         bool _enable
     ) public {
-        AllKnowingOracle(_oracle).whitelistToken(_token, _enable);
-        AllKnowingOracle(_book).whitelistToken(_token, _enable);
+        assert(_token != address(0));
+        _oracle.whitelistToken(_token, _enable);
+        _book.whitelistToken(_token, _enable);
     }
 }
