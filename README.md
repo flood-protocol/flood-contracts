@@ -1,7 +1,7 @@
 [![CI](https://github.com/fulmin-labs/cfmm-contracts/actions/workflows/ci.yml/badge.svg)](https://github.com/fulmin-labs/cfmm-contracts/actions/workflows/ci.yml)
 [![Lint](https://github.com/fulmin-labs/cfmm-contracts/actions/workflows/lint.yml/badge.svg)](https://github.com/fulmin-labs/cfmm-contracts/actions/workflows/lint.yml)
 
-# <h1 align="center"> CFMM Contracts </h1>
+# <h1 align="center"> Flood Contracts </h1>
 
 ## Getting Started
 
