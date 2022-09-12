@@ -1,10 +1,11 @@
 [package]
+name = "flood-contracts"
+version = "0.1.0"
 edition = "2021"
-name = "cfmm-contracts"
-version = "0.0.8"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 
-ethers = {version = "0.17", features = ["abigen"]}
+ethers = { version = "0.17.*", default-features = false, features = ["abigen"] }
+

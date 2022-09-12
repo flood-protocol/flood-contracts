@@ -3,8 +3,8 @@
 /* eslint-disable */
 import type * as allKnowingOracleSol from "./AllKnowingOracle.sol";
 export type { allKnowingOracleSol };
-import type * as bookSingleChainSol from "./BookSingleChain.sol";
-export type { bookSingleChainSol };
+import type * as bookSol from "./Book.sol";
+export type { bookSol };
 export type { ERC20 } from "./ERC20";
 export type { Owned } from "./Owned";
 export * as factories from "./factories";
@@ -14,9 +14,9 @@ export type { IAllKnowingOracleEvents } from "./AllKnowingOracle.sol/IAllKnowing
 export { IAllKnowingOracleEvents__factory } from "./factories/AllKnowingOracle.sol/IAllKnowingOracleEvents__factory";
 export type { IOptimisticRequester } from "./AllKnowingOracle.sol/IOptimisticRequester";
 export { IOptimisticRequester__factory } from "./factories/AllKnowingOracle.sol/IOptimisticRequester__factory";
-export type { BookSingleChain } from "./BookSingleChain.sol/BookSingleChain";
-export { BookSingleChain__factory } from "./factories/BookSingleChain.sol/BookSingleChain__factory";
-export type { IBookSingleChainEvents } from "./BookSingleChain.sol/IBookSingleChainEvents";
-export { IBookSingleChainEvents__factory } from "./factories/BookSingleChain.sol/IBookSingleChainEvents__factory";
+export type { Book } from "./Book.sol/Book";
+export { Book__factory } from "./factories/Book.sol/Book__factory";
+export type { IBookEvents } from "./Book.sol/IBookEvents";
+export { IBookEvents__factory } from "./factories/Book.sol/IBookEvents__factory";
 export { ERC20__factory } from "./factories/ERC20__factory";
 export { Owned__factory } from "./factories/Owned__factory";

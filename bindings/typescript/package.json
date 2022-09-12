@@ -1,6 +1,6 @@
 {
   "version": "0.3.2",
-  "name": "@fulmin-labs/contracts",
+  "name": "@flood/contracts",
   "scripts": {
     "generate": "rm -rf typescript && npx typechain --target ethers-v5 --out-dir lib \"../../out/**/!(*(*.t|*.s|*Fixture?(s)|Test|Vm|Script).sol)/*.json\""
   },

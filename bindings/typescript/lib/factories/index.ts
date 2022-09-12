@@ -2,6 +2,6 @@
 /* tslint:disable */
 /* eslint-disable */
 export * as allKnowingOracleSol from "./AllKnowingOracle.sol";
-export * as bookSingleChainSol from "./BookSingleChain.sol";
+export * as bookSol from "./Book.sol";
 export { ERC20__factory } from "./ERC20__factory";
 export { Owned__factory } from "./Owned__factory";
