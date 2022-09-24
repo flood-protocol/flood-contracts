@@ -7,6 +7,8 @@ import "forge-std/Script.sol";
 import "forge-std/Test.sol";
 
 contract DeployScript is Script, Test {
+    AllKnowingOracle internal oracle;
+
     function run() public {
         uint256 safeBlockThreshold = vm.envUint("SAFE_BLOCK_THRESHOLD");
         uint256 disputeBondPct = vm.envUint("DISPUTE_BOND_PCT");
@@ -15,10 +17,14 @@ contract DeployScript is Script, Test {
         uint256 feePct = vm.envUint("FEE_PCT");
         address USDC = vm.envAddress("USDC_ADDRESS");
         address WETH = vm.envAddress("WETH_ADDRESS");
-        string memory RPC_URL = vm.envString("DEPLOY_RPC_URL");
-        vm.createSelectFork(RPC_URL);
+        address ORACLE_ADDRESS = vm.envAddress("ORACLE_ADDRESS");
         vm.startBroadcast();
-        AllKnowingOracle oracle = deployOracle();
+
+        if (ORACLE_ADDRESS == address(0)) {
+            oracle = deployOracle();
+        } else {
+            oracle = AllKnowingOracle(ORACLE_ADDRESS);
+        }
         Book book = deployBook(
             address(oracle),
             safeBlockThreshold,
@@ -32,8 +38,8 @@ contract DeployScript is Script, Test {
         vm.stopBroadcast();
     }
 
-    function deployOracle() public returns (AllKnowingOracle oracle) {
-        oracle = new AllKnowingOracle();
+    function deployOracle() public returns (AllKnowingOracle newOracle) {
+        newOracle = new AllKnowingOracle();
     }
 
     function deployBook(
