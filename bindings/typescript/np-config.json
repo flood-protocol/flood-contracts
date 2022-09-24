@@ -1,8 +1,8 @@
 {
-  "yarn": false,
-  "contents": "./lib",
-  "publishConfig": {
-    "access": "restricted",
-    "registry": "https://registry.npmjs.org"
-  }
+    "yarn": false,
+    "contents": "./lib",
+    "publishConfig": {
+        "access": "restricted",
+        "registry": "https://registry.npmjs.org"
+    }
 }
