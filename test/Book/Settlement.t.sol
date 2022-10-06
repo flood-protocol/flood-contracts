@@ -29,7 +29,7 @@ contract SettlementTest is DisputeFixture {
         );
         uint256 filledAtBlock = book.filledAtBlock(id);
         vm.expectEmit(true, true, true, true, address(book));
-        emit TradeSettled(relayer, tradeIndex, filledAtBlock);
+        emit TradeSettled(relayer, tradeIndex, filledAtBlock, testTrader);
         book.settleTrade(
             testTokenIn,
             testTokenOut,
