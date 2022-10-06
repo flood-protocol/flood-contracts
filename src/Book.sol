@@ -18,35 +18,43 @@ interface IBookEvents {
     event TokenWhitelisted(address indexed token, bool whitelisted);
     event TradeRequested(
         address indexed tokenIn,
-        address indexed tokenOut,
+        address tokenOut,
         uint256 amountIn,
         uint256 minAmountOut,
         address recipient,
         uint256 indexed tradeIndex,
-        address trader
+        address indexed trader
     );
     event TradeFilled(
         address indexed relayer,
         uint256 indexed tradeIndex,
-        uint256 amountOut
+        uint256 amountOut,
+        address indexed trader
     );
     event TradeSettled(
         address indexed relayer,
         uint256 indexed tradeIndex,
-        uint256 filledAtBlock
+        uint256 filledAtBlock,
+        address indexed trader
     );
     event TradeDisputed(
-        address indexed relayer,
+        address relayer,
         uint256 indexed tradeIndex,
         bytes32 indexed disputeId,
-        uint256 filledAtBlock
+        uint256 filledAtBlock,
+        address indexed trader
     );
-    event TradeCancelled(uint256 indexed tradeIndex, bytes32 indexed tradeId);
+    event TradeCancelled(
+        uint256 indexed tradeIndex,
+        bytes32 indexed tradeId,
+        address indexed trader
+    );
     event TradeDisputeSettled(
-        address indexed relayer,
+        address relayer,
         uint256 indexed tradeIndex,
         bytes32 indexed disputeId,
-        bool answer
+        bool answer,
+        address indexed trader
     );
 }
 
@@ -241,7 +249,7 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
 
         _deleteTrade(tradeId);
 
-        emit TradeCancelled(tradeIndex, tradeId);
+        emit TradeCancelled(tradeIndex, tradeId, trader);
         // Refund the trader.
         ERC20(tokenIn).safeTransfer(trader, amountIn);
     }
@@ -289,7 +297,7 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
         filledBy[tradeId] = msg.sender;
         status[tradeId] = TradeStatus.FILLED;
 
-        emit TradeFilled(msg.sender, tradeIndex, amountToSend);
+        emit TradeFilled(msg.sender, tradeIndex, amountToSend, trader);
         // Send the tokens to the recipient.
         ERC20(tokenOut).safeTransferFrom(msg.sender, recipient, amountToSend);
         // Send some of the tokens to the relayer.
@@ -348,7 +356,7 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
 
         ERC20(tokenIn).safeTransfer(relayer, amountInToRelayer);
 
-        emit TradeSettled(relayer, tradeIndex, filledHeight);
+        emit TradeSettled(relayer, tradeIndex, filledHeight, trader);
     }
 
     /**
@@ -405,20 +413,20 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
             msg.sender,
             tokenIn,
             bondAmount,
-            abi.encode(amountIn, recipient, tradeIndex)
+            abi.encode(amountIn, recipient, tradeIndex, trader)
         );
         ERC20(tokenIn).safeApprove(address(oracle), 0);
 
-        emit TradeDisputed(relayer, tradeIndex, disputeId, filledHeight);
+        emit TradeDisputed(relayer, tradeIndex, disputeId, filledHeight, trader);
     }
 
     function onPriceSettled(bytes32 id, Request calldata request) external {
         if (msg.sender != address(oracle)) {
             revert Book__MaliciousCaller(msg.sender);
         }
-        (uint256 amountIn, address recipient, uint256 tradeIndex) = abi.decode(
+        (uint256 amountIn, address recipient, uint256 tradeIndex, address trader) = abi.decode(
             request.data,
-            (uint256, address, uint256)
+            (uint256, address, uint256, address)
         );
         // If answer is true, it means the relayer was truthful, so he gets the tradeRebatePct of the trade as no rebate is necessary.
         uint256 rebate = (amountIn * tradeRebatePct) / 100;
@@ -432,7 +440,8 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
             request.proposer,
             tradeIndex,
             id,
-            request.answer
+            request.answer,
+            trader
         );
     }
 

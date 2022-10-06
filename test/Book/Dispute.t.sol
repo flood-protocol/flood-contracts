@@ -38,7 +38,8 @@ contract DisputeTest is DisputeFixture {
             relayer,
             tradeIndex,
             reqId,
-            uint256(filledAtBeforeDispute)
+            uint256(filledAtBeforeDispute),
+            testTrader
         );
         _disputeTrade(
             testTokenIn,
@@ -107,7 +108,7 @@ contract DisputeTest is DisputeFixture {
         );
         assertEq(
             _reqData,
-            abi.encode(testAmountIn, testRecipient, tradeIndex),
+            abi.encode(testAmountIn, testRecipient, tradeIndex, testTrader),
             "Request Data should equal request data"
         );
 
@@ -215,7 +216,7 @@ contract DisputeTest is DisputeFixture {
             bond: 100,
             state: RequestState.Settled,
             answer: true,
-            data: abi.encode(testAmountIn, testRecipient, tradeIndex)
+            data: abi.encode(testAmountIn, testRecipient, tradeIndex, testTrader)
         });
         vm.prank(caller);
         vm.expectRevert(

@@ -168,7 +168,7 @@ contract TradeTest is TradeFixture {
 
         vm.prank(bob);
         vm.expectEmit(true, true, true, true, address(book));
-        emit TradeFilled(bob, tradeIndex, amountOut);
+        emit TradeFilled(bob, tradeIndex, amountOut, alice);
         book.fillTrade(
             testTokenIn,
             testTokenOut,
@@ -362,7 +362,7 @@ contract TradeTest is TradeFixture {
 
         vm.prank(testTrader);
         vm.expectEmit(true, true, true, true, address(book));
-        emit TradeCancelled(tradeIndex, tradeId);
+        emit TradeCancelled(tradeIndex, tradeId, testTrader);
         book.cancelTrade(
             testTokenIn,
             testTokenOut,
