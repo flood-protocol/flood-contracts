@@ -123,7 +123,7 @@ const _abi = [
     name: "TokenWhitelisted",
     type: "event",
   },
-];
+] as const;
 
 export class IAllKnowingOracleEvents__factory {
   static readonly abi = _abi;
