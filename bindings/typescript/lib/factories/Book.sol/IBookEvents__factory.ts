@@ -290,7 +290,7 @@ const _abi = [
     name: "TradeSettled",
     type: "event",
   },
-];
+] as const;
 
 export class IBookEvents__factory {
   static readonly abi = _abi;

@@ -4,7 +4,8 @@
   "description": "Typescript bindings to Flood Protocol contracts",
   "main": "lib/index.ts",
   "scripts": {
-    "generate": "rm -rf typescript && npx typechain --target ethers-v5 --out-dir lib \"../../out/**/!(*(*.t|*.s|*Fixture?(s)|Test|Vm|Script).sol)/*.json\""
+    "generate": "rm -rf typescript && npx typechain --target ethers-v5 --out-dir lib \"../../out/**/!(*(*.t|*.s|*Fixture?(s)|Test|Vm|Script).sol)/*.json\"",
+    "postinstall": "patch-package"
   },
   "module": "lib/index.ts",
   "types": "lib/index.ts",
@@ -26,6 +27,7 @@
   "homepage": "https://github.com/fulmin-labs/flood-contracts#readme",
   "devDependencies": {
     "@typechain/ethers-v5": "^10.1.0",
+    "patch-package": "^6.4.7",
     "typechain": "^8.1.0"
   }
 }
