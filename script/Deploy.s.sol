@@ -17,6 +17,9 @@ contract DeployScript is Script, Test {
         uint256 feePct = vm.envUint("FEE_PCT");
         address USDC = vm.envAddress("USDC_ADDRESS");
         address WETH = vm.envAddress("WETH_ADDRESS");
+        address DAI = vm.envAddress("DAI_ADDRESS");
+        address WBTC = vm.envAddress("WBTC_ADDRESS");
+        address USDT = vm.envAddress("USDT_ADDRESS");
         address ORACLE_ADDRESS = vm.envAddress("ORACLE_ADDRESS");
         vm.startBroadcast();
 
@@ -35,6 +38,9 @@ contract DeployScript is Script, Test {
         );
         whitelistTokenForBookAndOracle(oracle, book, USDC, true);
         whitelistTokenForBookAndOracle(oracle, book, WETH, true);
+        whitelistTokenForBookAndOracle(oracle, book, DAI, true);
+        whitelistTokenForBookAndOracle(oracle, book, WBTC, true);
+        whitelistTokenForBookAndOracle(oracle, book, USDT, true);
         vm.stopBroadcast();
     }
 
