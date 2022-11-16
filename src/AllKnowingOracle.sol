@@ -1,15 +1,15 @@
-// SPDX-License-Identifier: Unlicense
-pragma solidity ^0.8.15;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.17;
 
 import "solmate/auth/Owned.sol";
 import "solmate/tokens/ERC20.sol";
 import "solmate/utils/SafeTransferLib.sol";
 
+
 error AllKnowingOracle__AlreadySettled(bytes32 id);
 error AllKnowingOracle__NonSettler();
 error AllKnowingOracle__NonRequester();
 error AllKnowingOracle__RequestAlreadyExists(bytes32 id);
-error AllKnowingOracle__TokenNotWhitelisted(address token);
 error AllKnowingOracle__BondTooSmall();
 
 enum RequestState {
@@ -34,20 +34,16 @@ interface IOptimisticRequester {
 }
 
 /**
- ***************************************
+ *
  *                EVENTS                *
- ***************************************
+ *
  */
 interface IAllKnowingOracleEvents {
     event TokenWhitelisted(address indexed token, bool enabled);
     event SettlerWhitelisted(address indexed settler, bool enabled);
     event RequesterWhitelisted(address indexed requester, bool enabled);
     event NewRequest(
-        bytes32 indexed id,
-        address indexed proposer,
-        address indexed disputer,
-        address currency,
-        uint256 bond
+        bytes32 indexed id, address indexed proposer, address indexed disputer, address currency, uint256 bond
     );
     event RequestSettled(bytes32 indexed id, bool answer);
 }
@@ -65,6 +61,7 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Owned {
     mapping(address => bool) public whitelistedTokens;
     mapping(address => bool) public settlers;
     mapping(address => bool) public requesters;
+  
 
     modifier onlySettler() {
         if (!settlers[msg.sender]) {
@@ -85,41 +82,24 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Owned {
     }
 
     /**
-     *************************************
+     *
      *          ADMIN FUNCTIONS           *
-     *************************************
+     *
      */
-
-    /**
-     @notice Whitelist a token for use in the contract.
-     @param token Token to whitelist as currency
-     @param enabled Whether to enable or disable the token
-    */
-    function whitelistToken(address token, bool enabled) external onlyOwner {
-        whitelistedTokens[token] = enabled;
-        emit TokenWhitelisted(token, enabled);
-    }
-
-    function whitelistSettler(address settler, bool enabled)
-        external
-        onlyOwner
-    {
+    function whitelistSettler(address settler, bool enabled) external onlyOwner {
         settlers[settler] = enabled;
         emit SettlerWhitelisted(settler, enabled);
     }
 
-    function whitelistRequester(address requester, bool enabled)
-        external
-        onlyOwner
-    {
+    function whitelistRequester(address requester, bool enabled) external onlyOwner {
         requesters[requester] = enabled;
         emit RequesterWhitelisted(requester, enabled);
     }
 
     /**
-     *************************************
+     *
      *          EXTERNAL FUNCTIONS         *
-     *************************************
+     *
      */
 
     /**
@@ -133,13 +113,7 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Owned {
      * @param bond Value of the bond
      * @return ID of the request
      */
-    function getRequestId(
-        address sender,
-        address proposer,
-        address disputer,
-        address currency,
-        uint256 bond
-    )
+    function getRequestId(address sender, address proposer, address disputer, address currency, uint256 bond)
         external
         pure
         returns (bytes32)
@@ -156,21 +130,11 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Owned {
      * @param currency Token to use for the bond
      * @param bond Bond value which must be posted to dispute
      */
-    function ask(
-        address proposer,
-        address disputer,
-        address currency,
-        uint256 bond,
-        bytes calldata data
-    )
+    function ask(address proposer, address disputer, address currency, uint256 bond, bytes calldata data)
         external
         onlyRequester
         returns (bytes32 id)
     {
-        if (!whitelistedTokens[currency]) {
-            revert AllKnowingOracle__TokenNotWhitelisted(currency);
-        }
-
         id = _getRequestId(msg.sender, proposer, disputer, currency, bond);
         if (requests[id].state != RequestState.Uninitialized) {
             revert AllKnowingOracle__RequestAlreadyExists(id);
@@ -226,24 +190,16 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Owned {
     }
 
     /**
-     *************************************
+     *
      *          INTERNAL FUNCTIONS         *
-     *************************************
+     *
      */
 
-    function _getRequestId(
-        address requester,
-        address proposer,
-        address disputer,
-        address currency,
-        uint256 bond
-    )
+    function _getRequestId(address requester, address proposer, address disputer, address currency, uint256 bond)
         internal
         pure
         returns (bytes32)
     {
-        return keccak256(
-            abi.encodePacked(requester, proposer, disputer, currency, bond)
-        );
+        return keccak256(abi.encodePacked(requester, proposer, disputer, currency, bond));
     }
 }

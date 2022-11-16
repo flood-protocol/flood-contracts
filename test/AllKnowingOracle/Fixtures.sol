@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: Unlicense
-pragma solidity ^0.8.15;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.17;
 
 import "../utils/BaseFixture.sol";
 import "../utils/TokenFixture.sol";
@@ -26,8 +26,6 @@ contract OracleFixture is BaseFixture, TokenFixture {
         ERC20(USDC).approve(address(oracle), type(uint256).max);
         ERC20(WETH).approve(address(oracle), type(uint256).max);
         vm.stopPrank();
-        oracle.whitelistToken(USDC, true);
-        oracle.whitelistToken(WETH, true);
         oracle.whitelistSettler(charlie, true);
         oracle.whitelistRequester(charlie, true);
         oracle.whitelistRequester(address(this), true);

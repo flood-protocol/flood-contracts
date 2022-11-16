@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: Unlicense
-pragma solidity ^0.8.15;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.17;
 
 import "src/AllKnowingOracle.sol";
 import "./Fixtures.sol";
@@ -23,20 +23,9 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
         super.setUp();
     }
 
-    function testGetId(
-        address sender,
-        address proposer,
-        address disputer,
-        address currency,
-        uint256 bond
-    )
-        public
-    {
-        bytes32 id =
-            keccak256(abi.encodePacked(sender, proposer, disputer, currency, bond));
-        assertEq(
-            oracle.getRequestId(sender, proposer, disputer, currency, bond), id
-        );
+    function testGetId(address sender, address proposer, address disputer, address currency, uint256 bond) public {
+        bytes32 id = keccak256(abi.encodePacked(sender, proposer, disputer, currency, bond));
+        assertEq(oracle.getRequestId(sender, proposer, disputer, currency, bond), id);
     }
 
     function testAsk(uint256 bond) public {
@@ -89,28 +78,12 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
 
         bytes32 id = oracle.getRequestId(charlie, alice, bob, USDC, bond);
         vm.prank(charlie);
-        vm.expectRevert(
-            abi.encodeWithSelector(AllKnowingOracle__RequestAlreadyExists.selector, id)
-        );
+        vm.expectRevert(abi.encodeWithSelector(AllKnowingOracle__RequestAlreadyExists.selector, id));
         oracle.ask(alice, bob, USDC, bond, abi.encode(charlie));
         // Even the same question with no callback should fail
         vm.prank(charlie);
-        vm.expectRevert(
-            abi.encodeWithSelector(AllKnowingOracle__RequestAlreadyExists.selector, id)
-        );
+        vm.expectRevert(abi.encodeWithSelector(AllKnowingOracle__RequestAlreadyExists.selector, id));
         oracle.ask(alice, bob, USDC, bond, "");
-    }
-
-    function testCannotAskWithNonWhitelistedToken(address bondToken) public {
-        vm.assume(bondToken != USDC);
-        vm.assume(bondToken != WETH);
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                AllKnowingOracle__TokenNotWhitelisted.selector, bondToken
-            )
-        );
-        vm.prank(charlie);
-        oracle.ask(alice, bob, bondToken, 100, "");
     }
 
     function testCannotAskWithInsufficientBalanceForBond() public {
@@ -141,8 +114,7 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
         vm.prank(requesterAddress);
         oracle.ask(alice, bob, USDC, bond, abi.encode(int256(-42)));
 
-        bytes32 id =
-            oracle.getRequestId(requesterAddress, alice, bob, USDC, bond);
+        bytes32 id = oracle.getRequestId(requesterAddress, alice, bob, USDC, bond);
         (
             address storageRequester,
             address storageProposer,
@@ -193,9 +165,7 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
         oracle.settle(id, answer);
 
         vm.prank(charlie);
-        vm.expectRevert(
-            abi.encodeWithSelector(AllKnowingOracle__AlreadySettled.selector, id)
-        );
+        vm.expectRevert(abi.encodeWithSelector(AllKnowingOracle__AlreadySettled.selector, id));
         oracle.settle(id, answer);
     }
 }

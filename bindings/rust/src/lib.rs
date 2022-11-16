@@ -4,6 +4,30 @@
 //! Do not manually edit these files.
 //! These files may be overwritten by the codegen system at any time.
 pub mod all_knowing_oracle;
+pub mod base_book_fixture;
+pub mod base_fixture;
 pub mod book;
+pub mod console;
+pub mod console_2;
+pub mod dispute_fixture;
+pub mod erc20;
+pub mod flood_registry;
+pub mod i_all_knowing_oracle_events;
+pub mod i_book_events;
+pub mod i_flood_registry_events;
+pub mod i_optimistic_requester;
+pub mod i_token_whitelist_events;
+pub mod mock_requester;
+pub mod mock_token;
+pub mod oracle_fixture;
+pub mod owned;
+pub mod reentrancy_guard;
+pub mod safe_transfer_lib;
 pub mod shared_types;
-
+pub mod std_error;
+pub mod std_math;
+pub mod std_storage;
+pub mod token_fixture;
+pub mod token_whitelist;
+pub mod trade_fixture;
+pub mod vm;
