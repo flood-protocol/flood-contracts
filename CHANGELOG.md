@@ -5,8 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] - 2022-11-17
 
-## [0.1.1] - 2022-10-06
+### Fixed
+
+- Fixed JS bindings @typechain/ethers-v5 patch to only apply when installing dev dependencies
+
+
+## [0.2.0] - 2022-10-06
 
 ### Changed
 
@@ -18,6 +24,3 @@ The tradeId is now calculated from "tokenIn, tokenOut, amountIn, minAmountOut, r
 - Add trader as an indexed field in the TradeDisputed event, make relayer non indexed 
 - Add trader as an indexed field in the TradeCancelled event
 - Add trader as an indexed field in the TradeDisputeSettled event, make relayer non indexed
-
-
-### Fixed
