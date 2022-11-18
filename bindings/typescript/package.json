@@ -1,11 +1,11 @@
 {
   "name": "@flood-protocol/contracts",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Typescript bindings to Flood Protocol contracts",
   "main": "lib/index.ts",
   "scripts": {
     "generate": "rm -rf typescript && npx typechain --target ethers-v5 --out-dir lib \"../../out/**/!(*(*.t|*.s|*Fixture?(s)|Test|Vm|Script).sol)/*.json\"",
-    "postinstall": "patch-package"
+    "prepare": "patch-package"
   },
   "module": "lib/index.ts",
   "types": "lib/index.ts",
