@@ -13,8 +13,12 @@ contract DeployTest is DeployScript {
     uint256 internal testRelayerRefundPct = 80;
     uint256 internal testFeePct = 300;
 
-    function testDeployOracle() public {
-        AllKnowingOracle _oracle = deployOracle();
+
+   
+
+    function testDeployOracle(FloodRegistry _registry) public {
+        AllKnowingOracle _oracle = deployOracle(_registry);
+        assertEq(address(_oracle.registry()), address(_registry), "Oracle constructor should have run correctly");
         assertTrue(_oracle.settlers(address(this)), "Oracle constructor should have run correctly");
     }
 
@@ -35,8 +39,9 @@ contract DeployTest is DeployScript {
         if (_tradeRebatePct + _relayerRefundPct + _disputeBondPct != 100) {
             return;
         }
+        FloodRegistry(_registry).setOracle(AllKnowingOracle(_oracle));
         Book book =
-            deployBook(FloodRegistry(_registry), AllKnowingOracle(_oracle), _safeBlockThreshold, _disputeBondPct, _tradeRebatePct, _relayerRefundPct, _feePct);
+            deployBook(FloodRegistry(_registry), _safeBlockThreshold, _disputeBondPct, _tradeRebatePct, _relayerRefundPct, _feePct);
         
 
         assertEq(address(book.registry()),_registry, "Book constructor should have run correctly");
@@ -57,22 +62,22 @@ contract DeployTest is DeployScript {
         vm.assume(feePct > 2500);
         vm.expectRevert(stdError.assertionError);
         deployBook(
-            testRegistry, testOracle, testSafeBlockThreshold, testDisputeBondPct, testTradeRebatePct, testRelayerRefundPct, feePct
+            testRegistry, testSafeBlockThreshold, testDisputeBondPct, testTradeRebatePct, testRelayerRefundPct, feePct
         );
     }
 
     function testCannotDeployIfSafeThresholdIsZero() public {
         vm.expectRevert(stdError.assertionError);
-        deployBook(testRegistry, testOracle, 0, testDisputeBondPct, testTradeRebatePct, testRelayerRefundPct, testFeePct);
+        deployBook(testRegistry,0, testDisputeBondPct, testTradeRebatePct, testRelayerRefundPct, testFeePct);
     }
 
     function testCannotDeployBookIfAnyFeeIsZero() public {
         vm.expectRevert(stdError.assertionError);
-        deployBook(testRegistry,testOracle, testSafeBlockThreshold, 0, testTradeRebatePct, testRelayerRefundPct, testFeePct);
+        deployBook(testRegistry, testSafeBlockThreshold, 0, testTradeRebatePct, testRelayerRefundPct, testFeePct);
         vm.expectRevert(stdError.assertionError);
-        deployBook(testRegistry,testOracle, testSafeBlockThreshold, testDisputeBondPct, 0, testRelayerRefundPct, testFeePct);
+        deployBook(testRegistry, testSafeBlockThreshold, testDisputeBondPct, 0, testRelayerRefundPct, testFeePct);
         vm.expectRevert(stdError.assertionError);
-        deployBook(testRegistry, testOracle, testSafeBlockThreshold, testDisputeBondPct, testTradeRebatePct, 0, testFeePct);
+        deployBook(testRegistry, testSafeBlockThreshold, testDisputeBondPct, testTradeRebatePct, 0, testFeePct);
     }
 
     function testWhitelistToken(address _token, bool _enable) public {

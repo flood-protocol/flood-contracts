@@ -2,10 +2,12 @@
 pragma solidity ^0.8.17;
 
 import "solmate/auth/Owned.sol";
+import "./AllKnowingOracle.sol";
 
 
 interface IFloodRegistryEvents {
     event TokenWhitelisted(address indexed token, bool whitelisted);
+    event OracleChanged(AllKnowingOracle indexed oracle);
 }
 
 
@@ -22,14 +24,20 @@ contract FloodRegistry is IFloodRegistryEvents, Owned {
     mapping(address => uint) public tokenIndexes;
     address[] private tokens;
 
+    // The latest oracle used in the protocol.
+    AllKnowingOracle public latestOracle;
+
     constructor() Owned(msg.sender) {}
 
+
+
+
     /**
-     * @notice Whitelists a token.
+     * @notice Whitelists a token. Reverts if trying to add a token that is already whitelisted or if trying to remove a token that is not whitelisted.
      * @param token The token to whitelist.
      * @param enabled Whether the token should be whitelisted or not.
      */
-    function whitelistToken(address token, bool enabled) public onlyOwner {
+    function whitelistToken(address token, bool enabled) external onlyOwner {
         if (enabled) {
            _addToken(token); 
         } else {
@@ -38,8 +46,20 @@ contract FloodRegistry is IFloodRegistryEvents, Owned {
         emit TokenWhitelisted(token, enabled);
     }
 
+
     /**
-     * @notice Checks if a token is whitelisted.
+    * @notice Sets the latest oracle used in the protocol.
+    * @param _oracle The oracle to set.
+    */
+    function setOracle(AllKnowingOracle _oracle) external onlyOwner {
+        latestOracle = _oracle;
+        emit OracleChanged(_oracle);
+    }
+
+
+
+    /**
+     * @notice Checks if a token is whitelisted. 
      * @param token The token to check.
      * @return True if the token is whitelisted, false otherwise.
      */

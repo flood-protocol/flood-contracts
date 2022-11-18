@@ -13,21 +13,28 @@ contract FloodRegistryTest is Test, IFloodRegistryEvents {
         registry = new FloodRegistry();
     }
 
-    function testWhitelistToken() public {
-        address token = address(1);
+    function testWhitelistToken(address token) public {
         vm.expectEmit(true, false, false, true, address(registry));
         emit TokenWhitelisted(token, true);
         registry.whitelistToken(token, true);
         assertTrue(registry.isTokenWhitelisted(token));
         assertEq(stdstore.target(address(registry)).sig(registry.tokenIndexes.selector).with_key(token).read_uint(), 1);
-
         vm.expectEmit(true, false, false, true, address(registry));
         emit TokenWhitelisted(token, false);
         registry.whitelistToken(token, false);
         assertFalse(registry.isTokenWhitelisted(token));
-
         vm.expectRevert("UNAUTHORIZED");
         vm.prank(address(2));
         registry.whitelistToken(token, true);
+    }
+
+    function testSetOracle(AllKnowingOracle oracle) public {
+        vm.expectEmit(true, false, false, true, address(registry));
+        emit OracleChanged(oracle);
+        registry.setOracle(oracle);
+        assertEq(address(registry.latestOracle()), address(oracle));
+        vm.expectRevert("UNAUTHORIZED");
+        vm.prank(address(2));
+        registry.setOracle(oracle);
     }
 }

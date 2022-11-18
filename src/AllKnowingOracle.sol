@@ -4,6 +4,7 @@ pragma solidity ^0.8.17;
 import "solmate/auth/Owned.sol";
 import "solmate/tokens/ERC20.sol";
 import "solmate/utils/SafeTransferLib.sol";
+import "./FloodRegistry.sol";
 
 
 error AllKnowingOracle__AlreadySettled(bytes32 id);
@@ -58,9 +59,10 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Owned {
     using SafeTransferLib for ERC20;
 
     mapping(bytes32 => Request) public requests;
-    mapping(address => bool) public whitelistedTokens;
     mapping(address => bool) public settlers;
     mapping(address => bool) public requesters;
+    FloodRegistry public immutable registry;
+
   
 
     modifier onlySettler() {
@@ -77,8 +79,9 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Owned {
         _;
     }
 
-    constructor() Owned(msg.sender) {
+    constructor(FloodRegistry _registry) Owned(msg.sender) {
         settlers[msg.sender] = true;
+        registry = _registry;
     }
 
     /**

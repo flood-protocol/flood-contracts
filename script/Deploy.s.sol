@@ -31,12 +31,13 @@ contract DeployScript is Script, Test {
         }
 
         if (ORACLE_ADDRESS == address(0)) {
-            oracle = deployOracle();
+            oracle = deployOracle(registry);
         } else {
             oracle = AllKnowingOracle(ORACLE_ADDRESS);
         }
+        registry.setOracle(oracle);
         Book book =
-            deployBook(registry, oracle, safeBlockThreshold, disputeBondPct, tradeRebatePct, relayerRefundPct, feePct);
+            deployBook(registry,safeBlockThreshold, disputeBondPct, tradeRebatePct, relayerRefundPct, feePct);
         whitelistToken(registry, USDC, true);
         whitelistToken(registry,WETH, true);
         whitelistToken(registry,DAI, true);
@@ -45,8 +46,8 @@ contract DeployScript is Script, Test {
         vm.stopBroadcast();
     }
 
-    function deployOracle() public returns (AllKnowingOracle newOracle) {
-        newOracle = new AllKnowingOracle();
+    function deployOracle(FloodRegistry _registry) public returns (AllKnowingOracle newOracle) {
+        newOracle = new AllKnowingOracle(_registry);
     }
 
       function deployRegistry() public returns (FloodRegistry newRegistry) {
@@ -55,7 +56,6 @@ contract DeployScript is Script, Test {
 
     function deployBook(
         FloodRegistry _registry,
-        AllKnowingOracle _oracle,
         uint256 _safeBlockThreshold,
         uint256 _disputeBondPct,
         uint256 _tradeRebatePct,
@@ -71,14 +71,13 @@ contract DeployScript is Script, Test {
 
         book = new Book(
             _registry,
-            _oracle,
             _safeBlockThreshold,
             _disputeBondPct,
             _tradeRebatePct,
             _relayerRefundPct,
             _feePct
         );
-        _oracle.whitelistRequester(address(book), true);
+        registry.latestOracle().whitelistRequester(address(book), true);
     }
 
     function whitelistToken(FloodRegistry _registry,address _token, bool _enable)

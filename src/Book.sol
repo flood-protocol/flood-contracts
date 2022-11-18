@@ -2,7 +2,6 @@
 pragma solidity ^0.8.17;
 
 import "solmate/tokens/ERC20.sol";
-import "solmate/auth/Owned.sol";
 import "solmate/utils/SafeTransferLib.sol";
 import "solmate/utils/ReentrancyGuard.sol";
 import "./AllKnowingOracle.sol";
@@ -65,7 +64,7 @@ enum TradeStatus
     FILLED
 }
 
-contract Book is IOptimisticRequester, IBookEvents, Owned {
+contract Book is IOptimisticRequester, IBookEvents {
     using SafeTransferLib for ERC20;
 
     uint256 public immutable safeBlockThreshold;
@@ -76,6 +75,7 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
     uint256 public immutable feePct;
 
     FloodRegistry public immutable registry;
+    // The oracle to use for dispute resolution. At deployment, this is the latest oracle used in the protocol and it cannot be changed.
     AllKnowingOracle public immutable oracle;
 
     uint256 public numberOfTrades = 0;
@@ -88,15 +88,14 @@ contract Book is IOptimisticRequester, IBookEvents, Owned {
 
     constructor(
         FloodRegistry _registry,
-        AllKnowingOracle _oracle,
         uint256 _safeBlockThreshold,
         uint256 _disputeBondPct,
         uint256 _tradeRebatePct,
         uint256 _relayerRefundPct,
         uint256 _feePct
-    ) Owned(msg.sender) {
+    )  {
         registry = _registry;
-        oracle = _oracle;
+        oracle = registry.latestOracle();
         safeBlockThreshold = _safeBlockThreshold;
         emit SafeBlockThresholdSet(safeBlockThreshold);
 

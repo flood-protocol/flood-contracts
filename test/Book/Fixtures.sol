@@ -8,7 +8,6 @@ import "src/Book.sol";
 import "src/FloodRegistry.sol";
 
 contract BaseBookFixture is IBookEvents, OracleFixture {
-    FloodRegistry internal registry;
     Book internal book;
     uint256 internal testSafeBlockThreashold = 100;
     uint256 testDisputeBondPct = 20;
@@ -18,10 +17,8 @@ contract BaseBookFixture is IBookEvents, OracleFixture {
 
     function setUp() public virtual override {
         super.setUp();
-        registry = new FloodRegistry(); 
         book = new Book(
             registry,
-            oracle,
             testSafeBlockThreashold,
             testDisputeBondPct,
             testTradeRebatePct,

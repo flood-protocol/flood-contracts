@@ -6,11 +6,14 @@ import "../utils/TokenFixture.sol";
 import "src/AllKnowingOracle.sol";
 
 contract OracleFixture is BaseFixture, TokenFixture {
+    FloodRegistry internal registry;
     AllKnowingOracle internal oracle;
 
     function setUp() public virtual override {
         super.setUp();
-        oracle = new AllKnowingOracle();
+        registry = new FloodRegistry();
+        oracle = new AllKnowingOracle(registry);
+        registry.setOracle(oracle);
         ERC20(USDC).approve(address(oracle), type(uint256).max);
         ERC20(WETH).approve(address(oracle), type(uint256).max);
         vm.label(address(oracle), "AllKnowingOracle");
