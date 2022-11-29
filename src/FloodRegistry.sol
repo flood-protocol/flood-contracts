@@ -32,7 +32,7 @@ contract FloodRegistry is IFloodRegistryEvents, Ownable2Step {
      * @param enabled Whether the token should be whitelisted or not.
      */
     function whitelistToken(address token, bool enabled) external onlyOwner {
-       _whitelistToken(token, enabled);
+        _whitelistToken(token, enabled);
     }
 
     /**
@@ -46,7 +46,7 @@ contract FloodRegistry is IFloodRegistryEvents, Ownable2Step {
         }
 
         for (uint256 i = 0; i < tokens.length; i++) {
-          _whitelistToken(tokens[i], enabled[i]);
+            _whitelistToken(tokens[i], enabled[i]);
         }
     }
 
@@ -85,14 +85,13 @@ contract FloodRegistry is IFloodRegistryEvents, Ownable2Step {
         return _whitelistedTokens.values();
     }
 
-
-    /** 
-    * @notice Whitelists a token. Reverts if trying to add a token that is already whitelisted or if trying to remove a token that is not whitelisted.
-    * @param token The token to whitelist.
-    * @param enabled Whether the token should be whitelisted or removed.
+    /**
+     * @notice Whitelists a token. Reverts if trying to add a token that is already whitelisted or if trying to remove a token that is not whitelisted.
+     * @param token The token to whitelist.
+     * @param enabled Whether the token should be whitelisted or removed.
      */
-     function _whitelistToken(address token, bool enabled) internal {
-          if (enabled) {
+    function _whitelistToken(address token, bool enabled) internal {
+        if (enabled) {
             bool success = _whitelistedTokens.add(token);
             if (!success) revert FloodRegistry__TokenAlreadyWhitelisted();
         } else {
@@ -100,5 +99,5 @@ contract FloodRegistry is IFloodRegistryEvents, Ownable2Step {
             if (!success) revert FloodRegistry__TokenNotWhitelisted();
         }
         emit TokenWhitelisted(token, enabled);
-        }
+    }
 }

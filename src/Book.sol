@@ -306,7 +306,10 @@ contract Book is IOptimisticRequester, IBookEvents {
 
         _deleteTrade(tradeId);
 
-        IERC20(tokenIn).safeApprove(address(oracle), bondAmount);
+        // Pull the bond from the disputer
+        IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), bondAmount);
+        // Now the book is going to sponsor the dispute.
+        IERC20(tokenIn).safeApprove(address(oracle), 2 * bondAmount);
         bytes32 disputeId =
             oracle.ask(relayer, msg.sender, tokenIn, bondAmount, abi.encode(amountIn, recipient, tradeIndex, trader));
         IERC20(tokenIn).safeApprove(address(oracle), 0);

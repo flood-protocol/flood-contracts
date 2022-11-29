@@ -28,21 +28,4 @@ contract AdminTest is IAllKnowingOracleEvents, OracleFixture {
         vm.prank(alice);
         oracle.whitelistSettler(bob, true);
     }
-
-    function testWhitelistRequester(address requester, bool enabled) public {
-        vm.expectEmit(true, false, false, true, address(oracle));
-        emit RequesterWhitelisted(requester, enabled);
-        oracle.whitelistRequester(requester, enabled);
-
-        bool storageEnabled =
-            stdstore.target(address(oracle)).sig(oracle.requesters.selector).with_key(requester).read_bool();
-
-        assertEq(storageEnabled, enabled);
-    }
-
-    function testCannotWhitelistRequesterIfNonOwner() public {
-        vm.expectRevert("Ownable: caller is not the owner");
-        vm.prank(alice);
-        oracle.whitelistSettler(bob, true);
-    }
 }

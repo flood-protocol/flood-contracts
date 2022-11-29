@@ -120,7 +120,7 @@ contract DisputeFixture is TradeFixture {
 
     function setUp() public virtual override {
         super.setUp();
-        oracle.whitelistRequester(address(book), true);
+
         deal(testTokenIn, alice, testAmountIn);
 
         (tradeIndex, tradeId) =

@@ -30,7 +30,5 @@ contract OracleFixture is BaseFixture, TokenFixture {
         ERC20(WETH).approve(address(oracle), type(uint256).max);
         vm.stopPrank();
         oracle.whitelistSettler(charlie, true);
-        oracle.whitelistRequester(charlie, true);
-        oracle.whitelistRequester(address(this), true);
     }
 }

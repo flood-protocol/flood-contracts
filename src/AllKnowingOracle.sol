@@ -59,19 +59,11 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Ownable2Step {
 
     mapping(bytes32 => Request) public requests;
     mapping(address => bool) public settlers;
-    mapping(address => bool) public requesters;
     FloodRegistry public immutable registry;
 
     modifier onlySettler() {
         if (!settlers[msg.sender]) {
             revert AllKnowingOracle__NonSettler();
-        }
-        _;
-    }
-
-    modifier onlyRequester() {
-        if (!requesters[msg.sender]) {
-            revert AllKnowingOracle__NonRequester();
         }
         _;
     }
@@ -89,11 +81,6 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Ownable2Step {
     function whitelistSettler(address settler, bool enabled) external onlyOwner {
         settlers[settler] = enabled;
         emit SettlerWhitelisted(settler, enabled);
-    }
-
-    function whitelistRequester(address requester, bool enabled) external onlyOwner {
-        requesters[requester] = enabled;
-        emit RequesterWhitelisted(requester, enabled);
     }
 
     /**
@@ -124,7 +111,7 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Ownable2Step {
     /**
      * @notice Requests and proposes a price to the oracle. Disputers should set their allowance at each dispute to safely pay the bond.
      * @dev The bond proposer bond is transferred from `msg.sender` rather than from `proposer` to allow contracts to sponsor proposals.
-     * For example, in `BookSingleChain`, the relayer has already sent funds to the contract, so they are pulled from the contract directly and the relayer is set as proposer.
+     * For example, in `BookSingleChain`, relayer and disputer have already sent funds to the contract, so they are pulled from the contract directly and the relayer is set as proposer.
      * @param proposer Address of the proposer
      * @param disputer Address of the disputer
      * @param currency Token to use for the bond
@@ -132,7 +119,6 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Ownable2Step {
      */
     function ask(address proposer, address disputer, address currency, uint256 bond, bytes calldata data)
         external
-        onlyRequester
         returns (bytes32 id)
     {
         id = _getRequestId(msg.sender, proposer, disputer, currency, bond);
@@ -154,10 +140,7 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Ownable2Step {
 
         emit NewRequest(id, proposer, disputer, currency, bond);
 
-        IERC20(currency).safeTransferFrom(msg.sender, address(this), bond);
-        // Note: This is unsafe for the disputer as a requester could list someone as disputer and give the right answer, making the disputer lose the bond.
-        // However, as this method is permissioned and requesters are assumed to be trustworthy, this is "safe".
-        IERC20(currency).safeTransferFrom(disputer, address(this), bond);
+        IERC20(currency).safeTransferFrom(msg.sender, address(this), 2 * bond);
     }
 
     /**

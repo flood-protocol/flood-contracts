@@ -29,11 +29,10 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
     }
 
     function testAsk(uint256 bond) public {
-        // As Charlie is the requester, he will pay the bond for Alice.
-        deal(USDC, charlie, bond);
-        deal(USDC, bob, bond);
+        vm.assume(bond < type(uint256).max / 2);
+        // As Charlie is the requester, he will pay the bond for Alice and Bob.
+        deal(USDC, charlie, 2 * bond);
         uint256 charlieBalanceBefore = IERC20(USDC).balanceOf(charlie);
-        uint256 bobBalanceBefore = IERC20(USDC).balanceOf(bob);
 
         bytes32 id = oracle.getRequestId(charlie, alice, bob, USDC, bond);
         vm.prank(charlie);
@@ -41,8 +40,7 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
         emit NewRequest(id, alice, bob, USDC, bond);
         oracle.ask(alice, bob, USDC, bond, abi.encode(charlie));
 
-        assertEq(IERC20(USDC).balanceOf(charlie), charlieBalanceBefore - bond);
-        assertEq(IERC20(USDC).balanceOf(bob), bobBalanceBefore - bond);
+        assertEq(IERC20(USDC).balanceOf(charlie), charlieBalanceBefore - 2 * bond);
 
         // FIXME: For a bug in foundry, non packed less than 32bytes slots are not found, so we go through the public getter instead. Once fixed move this to reading from storage.
         (
@@ -107,10 +105,8 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
         address requesterAddress = address(requester);
         vm.prank(requesterAddress);
         IERC20(USDC).approve(address(oracle), type(uint256).max);
-        deal(USDC, requesterAddress, bond);
-        deal(USDC, bob, bond);
-
-        oracle.whitelistRequester(requesterAddress, true);
+        // requester is sponsoring the bond for alice and bob
+        deal(USDC, requesterAddress, 2 * bond);
         vm.prank(requesterAddress);
         oracle.ask(alice, bob, USDC, bond, abi.encode(int256(-42)));
 
@@ -151,9 +147,7 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
     function testCannotSettleIfAlreadySettled(bool answer) public {
         uint256 bond = 100;
 
-        deal(USDC, charlie, bond);
-        deal(USDC, bob, bond);
-
+        deal(USDC, charlie, 2 * bond);
         vm.prank(charlie);
         oracle.ask(alice, bob, USDC, bond, "");
 
