@@ -26,9 +26,8 @@ contract DeployScript is Script, Test {
         address ORACLE_ADDRESS = vm.envAddress("ORACLE_ADDRESS");
         vm.startBroadcast();
 
-        if (REGISTRY_ADDRESS == address(0)) {  registry = deployRegistry(); } else {
-            registry = FloodRegistry(REGISTRY_ADDRESS);
-        }
+        if (REGISTRY_ADDRESS == address(0)) registry = deployRegistry();
+        else registry = FloodRegistry(REGISTRY_ADDRESS);
 
         if (ORACLE_ADDRESS == address(0)) {
             oracle = deployOracle(registry);
@@ -36,13 +35,12 @@ contract DeployScript is Script, Test {
             oracle = AllKnowingOracle(ORACLE_ADDRESS);
         }
         registry.setOracle(oracle);
-        Book book =
-            deployBook(registry,safeBlockThreshold, disputeBondPct, tradeRebatePct, relayerRefundPct, feePct);
+        Book book = deployBook(registry, safeBlockThreshold, disputeBondPct, tradeRebatePct, relayerRefundPct, feePct);
         whitelistToken(registry, USDC, true);
-        whitelistToken(registry,WETH, true);
-        whitelistToken(registry,DAI, true);
-        whitelistToken(registry,WBTC, true);
-        whitelistToken(registry,USDT, true);
+        whitelistToken(registry, WETH, true);
+        whitelistToken(registry, DAI, true);
+        whitelistToken(registry, WBTC, true);
+        whitelistToken(registry, USDT, true);
         vm.stopBroadcast();
     }
 
@@ -50,7 +48,7 @@ contract DeployScript is Script, Test {
         newOracle = new AllKnowingOracle(_registry);
     }
 
-      function deployRegistry() public returns (FloodRegistry newRegistry) {
+    function deployRegistry() public returns (FloodRegistry newRegistry) {
         newRegistry = new FloodRegistry();
     }
 
@@ -80,9 +78,7 @@ contract DeployScript is Script, Test {
         registry.latestOracle().whitelistRequester(address(book), true);
     }
 
-    function whitelistToken(FloodRegistry _registry,address _token, bool _enable)
-        public
-    {
+    function whitelistToken(FloodRegistry _registry, address _token, bool _enable) public {
         _registry.whitelistToken(_token, _enable);
     }
 }

@@ -32,8 +32,8 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
         // As Charlie is the requester, he will pay the bond for Alice.
         deal(USDC, charlie, bond);
         deal(USDC, bob, bond);
-        uint256 charlieBalanceBefore = ERC20(USDC).balanceOf(charlie);
-        uint256 bobBalanceBefore = ERC20(USDC).balanceOf(bob);
+        uint256 charlieBalanceBefore = IERC20(USDC).balanceOf(charlie);
+        uint256 bobBalanceBefore = IERC20(USDC).balanceOf(bob);
 
         bytes32 id = oracle.getRequestId(charlie, alice, bob, USDC, bond);
         vm.prank(charlie);
@@ -41,15 +41,15 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
         emit NewRequest(id, alice, bob, USDC, bond);
         oracle.ask(alice, bob, USDC, bond, abi.encode(charlie));
 
-        assertEq(ERC20(USDC).balanceOf(charlie), charlieBalanceBefore - bond);
-        assertEq(ERC20(USDC).balanceOf(bob), bobBalanceBefore - bond);
+        assertEq(IERC20(USDC).balanceOf(charlie), charlieBalanceBefore - bond);
+        assertEq(IERC20(USDC).balanceOf(bob), bobBalanceBefore - bond);
 
         // FIXME: For a bug in foundry, non packed less than 32bytes slots are not found, so we go through the public getter instead. Once fixed move this to reading from storage.
         (
             address storageRequester,
             address storageProposer,
             address storageDisputer,
-            ERC20 storageCurrency,
+            IERC20 storageCurrency,
             uint256 storageBond,
             RequestState storageState,
             bool storageAnswer,
@@ -88,15 +88,15 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
 
     function testCannotAskWithInsufficientBalanceForBond() public {
         vm.prank(charlie);
-        vm.expectRevert("TRANSFER_FROM_FAILED");
+        vm.expectRevert("ERC20: transfer amount exceeds balance");
         oracle.ask(alice, bob, USDC, 100, "");
     }
 
     function testCannotAskIfNoAllowance() public {
         // Bob removes the allowance for USDC
         vm.prank(bob);
-        ERC20(USDC).approve(address(oracle), 0);
-        vm.expectRevert("TRANSFER_FROM_FAILED");
+        IERC20(USDC).approve(address(oracle), 0);
+        vm.expectRevert("ERC20: transfer amount exceeds balance");
         vm.prank(charlie);
         oracle.ask(alice, bob, USDC, 100, "");
     }
@@ -106,7 +106,7 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
         MockRequester requester = new MockRequester();
         address requesterAddress = address(requester);
         vm.prank(requesterAddress);
-        ERC20(USDC).approve(address(oracle), type(uint256).max);
+        IERC20(USDC).approve(address(oracle), type(uint256).max);
         deal(USDC, requesterAddress, bond);
         deal(USDC, bob, bond);
 
@@ -119,7 +119,7 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
             address storageRequester,
             address storageProposer,
             address storageDisputer,
-            ERC20 storageCurrency,
+            IERC20 storageCurrency,
             uint256 storageBond,
             ,
             ,

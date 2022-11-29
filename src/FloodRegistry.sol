@@ -1,36 +1,30 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import "solmate/auth/Owned.sol";
 import "./AllKnowingOracle.sol";
-
+import "@openzeppelin/access/Ownable2Step.sol";
+import "@openzeppelin/utils/structs/EnumerableSet.sol";
 
 interface IFloodRegistryEvents {
     event TokenWhitelisted(address indexed token, bool whitelisted);
     event OracleChanged(AllKnowingOracle indexed oracle);
 }
 
-
-error FloodRegistry__TokenNotWhitelisted(address token);
-error FloodRegistry__TokenAlreadyWhitelisted(address token);
+error FloodRegistry__TokenAlreadyWhitelisted();
+error FloodRegistry__TokenNotWhitelisted();
+error FloodRegistry__InvalidInputLength();
 
 /**
  * @title FloodRegistry
  * @notice This contract is the central store of information about the Flood Protocol.
- * Here its possible to query which tokens can be used in the protocol, as well as what is the latest oracle used. 
+ * Here its possible to query which tokens can be used in the protocol, as well as what is the latest oracle used.
  */
-contract FloodRegistry is IFloodRegistryEvents, Owned {
-    // Mapping from token address to its index in the tokens array. A token index of 0 means the token is not whitelisted. 
-    mapping(address => uint) public tokenIndexes;
-    address[] private tokens;
+contract FloodRegistry is IFloodRegistryEvents, Ownable2Step {
+    using EnumerableSet for EnumerableSet.AddressSet;
 
+    EnumerableSet.AddressSet private _whitelistedTokens;
     // The latest oracle used in the protocol.
     AllKnowingOracle public latestOracle;
-
-    constructor() Owned(msg.sender) {}
-
-
-
 
     /**
      * @notice Whitelists a token. Reverts if trying to add a token that is already whitelisted or if trying to remove a token that is not whitelisted.
@@ -38,59 +32,73 @@ contract FloodRegistry is IFloodRegistryEvents, Owned {
      * @param enabled Whether the token should be whitelisted or not.
      */
     function whitelistToken(address token, bool enabled) external onlyOwner {
-        if (enabled) {
-           _addToken(token); 
-        } else {
-            _removeToken(token);
+       _whitelistToken(token, enabled);
+    }
+
+    /**
+     * @notice whitelists multiple tokens at once. Same rules as `whitelistToken` apply.
+     * @param tokens The tokens to whitelist.
+     * @param enabled Whether the tokens should be whitelisted or not.
+     */
+    function batchWhitelistTokens(address[] calldata tokens, bool[] calldata enabled) external onlyOwner {
+        if (tokens.length != enabled.length) {
+            revert FloodRegistry__InvalidInputLength();
         }
-        emit TokenWhitelisted(token, enabled);
+
+        for (uint256 i = 0; i < tokens.length; i++) {
+          _whitelistToken(tokens[i], enabled[i]);
+        }
     }
 
-
     /**
-    * @notice Sets the latest oracle used in the protocol.
-    * @param _oracle The oracle to set.
-    */
-    function setOracle(AllKnowingOracle _oracle) external onlyOwner {
-        latestOracle = _oracle;
-        emit OracleChanged(_oracle);
+     * @notice Sets the latest oracle used in the protocol.
+     * @param oracle The oracle to set.
+     */
+    function setOracle(AllKnowingOracle oracle) external onlyOwner {
+        latestOracle = oracle;
+        emit OracleChanged(oracle);
     }
 
-
-
     /**
-     * @notice Checks if a token is whitelisted. 
+     * @notice Checks if a token is whitelisted.
      * @param token The token to check.
      * @return True if the token is whitelisted, false otherwise.
      */
     function isTokenWhitelisted(address token) external view returns (bool) {
-        return _isTokenWhitelisted(token); 
+        return _whitelistedTokens.contains(token);
+    }
+
+    /**
+     * @notice Returns the number of whitelisted tokens.
+     * @return The number of whitelisted tokens.
+     */
+    function whitelistedTokensCount() external view returns (uint256) {
+        return _whitelistedTokens.length();
+    }
+
+    /**
+     * @notice Returns all the whitelisted tokens.
+     * @dev This function is gas intensive and should be used off-chain or with caution.
+     * @return The whitelisted tokens.
+     */
+    function whitelistedTokens() external view returns (address[] memory) {
+        return _whitelistedTokens.values();
     }
 
 
-    function _isTokenWhitelisted(address token) internal view returns (bool) {
-        return tokenIndexes[token] != 0;
-    }
-
-    function _addToken(address token) internal {
-        if (_isTokenWhitelisted(token)) {
-            revert FloodRegistry__TokenAlreadyWhitelisted(token);
+    /** 
+    * @notice Whitelists a token. Reverts if trying to add a token that is already whitelisted or if trying to remove a token that is not whitelisted.
+    * @param token The token to whitelist.
+    * @param enabled Whether the token should be whitelisted or removed.
+     */
+     function _whitelistToken(address token, bool enabled) internal {
+          if (enabled) {
+            bool success = _whitelistedTokens.add(token);
+            if (!success) revert FloodRegistry__TokenAlreadyWhitelisted();
+        } else {
+            bool success = _whitelistedTokens.remove(token);
+            if (!success) revert FloodRegistry__TokenNotWhitelisted();
         }
-        tokens.push(token);
-        // We add 1 to the index to avoid having a 0 index, which would mean the token is not whitelisted.
-        tokenIndexes[token] = tokens.length;
-    }
-
-    function _removeToken(address token) internal {
-        uint256 index_plus_one = tokenIndexes[token];
-        if(index_plus_one == 0) {
-            revert FloodRegistry__TokenNotWhitelisted(token);
+        emit TokenWhitelisted(token, enabled);
         }
-        // We set the index to 0 to signal to callers that the token is not whitelisted.
-        tokenIndexes[token] = 0;
-        // We swap the token to remove with the last token in the array.
-        tokens[index_plus_one - 1] = tokens[tokens.length - 1];
-        tokens.pop();
-    }
-
 }

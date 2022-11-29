@@ -2,13 +2,21 @@
 pragma solidity ^0.8.17;
 
 import "forge-std/Test.sol";
-import "solmate/tokens/ERC20.sol";
+import "@openzeppelin/token/ERC20/ERC20.sol";
 
 address constant MAINNET_USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
 address constant MAINNET_WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
 
 contract MockToken is ERC20 {
-    constructor(string memory name, string memory symbol, uint8 decimals) ERC20(name, symbol, decimals) {}
+    uint8 private mockDecimals;
+
+    constructor(string memory _name, string memory _symbol, uint8 _decimals) ERC20(_name, _symbol) {
+        mockDecimals = _decimals;
+    }
+
+    function decimals() public view virtual override returns (uint8) {
+        return mockDecimals;
+    }
 }
 
 contract TokenFixture is Test {

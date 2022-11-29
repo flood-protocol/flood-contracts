@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import "solmate/tokens/ERC20.sol";
-import "solmate/utils/SafeTransferLib.sol";
-import "solmate/utils/ReentrancyGuard.sol";
+import "@openzeppelin/token/ERC20/IERC20.sol";
+import "@openzeppelin/token/ERC20/utils/SafeERC20.sol";
 import "./AllKnowingOracle.sol";
 import "./FloodRegistry.sol";
 
@@ -65,7 +64,7 @@ enum TradeStatus
 }
 
 contract Book is IOptimisticRequester, IBookEvents {
-    using SafeTransferLib for ERC20;
+    using SafeERC20 for IERC20;
 
     uint256 public immutable safeBlockThreshold;
     uint256 public immutable disputeBondPct;
@@ -93,7 +92,7 @@ contract Book is IOptimisticRequester, IBookEvents {
         uint256 _tradeRebatePct,
         uint256 _relayerRefundPct,
         uint256 _feePct
-    )  {
+    ) {
         registry = _registry;
         oracle = registry.latestOracle();
         safeBlockThreshold = _safeBlockThreshold;
@@ -127,7 +126,7 @@ contract Book is IOptimisticRequester, IBookEvents {
     function requestTrade(address tokenIn, address tokenOut, uint256 amountIn, uint256 minAmountOut, address recipient)
         external
     {
-        // checks whether the tokens are whitelisted 
+        // checks whether the tokens are whitelisted
         _isPairSupported(tokenIn, tokenOut);
         if (amountIn == 0 || minAmountOut == 0) {
             revert Book__ZeroAmount();
@@ -142,7 +141,7 @@ contract Book is IOptimisticRequester, IBookEvents {
         status[tradeId] = TradeStatus.REQUESTED;
         numberOfTrades++;
 
-        ERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
+        IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
     }
 
     /**
@@ -176,7 +175,7 @@ contract Book is IOptimisticRequester, IBookEvents {
 
         emit TradeCancelled(tradeIndex, tradeId, trader);
         // Refund the trader.
-        ERC20(tokenIn).safeTransfer(trader, amountIn);
+        IERC20(tokenIn).safeTransfer(trader, amountIn);
     }
 
     /**
@@ -216,11 +215,11 @@ contract Book is IOptimisticRequester, IBookEvents {
 
         emit TradeFilled(msg.sender, tradeIndex, amountToSend, trader);
         // Send the tokens to the recipient.
-        ERC20(tokenOut).safeTransferFrom(msg.sender, recipient, amountToSend);
+        IERC20(tokenOut).safeTransferFrom(msg.sender, recipient, amountToSend);
         // Send some of the tokens to the relayer.
         uint256 amountInToRelayer = (amountIn * relayerRefundPct) / 100;
 
-        ERC20(tokenIn).safeTransfer(msg.sender, amountInToRelayer);
+        IERC20(tokenIn).safeTransfer(msg.sender, amountInToRelayer);
     }
 
     /**
@@ -262,7 +261,7 @@ contract Book is IOptimisticRequester, IBookEvents {
         // Since the trade is valid, the relayer can now receive all the tokens.
         uint256 amountInToRelayer = (amountIn * (100 - relayerRefundPct)) / 100;
 
-        ERC20(tokenIn).safeTransfer(relayer, amountInToRelayer);
+        IERC20(tokenIn).safeTransfer(relayer, amountInToRelayer);
 
         emit TradeSettled(relayer, tradeIndex, filledHeight, trader);
     }
@@ -307,10 +306,10 @@ contract Book is IOptimisticRequester, IBookEvents {
 
         _deleteTrade(tradeId);
 
-        ERC20(tokenIn).safeApprove(address(oracle), bondAmount);
+        IERC20(tokenIn).safeApprove(address(oracle), bondAmount);
         bytes32 disputeId =
             oracle.ask(relayer, msg.sender, tokenIn, bondAmount, abi.encode(amountIn, recipient, tradeIndex, trader));
-        ERC20(tokenIn).safeApprove(address(oracle), 0);
+        IERC20(tokenIn).safeApprove(address(oracle), 0);
 
         emit TradeDisputed(relayer, tradeIndex, disputeId, filledHeight, trader);
     }
@@ -352,21 +351,21 @@ contract Book is IOptimisticRequester, IBookEvents {
         return block.number < safeBlockThreshold + filledHeight;
     }
 
-      /**
-    * @notice Checks whether a pair of tokens is supported by the flood. Reverts if not. 
-    * @param tokenA The first token of the pair.
-    * @param tokenB The second token of the pair.
-    */
+    /**
+     * @notice Checks whether a pair of tokens is supported by the flood. Reverts if not.
+     * @param tokenA The first token of the pair.
+     * @param tokenB The second token of the pair.
+     */
     function _isPairSupported(address tokenA, address tokenB) internal view {
-       if(tokenA == tokenB) {
-           revert Book__SameToken();
-       }
-       if (!registry.isTokenWhitelisted(tokenA)) { 
-           revert Book__InvalidToken(tokenA);
-       }
-         if (!registry.isTokenWhitelisted(tokenB)) { 
-           revert Book__InvalidToken(tokenB);
-       }
+        if (tokenA == tokenB) {
+            revert Book__SameToken();
+        }
+        if (!registry.isTokenWhitelisted(tokenA)) {
+            revert Book__InvalidToken(tokenA);
+        }
+        if (!registry.isTokenWhitelisted(tokenB)) {
+            revert Book__InvalidToken(tokenB);
+        }
     }
 
     /**
@@ -390,6 +389,4 @@ contract Book is IOptimisticRequester, IBookEvents {
     ) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked(tokenIn, tokenOut, amountIn, minAmountOut, recipient, tradeIndex, trader));
     }
-
-  
 }

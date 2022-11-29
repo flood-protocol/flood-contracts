@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import "solmate/auth/Owned.sol";
-import "solmate/tokens/ERC20.sol";
-import "solmate/utils/SafeTransferLib.sol";
 import "./FloodRegistry.sol";
-
+import "@openzeppelin/token/ERC20/IERC20.sol";
+import "@openzeppelin/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/access/Ownable2Step.sol";
 
 error AllKnowingOracle__AlreadySettled(bytes32 id);
 error AllKnowingOracle__NonSettler();
@@ -23,7 +22,7 @@ struct Request {
     address requester; // who requested an answer.
     address proposer; // Address of the proposer.
     address disputer; // Address of the disputer.
-    ERC20 currency; // ERC20 token used to pay rewards and fees.
+    IERC20 currency; // ERC20 token used to pay rewards and fees.
     uint256 bond; // Bond that the proposer and disputer must pay.
     RequestState state; // State of the request.
     bool answer; // Answer to the request.
@@ -55,15 +54,13 @@ interface IAllKnowingOracleEvents {
  * In implementation, only the owner of the contract can settle a request.
  * @dev This should be deployed before `BookSingleChain`
  */
-contract AllKnowingOracle is IAllKnowingOracleEvents, Owned {
-    using SafeTransferLib for ERC20;
+contract AllKnowingOracle is IAllKnowingOracleEvents, Ownable2Step {
+    using SafeERC20 for IERC20;
 
     mapping(bytes32 => Request) public requests;
     mapping(address => bool) public settlers;
     mapping(address => bool) public requesters;
     FloodRegistry public immutable registry;
-
-  
 
     modifier onlySettler() {
         if (!settlers[msg.sender]) {
@@ -79,7 +76,7 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Owned {
         _;
     }
 
-    constructor(FloodRegistry _registry) Owned(msg.sender) {
+    constructor(FloodRegistry _registry) {
         settlers[msg.sender] = true;
         registry = _registry;
     }
@@ -146,7 +143,7 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Owned {
             requester: msg.sender,
             proposer: proposer,
             disputer: disputer,
-            currency: ERC20(currency),
+            currency: IERC20(currency),
             bond: bond,
             state: RequestState.Pending,
             answer: false,
@@ -157,10 +154,10 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Owned {
 
         emit NewRequest(id, proposer, disputer, currency, bond);
 
-        ERC20(currency).safeTransferFrom(msg.sender, address(this), bond);
+        IERC20(currency).safeTransferFrom(msg.sender, address(this), bond);
         // Note: This is unsafe for the disputer as a requester could list someone as disputer and give the right answer, making the disputer lose the bond.
         // However, as this method is permissioned and requesters are assumed to be trustworthy, this is "safe".
-        ERC20(currency).safeTransferFrom(disputer, address(this), bond);
+        IERC20(currency).safeTransferFrom(disputer, address(this), bond);
     }
 
     /**
@@ -176,16 +173,17 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Owned {
         }
         // Whoever wins gets the bond back plus the other party bond.
         uint256 payout = 2 * request.bond;
+        // Update the request state
+        request.state = RequestState.Settled;
+        request.answer = answer;
+        emit RequestSettled(id, answer);
+
         if (answer) {
             request.currency.safeTransfer(request.proposer, payout);
         } else {
             request.currency.safeTransfer(request.disputer, payout);
         }
-        // Update the request state
-        request.state = RequestState.Settled;
-        request.answer = answer;
 
-        emit RequestSettled(id, answer);
         // Callback into the proposer if its a contract
         if (request.requester.code.length != 0) {
             IOptimisticRequester(request.requester).onPriceSettled(id, request);

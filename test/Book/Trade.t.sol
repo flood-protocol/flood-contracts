@@ -38,7 +38,7 @@ contract TradeTest is TradeFixture {
     }
 
     function testCannotTradeIfNoBalance() public {
-        vm.expectRevert(bytes("TRANSFER_FROM_FAILED"));
+        vm.expectRevert(bytes("ERC20: transfer amount exceeds balance"));
         vm.prank(alice);
         book.requestTrade(testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient);
     }
@@ -160,7 +160,7 @@ contract TradeTest is TradeFixture {
             uint256(TradeStatus.REQUESTED)
         );
         vm.prank(bob);
-        vm.expectRevert(bytes("TRANSFER_FROM_FAILED"));
+        vm.expectRevert(bytes("ERC20: transfer amount exceeds balance"));
         book.fillTrade(testTokenIn, testTokenOut, testAmountIn, 0, testRecipient, 1, testTrader, amountOut);
     }
 

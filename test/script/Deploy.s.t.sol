@@ -13,9 +13,6 @@ contract DeployTest is DeployScript {
     uint256 internal testRelayerRefundPct = 80;
     uint256 internal testFeePct = 300;
 
-
-   
-
     function testDeployOracle(FloodRegistry _registry) public {
         AllKnowingOracle _oracle = deployOracle(_registry);
         assertEq(address(_oracle.registry()), address(_registry), "Oracle constructor should have run correctly");
@@ -40,11 +37,11 @@ contract DeployTest is DeployScript {
             return;
         }
         FloodRegistry(_registry).setOracle(AllKnowingOracle(_oracle));
-        Book book =
-            deployBook(FloodRegistry(_registry), _safeBlockThreshold, _disputeBondPct, _tradeRebatePct, _relayerRefundPct, _feePct);
-        
+        Book book = deployBook(
+            FloodRegistry(_registry), _safeBlockThreshold, _disputeBondPct, _tradeRebatePct, _relayerRefundPct, _feePct
+        );
 
-        assertEq(address(book.registry()),_registry, "Book constructor should have run correctly");
+        assertEq(address(book.registry()), _registry, "Book constructor should have run correctly");
         assertEq(address(book.oracle()), _oracle, "Book constructor should have run correctly");
 
         assertEq(book.safeBlockThreshold(), _safeBlockThreshold, "Book constructor should have run correctly");
@@ -68,7 +65,7 @@ contract DeployTest is DeployScript {
 
     function testCannotDeployIfSafeThresholdIsZero() public {
         vm.expectRevert(stdError.assertionError);
-        deployBook(testRegistry,0, testDisputeBondPct, testTradeRebatePct, testRelayerRefundPct, testFeePct);
+        deployBook(testRegistry, 0, testDisputeBondPct, testTradeRebatePct, testRelayerRefundPct, testFeePct);
     }
 
     function testCannotDeployBookIfAnyFeeIsZero() public {
@@ -82,12 +79,12 @@ contract DeployTest is DeployScript {
 
     function testWhitelistToken(address _token, bool _enable) public {
         FloodRegistry _registry = deployRegistry();
-       
-        if(_enable && _registry.isTokenWhitelisted(_token)) {
-            vm.expectRevert(abi.encodeWithSelector(FloodRegistry__TokenAlreadyWhitelisted.selector, _token));
+
+        if (_enable && _registry.isTokenWhitelisted(_token)) {
+            vm.expectRevert(FloodRegistry__TokenAlreadyWhitelisted.selector);
         }
-        if(!_enable && !_registry.isTokenWhitelisted(_token)) {
-            vm.expectRevert(abi.encodeWithSelector(FloodRegistry__TokenNotWhitelisted.selector, _token));
+        if (!_enable && !_registry.isTokenWhitelisted(_token)) {
+            vm.expectRevert(FloodRegistry__TokenNotWhitelisted.selector);
         }
         whitelistToken(_registry, _token, _enable);
     }

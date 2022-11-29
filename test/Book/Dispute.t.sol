@@ -14,8 +14,8 @@ contract DisputeTest is DisputeFixture {
         uint256 bond = (testDisputeBondPct * testAmountIn) / 100;
         deal(testTokenIn, disputer, bond);
 
-        uint256 bookBalanceBefore = ERC20(testTokenIn).balanceOf(address(book));
-        uint256 disputerBalanceBefore = ERC20(testTokenIn).balanceOf(disputer);
+        uint256 bookBalanceBefore = IERC20(testTokenIn).balanceOf(address(book));
+        uint256 disputerBalanceBefore = IERC20(testTokenIn).balanceOf(disputer);
         int256 filledAtBeforeDispute =
             stdstore.target(address(book)).sig(book.filledAtBlock.selector).with_key(tradeId).read_int();
 
@@ -46,7 +46,7 @@ contract DisputeTest is DisputeFixture {
             address _reqRequester,
             address _reqProposer,
             address _reqDisputer,
-            ERC20 _reqCurrency,
+            IERC20 _reqCurrency,
             uint256 _reqBond,
             RequestState _reqState,
             bool _reqAnswer,
@@ -68,12 +68,14 @@ contract DisputeTest is DisputeFixture {
 
         // Check that the tokens have been pulled from the book and the disputer
         assertEq(
-            ERC20(testTokenIn).balanceOf(address(book)),
+            IERC20(testTokenIn).balanceOf(address(book)),
             bookBalanceBefore - bond,
             "Book should have sponsored the proposer bond"
         );
         assertEq(
-            ERC20(testTokenIn).balanceOf(disputer), disputerBalanceBefore - bond, "Disputer should have posted the bond"
+            IERC20(testTokenIn).balanceOf(disputer),
+            disputerBalanceBefore - bond,
+            "Disputer should have posted the bond"
         );
     }
 
@@ -81,10 +83,10 @@ contract DisputeTest is DisputeFixture {
         uint256 bond = (testDisputeBondPct * testAmountIn) / 100;
         deal(testTokenIn, disputer, bond);
 
-        uint256 bookBalanceBeforeDispute = ERC20(testTokenIn).balanceOf(address(book));
-        uint256 disputerBalanceBeforeDispute = ERC20(testTokenIn).balanceOf(disputer);
-        uint256 relayerBalanceBeforeDispute = ERC20(testTokenIn).balanceOf(relayer);
-        uint256 recipientBalanceBeforeDispute = ERC20(testTokenIn).balanceOf(testRecipient);
+        uint256 bookBalanceBeforeDispute = IERC20(testTokenIn).balanceOf(address(book));
+        uint256 disputerBalanceBeforeDispute = IERC20(testTokenIn).balanceOf(disputer);
+        uint256 relayerBalanceBeforeDispute = IERC20(testTokenIn).balanceOf(relayer);
+        uint256 recipientBalanceBeforeDispute = IERC20(testTokenIn).balanceOf(testRecipient);
 
         bytes32 reqId = keccak256(abi.encodePacked(address(book), relayer, disputer, testTokenIn, bond));
 
@@ -94,40 +96,40 @@ contract DisputeTest is DisputeFixture {
 
         uint256 rebate = (testTradeRebatePct * testAmountIn) / 100;
         assertEq(
-            ERC20(testTokenIn).balanceOf(address(book)),
+            IERC20(testTokenIn).balanceOf(address(book)),
             bookBalanceBeforeDispute - bond - rebate,
             "Book should no tokenIn balance left"
         );
         // Dispute was wrong
         if (answer) {
             assertEq(
-                ERC20(testTokenIn).balanceOf(disputer),
+                IERC20(testTokenIn).balanceOf(disputer),
                 disputerBalanceBeforeDispute - bond,
                 "Disputer should have lost the bond"
             );
             assertEq(
-                ERC20(testTokenIn).balanceOf(relayer),
+                IERC20(testTokenIn).balanceOf(relayer),
                 relayerBalanceBeforeDispute + rebate + 2 * bond,
                 "Relayer should have received the rebate, his bond back and the disputer bond."
             );
             assertEq(
-                ERC20(testTokenIn).balanceOf(testRecipient),
+                IERC20(testTokenIn).balanceOf(testRecipient),
                 recipientBalanceBeforeDispute,
                 "Recipient should have received no tokens"
             ); // Disputer was right
         } else {
             assertEq(
-                ERC20(testTokenIn).balanceOf(disputer),
+                IERC20(testTokenIn).balanceOf(disputer),
                 disputerBalanceBeforeDispute + bond,
                 "Disputer should have received its bond + the relayer bond"
             );
             assertEq(
-                ERC20(testTokenIn).balanceOf(relayer),
+                IERC20(testTokenIn).balanceOf(relayer),
                 relayerBalanceBeforeDispute,
                 "Relayer should have received tokens"
             );
             assertEq(
-                ERC20(testTokenIn).balanceOf(testRecipient),
+                IERC20(testTokenIn).balanceOf(testRecipient),
                 recipientBalanceBeforeDispute + rebate,
                 "Recipient should have received the rebate"
             );
@@ -140,7 +142,7 @@ contract DisputeTest is DisputeFixture {
             requester: address(book),
             proposer: relayer,
             disputer: disputer,
-            currency: ERC20(USDC),
+            currency: IERC20(USDC),
             bond: 100,
             state: RequestState.Settled,
             answer: true,
@@ -162,7 +164,7 @@ contract DisputeTest is DisputeFixture {
         address nextDisputer = generateUser("nextDisputer");
         deal(testTokenIn, nextDisputer, bond);
         vm.prank(nextDisputer);
-        ERC20(testTokenIn).approve(address(oracle), type(uint256).max);
+        IERC20(testTokenIn).approve(address(oracle), type(uint256).max);
         vm.expectRevert(abi.encodeWithSelector(Book__TradeNotFilled.selector, tradeId));
         book.disputeTrade(
             testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, tradeIndex, testTrader

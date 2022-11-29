@@ -24,7 +24,7 @@ contract AdminTest is IAllKnowingOracleEvents, OracleFixture {
     }
 
     function testCannotWhitelistSettlerIfNonOwner() public {
-        vm.expectRevert("UNAUTHORIZED");
+        vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(alice);
         oracle.whitelistSettler(bob, true);
     }
@@ -41,7 +41,7 @@ contract AdminTest is IAllKnowingOracleEvents, OracleFixture {
     }
 
     function testCannotWhitelistRequesterIfNonOwner() public {
-        vm.expectRevert("UNAUTHORIZED");
+        vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(alice);
         oracle.whitelistSettler(bob, true);
     }

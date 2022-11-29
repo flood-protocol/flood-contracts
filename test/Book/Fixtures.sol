@@ -57,7 +57,6 @@ contract TradeFixture is BaseBookFixture {
         ERC20(USDC).approve(address(book), type(uint256).max);
         ERC20(WETH).approve(address(book), type(uint256).max);
         vm.stopPrank();
-
     }
 
     function _requestTrade(
