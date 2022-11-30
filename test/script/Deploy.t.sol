@@ -1,10 +1,13 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: UNLICENSED 
 pragma solidity ^0.8.17;
 
-import "script/Deploy.s.sol";
 import "forge-std/Test.sol";
+import {FloodRegistry, FloodRegistry__TokenAlreadyWhitelisted, FloodRegistry__TokenNotWhitelisted} from "src/FloodRegistry.sol";
+import {AllKnowingOracle} from "src/AllKnowingOracle.sol";
+import {Book} from "src/Book.sol";
+import {DeployScript} from "script/Deploy.s.sol";
 
-contract DeployTest is DeployScript {
+contract DeployScriptTest is DeployScript {
     AllKnowingOracle internal testOracle = AllKnowingOracle(address(0));
     FloodRegistry internal testRegistry = FloodRegistry(address(1));
     uint256 internal testSafeBlockThreshold = 100;

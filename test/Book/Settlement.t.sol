@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import "src/Book.sol";
 import "forge-std/Test.sol";
-import "./Fixtures.sol";
+import {IERC20} from "@openzeppelin/token/ERC20/IERC20.sol";
+import {Book, Book__TradeNotFilled, Book__DisputePeriodNotOver} from "src/Book.sol";
+import {DisputeFixture} from "./Fixtures.sol";
 
 contract SettlementTest is DisputeFixture {
     using stdStorage for StdStorage;
@@ -13,7 +14,7 @@ contract SettlementTest is DisputeFixture {
     }
 
     function testSettlement() public {
-        uint256 relayerBalanceBeforeSettle = ERC20(testTokenIn).balanceOf(relayer);
+        uint256 relayerBalanceBeforeSettle = IERC20(testTokenIn).balanceOf(relayer);
         // move to the end of the dispute period
         skipBlocks(book.safeBlockThreshold());
         bytes32 id = _getTradeId(
@@ -40,11 +41,11 @@ contract SettlementTest is DisputeFixture {
         uint256 relayerPenalty = (testAmountIn * (100 - testRelayerRefundPct)) / 100;
 
         assertEq(
-            ERC20(testTokenIn).balanceOf(relayer),
+            IERC20(testTokenIn).balanceOf(relayer),
             relayerBalanceBeforeSettle + relayerPenalty,
             "The relayer should have received the amount sold by the trader"
         );
-        assertEq(ERC20(testTokenOut).balanceOf(address(book)), 0, "Book should be empty");
+        assertEq(IERC20(testTokenOut).balanceOf(address(book)), 0, "Book should be empty");
     }
 
     function testCannotSettleBeforeThreshold() public {

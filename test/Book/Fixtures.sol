@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import "../utils/BaseFixture.sol";
-import "../utils/TokenFixture.sol";
-import "../AllKnowingOracle/Fixtures.sol";
-import "src/Book.sol";
-import "src/FloodRegistry.sol";
+import "forge-std/Test.sol";
+import {IERC20} from "@openzeppelin/token/ERC20/IERC20.sol";
+import {OracleFixture} from "../AllKnowingOracle/Fixtures.sol";
+import {Book, IBookEvents} from "src/Book.sol";
 
 contract BaseBookFixture is IBookEvents, OracleFixture {
     Book internal book;
@@ -46,16 +45,16 @@ contract TradeFixture is BaseBookFixture {
         registry.whitelistToken(USDC, true);
         registry.whitelistToken(WETH, true);
         vm.startPrank(alice);
-        ERC20(USDC).approve(address(book), type(uint256).max);
-        ERC20(WETH).approve(address(book), type(uint256).max);
+        IERC20(USDC).approve(address(book), type(uint256).max);
+        IERC20(WETH).approve(address(book), type(uint256).max);
         vm.stopPrank();
         vm.startPrank(bob);
-        ERC20(USDC).approve(address(book), type(uint256).max);
-        ERC20(WETH).approve(address(book), type(uint256).max);
+        IERC20(USDC).approve(address(book), type(uint256).max);
+        IERC20(WETH).approve(address(book), type(uint256).max);
         vm.stopPrank();
         vm.startPrank(charlie);
-        ERC20(USDC).approve(address(book), type(uint256).max);
-        ERC20(WETH).approve(address(book), type(uint256).max);
+        IERC20(USDC).approve(address(book), type(uint256).max);
+        IERC20(WETH).approve(address(book), type(uint256).max);
         vm.stopPrank();
     }
 
@@ -141,7 +140,7 @@ contract DisputeFixture is TradeFixture {
         _checkFill(tradeId, relayer, int256(block.number));
 
         vm.prank(disputer);
-        ERC20(testTokenIn).approve(address(oracle), type(uint256).max);
+        IERC20(testTokenIn).approve(address(oracle), type(uint256).max);
     }
 
     function _disputeTrade(

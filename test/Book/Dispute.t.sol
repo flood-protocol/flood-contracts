@@ -1,7 +1,11 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: UNLICENSED 
 pragma solidity ^0.8.17;
 
-import "./Fixtures.sol";
+import "forge-std/Test.sol";
+import {IERC20} from "@openzeppelin/interfaces/IERC20.sol";
+import {RequestState, Request} from "src/AllKnowingOracle.sol";
+import {TradeStatus, Book__MaliciousCaller, Book__DisputePeriodOver, Book__TradeNotFilled} from "src/Book.sol";
+import {DisputeFixture} from "./Fixtures.sol";
 
 contract DisputeTest is DisputeFixture {
     using stdStorage for StdStorage;

@@ -1,9 +1,10 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: UNLICENSED 
 pragma solidity ^0.8.17;
 
-import "../utils/BaseFixture.sol";
-import "../utils/TokenFixture.sol";
-import "src/AllKnowingOracle.sol";
+import {IERC20} from "@openzeppelin/interfaces/IERC20.sol";
+import {AllKnowingOracle, FloodRegistry} from "src/AllKnowingOracle.sol";
+import {BaseFixture} from "../utils/BaseFixture.sol";
+import {TokenFixture} from "../utils/TokenFixture.sol";
 
 contract OracleFixture is BaseFixture, TokenFixture {
     FloodRegistry internal registry;
@@ -14,20 +15,20 @@ contract OracleFixture is BaseFixture, TokenFixture {
         registry = new FloodRegistry();
         oracle = new AllKnowingOracle(registry);
         registry.setOracle(oracle);
-        ERC20(USDC).approve(address(oracle), type(uint256).max);
-        ERC20(WETH).approve(address(oracle), type(uint256).max);
+        IERC20(USDC).approve(address(oracle), type(uint256).max);
+        IERC20(WETH).approve(address(oracle), type(uint256).max);
         vm.label(address(oracle), "AllKnowingOracle");
         vm.startPrank(alice);
-        ERC20(USDC).approve(address(oracle), type(uint256).max);
-        ERC20(WETH).approve(address(oracle), type(uint256).max);
+        IERC20(USDC).approve(address(oracle), type(uint256).max);
+        IERC20(WETH).approve(address(oracle), type(uint256).max);
         vm.stopPrank();
         vm.startPrank(bob);
-        ERC20(USDC).approve(address(oracle), type(uint256).max);
-        ERC20(WETH).approve(address(oracle), type(uint256).max);
+        IERC20(USDC).approve(address(oracle), type(uint256).max);
+        IERC20(WETH).approve(address(oracle), type(uint256).max);
         vm.stopPrank();
         vm.startPrank(charlie);
-        ERC20(USDC).approve(address(oracle), type(uint256).max);
-        ERC20(WETH).approve(address(oracle), type(uint256).max);
+        IERC20(USDC).approve(address(oracle), type(uint256).max);
+        IERC20(WETH).approve(address(oracle), type(uint256).max);
         vm.stopPrank();
         oracle.whitelistSettler(charlie, true);
     }

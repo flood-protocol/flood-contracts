@@ -1,9 +1,10 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: UNLICENSED 
 pragma solidity ^0.8.17;
 
-import "src/AllKnowingOracle.sol";
-import "./Fixtures.sol";
 import "forge-std/Test.sol";
+import {IAllKnowingOracleEvents} from "src/AllKnowingOracle.sol";
+import {OracleFixture} from "./Fixtures.sol";
+
 
 contract AdminTest is IAllKnowingOracleEvents, OracleFixture {
     using stdStorage for StdStorage;

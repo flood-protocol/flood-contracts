@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import "@openzeppelin/token/ERC20/IERC20.sol";
-import "@openzeppelin/token/ERC20/utils/SafeERC20.sol";
-import "./AllKnowingOracle.sol";
-import "./FloodRegistry.sol";
+import {IERC20} from "@openzeppelin/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/token/ERC20/utils/SafeERC20.sol";
+import {AllKnowingOracle, Request, IOptimisticRequester} from "./AllKnowingOracle.sol";
+import {FloodRegistry} from "./FloodRegistry.sol";
 
 interface IBookEvents {
     event SafeBlockThresholdSet(uint256 newSafeBlockThreshold);

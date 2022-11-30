@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import "src/AllKnowingOracle.sol";
-import "src/Book.sol";
-import "src/FloodRegistry.sol";
+import {AllKnowingOracle} from "src/AllKnowingOracle.sol";
+import {Book} from "src/Book.sol";
+import {FloodRegistry} from "src/FloodRegistry.sol";
 import "forge-std/Script.sol";
 import "forge-std/Test.sol";
 

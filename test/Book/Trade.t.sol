@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import "./Fixtures.sol";
+import "forge-std/Test.sol";
+import {IERC20} from "@openzeppelin/token/ERC20/IERC20.sol";
+import {Book__SameToken, Book__ZeroAmount, Book__SentToBlackHole, Book__InvalidToken, Book__TradeNotInFillableState, Book__NotTrader, Book__TradeNotCancelable,Book__AmountOutTooLow, TradeStatus} from "src/Book.sol";
+import {TradeFixture} from "./Fixtures.sol";
 
 contract TradeTest is TradeFixture {
     using stdStorage for StdStorage;
@@ -19,14 +22,14 @@ contract TradeTest is TradeFixture {
         // Give alice some tokens to trade.
         deal(testTokenIn, alice, amountIn);
         // Request a trade from Alice.
-        uint256 balanceBefore = ERC20(testTokenIn).balanceOf(alice);
+        uint256 balanceBefore = IERC20(testTokenIn).balanceOf(alice);
 
         vm.expectEmit(true, true, true, true, address(book));
         emit TradeRequested(testTokenIn, testTokenOut, amountIn, amountOutMin, testRecipient, tradeIndex, alice);
         (, bytes32 id) = _requestTrade(testTokenIn, testTokenOut, amountIn, amountOutMin, testRecipient, alice);
 
         // Check that the balance of Alice of `tokenIn` is reduced by `amount`.
-        assertEq(ERC20(testTokenIn).balanceOf(alice), balanceBefore - amountIn);
+        assertEq(IERC20(testTokenIn).balanceOf(alice), balanceBefore - amountIn);
 
         // Check that the trade has been initialized
         uint256 statusInStorage = stdstore.target(address(book)).sig(book.status.selector).with_key(id).read_uint();
@@ -84,9 +87,9 @@ contract TradeTest is TradeFixture {
             _requestTrade(testTokenIn, testTokenOut, amountIn, testAmountOutMin, testRecipient, alice);
 
         deal(testTokenOut, bob, amountOut);
-        uint256 bobBalanceOutBefore = ERC20(testTokenOut).balanceOf(bob);
-        uint256 bobBalanceInBefore = ERC20(testTokenIn).balanceOf(bob);
-        uint256 recipientBalanceBefore = ERC20(testTokenOut).balanceOf(testRecipient);
+        uint256 bobBalanceOutBefore = IERC20(testTokenOut).balanceOf(bob);
+        uint256 bobBalanceInBefore = IERC20(testTokenIn).balanceOf(bob);
+        uint256 recipientBalanceBefore = IERC20(testTokenOut).balanceOf(testRecipient);
 
         vm.prank(bob);
         vm.expectEmit(true, true, true, true, address(book));
@@ -96,19 +99,19 @@ contract TradeTest is TradeFixture {
         );
         // Check bob submitted amountOut tokens
         assertEq(
-            ERC20(testTokenOut).balanceOf(bob) + amountOut, bobBalanceOutBefore, "bob should have sent amountOut tokens"
+            IERC20(testTokenOut).balanceOf(bob) + amountOut, bobBalanceOutBefore, "bob should have sent amountOut tokens"
         );
         // Check bob got relayerRefundPct * amountIn tokens
         uint256 bobExpectedTokens = (amountIn * testRelayerRefundPct) / 100;
 
         assertEq(
-            ERC20(testTokenIn).balanceOf(bob),
+            IERC20(testTokenIn).balanceOf(bob),
             bobBalanceInBefore + bobExpectedTokens,
             "bob should have received some tokens"
         );
         // Check the recipient received amountOut tokens
         assertEq(
-            ERC20(testTokenOut).balanceOf(testRecipient),
+            IERC20(testTokenOut).balanceOf(testRecipient),
             recipientBalanceBefore + amountOut,
             "recipient should have received amountOut tokens"
         );
@@ -180,8 +183,8 @@ contract TradeTest is TradeFixture {
 
     function testCancelTrade() public {
         deal(testTokenIn, testTrader, testAmountIn);
-        uint256 balanceBefore = ERC20(testTokenIn).balanceOf(testTrader);
-        uint256 bookBalanceBefore = ERC20(testTokenIn).balanceOf(address(book));
+        uint256 balanceBefore = IERC20(testTokenIn).balanceOf(testTrader);
+        uint256 bookBalanceBefore = IERC20(testTokenIn).balanceOf(address(book));
         // make a request
         (uint256 tradeIndex, bytes32 tradeId) =
             _requestTrade(testTokenIn, testTokenOut, testAmountIn, 1, testRecipient, testTrader);
@@ -193,8 +196,8 @@ contract TradeTest is TradeFixture {
 
         uint256 statusAfter = stdstore.target(address(book)).sig(book.status.selector).with_key(tradeId).read_uint();
 
-        uint256 balanceAfter = ERC20(testTokenIn).balanceOf(testTrader);
-        uint256 bookBalanceAfter = ERC20(testTokenIn).balanceOf(address(book));
+        uint256 balanceAfter = IERC20(testTokenIn).balanceOf(testTrader);
+        uint256 bookBalanceAfter = IERC20(testTokenIn).balanceOf(address(book));
         assertEq(balanceAfter, balanceBefore, "trader balance should be unchanged");
         assertEq(bookBalanceAfter, bookBalanceBefore, "book balance should be unchanged");
         assertEq(statusAfter, uint256(TradeStatus.UNINITIALIZED));

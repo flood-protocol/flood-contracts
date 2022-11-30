@@ -2,7 +2,8 @@
 pragma solidity ^0.8.17;
 
 import "forge-std/Test.sol";
-import "src/FloodRegistry.sol";
+import {FloodRegistry, IFloodRegistryEvents} from "src/FloodRegistry.sol";
+import {AllKnowingOracle} from "src/AllKnowingOracle.sol";
 
 contract FloodRegistryTest is Test, IFloodRegistryEvents {
     using stdStorage for StdStorage;

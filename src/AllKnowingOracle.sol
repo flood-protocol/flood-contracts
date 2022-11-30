@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import "./FloodRegistry.sol";
-import "@openzeppelin/token/ERC20/IERC20.sol";
-import "@openzeppelin/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/access/Ownable2Step.sol";
+import {FloodRegistry} from "./FloodRegistry.sol";
+import {IERC20} from "@openzeppelin/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/token/ERC20/utils/SafeERC20.sol";
+import {Ownable2Step} from "@openzeppelin/access/Ownable2Step.sol";
 
 error AllKnowingOracle__AlreadySettled(bytes32 id);
 error AllKnowingOracle__NonSettler();
-error AllKnowingOracle__NonRequester();
 error AllKnowingOracle__RequestAlreadyExists(bytes32 id);
 error AllKnowingOracle__BondTooSmall();
 

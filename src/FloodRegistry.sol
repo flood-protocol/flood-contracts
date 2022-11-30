@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import "./AllKnowingOracle.sol";
-import "@openzeppelin/access/Ownable2Step.sol";
-import "@openzeppelin/utils/structs/EnumerableSet.sol";
+import {AllKnowingOracle} from "./AllKnowingOracle.sol";
+import {Ownable2Step} from "@openzeppelin/access/Ownable2Step.sol";
+import {EnumerableSet} from "@openzeppelin/utils/structs/EnumerableSet.sol";
 
 interface IFloodRegistryEvents {
     event TokenWhitelisted(address indexed token, bool whitelisted);
