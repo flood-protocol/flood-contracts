@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED 
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.17;
 
 import {IERC20} from "@openzeppelin/interfaces/IERC20.sol";

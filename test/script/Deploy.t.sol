@@ -1,8 +1,12 @@
-// SPDX-License-Identifier: UNLICENSED 
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.17;
 
 import "forge-std/Test.sol";
-import {FloodRegistry, FloodRegistry__TokenAlreadyWhitelisted, FloodRegistry__TokenNotWhitelisted} from "src/FloodRegistry.sol";
+import {
+    FloodRegistry,
+    FloodRegistry__TokenAlreadyWhitelisted,
+    FloodRegistry__TokenNotWhitelisted
+} from "src/FloodRegistry.sol";
 import {AllKnowingOracle} from "src/AllKnowingOracle.sol";
 import {Book} from "src/Book.sol";
 import {DeployScript} from "script/Deploy.s.sol";

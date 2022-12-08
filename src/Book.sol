@@ -8,7 +8,7 @@ import {FloodRegistry} from "./FloodRegistry.sol";
 
 interface IBookEvents {
     event SafeBlockThresholdSet(uint256 newSafeBlockThreshold);
-    event FeeCombinationSet(uint256 disputeBondPct, uint256 tradeRebatePct, uint256 relayerRefundPct);
+    event ParamsCombinationSet(uint256 disputeBondPct, uint256 tradeRebatePct, uint256 relayerRefundPct);
     event FeePctSet(uint256 feePct);
     event TradeRequested(
         address indexed tokenIn,
@@ -41,7 +41,7 @@ error Book__SameToken();
 error Book__ZeroAmount();
 // the recipient of a transfer was the 0 address
 error Book__SentToBlackHole();
-error Book__InvalidFeeCombination();
+error Book__InvalidParamsCombination();
 error Book__FeePctTooHigh();
 // The trade is not filled yet, doesn't exist or was disputed
 error Book__TradeNotInFillableState(bytes32 tradeId);
@@ -98,14 +98,12 @@ contract Book is IOptimisticRequester, IBookEvents {
         safeBlockThreshold = _safeBlockThreshold;
         emit SafeBlockThresholdSet(safeBlockThreshold);
 
-        if (_disputeBondPct + _tradeRebatePct + _relayerRefundPct != 100) {
-            revert Book__InvalidFeeCombination();
-        }
+        _validateParams(_disputeBondPct, _tradeRebatePct, _relayerRefundPct);
         disputeBondPct = _disputeBondPct;
         tradeRebatePct = _tradeRebatePct;
         relayerRefundPct = _relayerRefundPct;
 
-        emit FeeCombinationSet(_disputeBondPct, _tradeRebatePct, _relayerRefundPct);
+        emit ParamsCombinationSet(_disputeBondPct, _tradeRebatePct, _relayerRefundPct);
 
         if (_feePct > 2500) {
             revert Book__FeePctTooHigh();
@@ -260,10 +258,10 @@ contract Book is IOptimisticRequester, IBookEvents {
 
         // Since the trade is valid, the relayer can now receive all the tokens.
         uint256 amountInToRelayer = (amountIn * (100 - relayerRefundPct)) / 100;
+        emit TradeSettled(relayer, tradeIndex, filledHeight, trader);
 
         IERC20(tokenIn).safeTransfer(relayer, amountInToRelayer);
 
-        emit TradeSettled(relayer, tradeIndex, filledHeight, trader);
     }
 
     /**
@@ -302,19 +300,21 @@ contract Book is IOptimisticRequester, IBookEvents {
         }
 
         address relayer = filledBy[tradeId];
-        uint256 bondAmount = (amountIn * (disputeBondPct)) / 100;
+        uint256 bondAmount = amountIn * disputeBondPct / 100;
 
         _deleteTrade(tradeId);
 
         // Pull the bond from the disputer
         IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), bondAmount);
-        // Now the book is going to sponsor the dispute.
-        IERC20(tokenIn).safeApprove(address(oracle), 2 * bondAmount);
+        // Now the book is going to sponsor the dispute. We approve 2 times 
+        IERC20(tokenIn).safeApprove(address(oracle), 2 * amountIn * disputeBondPct / 100);
+
         bytes32 disputeId =
             oracle.ask(relayer, msg.sender, tokenIn, bondAmount, abi.encode(amountIn, recipient, tradeIndex, trader));
+        emit TradeDisputed(relayer, tradeIndex, disputeId, filledHeight, trader);
+
         IERC20(tokenIn).safeApprove(address(oracle), 0);
 
-        emit TradeDisputed(relayer, tradeIndex, disputeId, filledHeight, trader);
     }
 
     function onPriceSettled(bytes32 id, Request calldata request) external {
@@ -325,13 +325,14 @@ contract Book is IOptimisticRequester, IBookEvents {
             abi.decode(request.data, (uint256, address, uint256, address));
         // If answer is true, it means the relayer was truthful, so he gets the tradeRebatePct of the trade as no rebate is necessary.
         uint256 rebate = (amountIn * tradeRebatePct) / 100;
+        emit TradeDisputeSettled(request.proposer, tradeIndex, id, request.answer, trader);
+
         if (request.answer) {
             request.currency.safeTransfer(request.proposer, rebate);
         } else {
             request.currency.safeTransfer(recipient, rebate);
         }
 
-        emit TradeDisputeSettled(request.proposer, tradeIndex, id, request.answer, trader);
     }
 
     /**
@@ -372,6 +373,20 @@ contract Book is IOptimisticRequester, IBookEvents {
     }
 
     /**
+     * @notice Validates the input parameters of a book instance. If the sum of the input parameters is not equal to 100, reverts.
+     * @param _tradeRebatePct The trade rebate percentage, that is, how much a trader gets back if the trade is disputed and the relayer is found to be lying.
+     * @param _relayerRefundPct The relayer refund percentage, that is, how much a relayer gets back immediately from a filled trade.
+     * @param _disputeBondPct The dispute bond percentage, that is, how much a disputer has to pay to dispute a trade.
+     */
+    function _validateParams(uint256 _tradeRebatePct, uint256 _relayerRefundPct, uint256 _disputeBondPct)
+        internal
+        pure
+    {
+        if (_tradeRebatePct + _relayerRefundPct + _disputeBondPct != 100) {
+            revert Book__InvalidParamsCombination();
+        }
+    }
+    /**
      * @notice Computes the trade ID for the given trade by hashing the trade parameters.
      * @param tokenIn The token to be sold.
      * @param tokenOut The token to be bought.
@@ -381,6 +396,7 @@ contract Book is IOptimisticRequester, IBookEvents {
      * @param tradeIndex The number of trades preceding this one.
      * @return The trade ID.
      */
+
     function _getTradeId(
         address tokenIn,
         address tokenOut,

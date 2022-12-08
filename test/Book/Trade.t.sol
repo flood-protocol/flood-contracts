@@ -3,7 +3,17 @@ pragma solidity ^0.8.17;
 
 import "forge-std/Test.sol";
 import {IERC20} from "@openzeppelin/token/ERC20/IERC20.sol";
-import {Book__SameToken, Book__ZeroAmount, Book__SentToBlackHole, Book__InvalidToken, Book__TradeNotInFillableState, Book__NotTrader, Book__TradeNotCancelable,Book__AmountOutTooLow, TradeStatus} from "src/Book.sol";
+import {
+    Book__SameToken,
+    Book__ZeroAmount,
+    Book__SentToBlackHole,
+    Book__InvalidToken,
+    Book__TradeNotInFillableState,
+    Book__NotTrader,
+    Book__TradeNotCancelable,
+    Book__AmountOutTooLow,
+    TradeStatus
+} from "src/Book.sol";
 import {TradeFixture} from "./Fixtures.sol";
 
 contract TradeTest is TradeFixture {
@@ -99,7 +109,9 @@ contract TradeTest is TradeFixture {
         );
         // Check bob submitted amountOut tokens
         assertEq(
-            IERC20(testTokenOut).balanceOf(bob) + amountOut, bobBalanceOutBefore, "bob should have sent amountOut tokens"
+            IERC20(testTokenOut).balanceOf(bob) + amountOut,
+            bobBalanceOutBefore,
+            "bob should have sent amountOut tokens"
         );
         // Check bob got relayerRefundPct * amountIn tokens
         uint256 bobExpectedTokens = (amountIn * testRelayerRefundPct) / 100;

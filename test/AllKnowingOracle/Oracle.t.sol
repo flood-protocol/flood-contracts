@@ -3,7 +3,15 @@ pragma solidity ^0.8.17;
 
 import "forge-std/Test.sol";
 import {IERC20} from "@openzeppelin/interfaces/IERC20.sol";
-import {IOptimisticRequester, IAllKnowingOracleEvents, Request, RequestState, AllKnowingOracle__RequestAlreadyExists, AllKnowingOracle__NonSettler, AllKnowingOracle__AlreadySettled} from "src/AllKnowingOracle.sol";
+import {
+    IOptimisticRequester,
+    IAllKnowingOracleEvents,
+    Request,
+    RequestState,
+    AllKnowingOracle__RequestAlreadyExists,
+    AllKnowingOracle__NonSettler,
+    AllKnowingOracle__AlreadySettled
+} from "src/AllKnowingOracle.sol";
 import {OracleFixture} from "./Fixtures.sol";
 
 contract MockRequester is IOptimisticRequester {
