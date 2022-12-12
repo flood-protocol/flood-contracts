@@ -1,9 +1,18 @@
-// SPDX-License-Identifier: Unlicense
-pragma solidity ^0.8.15;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.17;
 
-import "src/AllKnowingOracle.sol";
-import "./Fixtures.sol";
 import "forge-std/Test.sol";
+import {IERC20} from "@openzeppelin/interfaces/IERC20.sol";
+import {
+    IOptimisticRequester,
+    IAllKnowingOracleEvents,
+    Request,
+    RequestState,
+    AllKnowingOracle__RequestAlreadyExists,
+    AllKnowingOracle__NonSettler,
+    AllKnowingOracle__AlreadySettled
+} from "src/AllKnowingOracle.sol";
+import {OracleFixture} from "./Fixtures.sol";
 
 contract MockRequester is IOptimisticRequester {
     bytes32 public id;
@@ -23,28 +32,16 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
         super.setUp();
     }
 
-    function testGetId(
-        address sender,
-        address proposer,
-        address disputer,
-        address currency,
-        uint256 bond
-    )
-        public
-    {
-        bytes32 id =
-            keccak256(abi.encodePacked(sender, proposer, disputer, currency, bond));
-        assertEq(
-            oracle.getRequestId(sender, proposer, disputer, currency, bond), id
-        );
+    function testGetId(address sender, address proposer, address disputer, address currency, uint256 bond) public {
+        bytes32 id = keccak256(abi.encodePacked(sender, proposer, disputer, currency, bond));
+        assertEq(oracle.getRequestId(sender, proposer, disputer, currency, bond), id);
     }
 
     function testAsk(uint256 bond) public {
-        // As Charlie is the requester, he will pay the bond for Alice.
-        deal(USDC, charlie, bond);
-        deal(USDC, bob, bond);
-        uint256 charlieBalanceBefore = ERC20(USDC).balanceOf(charlie);
-        uint256 bobBalanceBefore = ERC20(USDC).balanceOf(bob);
+        vm.assume(bond < type(uint256).max / 2);
+        // As Charlie is the requester, he will pay the bond for Alice and Bob.
+        deal(USDC, charlie, 2 * bond);
+        uint256 charlieBalanceBefore = IERC20(USDC).balanceOf(charlie);
 
         bytes32 id = oracle.getRequestId(charlie, alice, bob, USDC, bond);
         vm.prank(charlie);
@@ -52,15 +49,14 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
         emit NewRequest(id, alice, bob, USDC, bond);
         oracle.ask(alice, bob, USDC, bond, abi.encode(charlie));
 
-        assertEq(ERC20(USDC).balanceOf(charlie), charlieBalanceBefore - bond);
-        assertEq(ERC20(USDC).balanceOf(bob), bobBalanceBefore - bond);
+        assertEq(IERC20(USDC).balanceOf(charlie), charlieBalanceBefore - 2 * bond);
 
         // FIXME: For a bug in foundry, non packed less than 32bytes slots are not found, so we go through the public getter instead. Once fixed move this to reading from storage.
         (
             address storageRequester,
             address storageProposer,
             address storageDisputer,
-            ERC20 storageCurrency,
+            IERC20 storageCurrency,
             uint256 storageBond,
             RequestState storageState,
             bool storageAnswer,
@@ -89,41 +85,25 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
 
         bytes32 id = oracle.getRequestId(charlie, alice, bob, USDC, bond);
         vm.prank(charlie);
-        vm.expectRevert(
-            abi.encodeWithSelector(AllKnowingOracle__RequestAlreadyExists.selector, id)
-        );
+        vm.expectRevert(abi.encodeWithSelector(AllKnowingOracle__RequestAlreadyExists.selector, id));
         oracle.ask(alice, bob, USDC, bond, abi.encode(charlie));
         // Even the same question with no callback should fail
         vm.prank(charlie);
-        vm.expectRevert(
-            abi.encodeWithSelector(AllKnowingOracle__RequestAlreadyExists.selector, id)
-        );
+        vm.expectRevert(abi.encodeWithSelector(AllKnowingOracle__RequestAlreadyExists.selector, id));
         oracle.ask(alice, bob, USDC, bond, "");
-    }
-
-    function testCannotAskWithNonWhitelistedToken(address bondToken) public {
-        vm.assume(bondToken != USDC);
-        vm.assume(bondToken != WETH);
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                AllKnowingOracle__TokenNotWhitelisted.selector, bondToken
-            )
-        );
-        vm.prank(charlie);
-        oracle.ask(alice, bob, bondToken, 100, "");
     }
 
     function testCannotAskWithInsufficientBalanceForBond() public {
         vm.prank(charlie);
-        vm.expectRevert("TRANSFER_FROM_FAILED");
+        vm.expectRevert("ERC20: transfer amount exceeds balance");
         oracle.ask(alice, bob, USDC, 100, "");
     }
 
     function testCannotAskIfNoAllowance() public {
         // Bob removes the allowance for USDC
         vm.prank(bob);
-        ERC20(USDC).approve(address(oracle), 0);
-        vm.expectRevert("TRANSFER_FROM_FAILED");
+        IERC20(USDC).approve(address(oracle), 0);
+        vm.expectRevert("ERC20: transfer amount exceeds balance");
         vm.prank(charlie);
         oracle.ask(alice, bob, USDC, 100, "");
     }
@@ -133,21 +113,18 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
         MockRequester requester = new MockRequester();
         address requesterAddress = address(requester);
         vm.prank(requesterAddress);
-        ERC20(USDC).approve(address(oracle), type(uint256).max);
-        deal(USDC, requesterAddress, bond);
-        deal(USDC, bob, bond);
-
-        oracle.whitelistRequester(requesterAddress, true);
+        IERC20(USDC).approve(address(oracle), type(uint256).max);
+        // requester is sponsoring the bond for alice and bob
+        deal(USDC, requesterAddress, 2 * bond);
         vm.prank(requesterAddress);
         oracle.ask(alice, bob, USDC, bond, abi.encode(int256(-42)));
 
-        bytes32 id =
-            oracle.getRequestId(requesterAddress, alice, bob, USDC, bond);
+        bytes32 id = oracle.getRequestId(requesterAddress, alice, bob, USDC, bond);
         (
             address storageRequester,
             address storageProposer,
             address storageDisputer,
-            ERC20 storageCurrency,
+            IERC20 storageCurrency,
             uint256 storageBond,
             ,
             ,
@@ -179,9 +156,7 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
     function testCannotSettleIfAlreadySettled(bool answer) public {
         uint256 bond = 100;
 
-        deal(USDC, charlie, bond);
-        deal(USDC, bob, bond);
-
+        deal(USDC, charlie, 2 * bond);
         vm.prank(charlie);
         oracle.ask(alice, bob, USDC, bond, "");
 
@@ -193,9 +168,7 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
         oracle.settle(id, answer);
 
         vm.prank(charlie);
-        vm.expectRevert(
-            abi.encodeWithSelector(AllKnowingOracle__AlreadySettled.selector, id)
-        );
+        vm.expectRevert(abi.encodeWithSelector(AllKnowingOracle__AlreadySettled.selector, id));
         oracle.settle(id, answer);
     }
 }

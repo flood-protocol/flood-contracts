@@ -70,16 +70,13 @@ export interface BookInterface extends utils.Interface {
     "numberOfTrades()": FunctionFragment;
     "onPriceSettled(bytes32,(address,address,address,address,uint256,uint8,bool,bytes))": FunctionFragment;
     "oracle()": FunctionFragment;
-    "owner()": FunctionFragment;
+    "registry()": FunctionFragment;
     "relayerRefundPct()": FunctionFragment;
     "requestTrade(address,address,uint256,uint256,address)": FunctionFragment;
     "safeBlockThreshold()": FunctionFragment;
-    "setOwner(address)": FunctionFragment;
     "settleTrade(address,address,uint256,uint256,address,uint256,address)": FunctionFragment;
     "status(bytes32)": FunctionFragment;
     "tradeRebatePct()": FunctionFragment;
-    "whitelistToken(address,bool)": FunctionFragment;
-    "whitelistedTokens(address)": FunctionFragment;
   };
 
   getFunction(
@@ -94,16 +91,13 @@ export interface BookInterface extends utils.Interface {
       | "numberOfTrades"
       | "onPriceSettled"
       | "oracle"
-      | "owner"
+      | "registry"
       | "relayerRefundPct"
       | "requestTrade"
       | "safeBlockThreshold"
-      | "setOwner"
       | "settleTrade"
       | "status"
       | "tradeRebatePct"
-      | "whitelistToken"
-      | "whitelistedTokens"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -165,7 +159,7 @@ export interface BookInterface extends utils.Interface {
     values: [PromiseOrValue<BytesLike>, RequestStruct]
   ): string;
   encodeFunctionData(functionFragment: "oracle", values?: undefined): string;
-  encodeFunctionData(functionFragment: "owner", values?: undefined): string;
+  encodeFunctionData(functionFragment: "registry", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "relayerRefundPct",
     values?: undefined
@@ -183,10 +177,6 @@ export interface BookInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "safeBlockThreshold",
     values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setOwner",
-    values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
     functionFragment: "settleTrade",
@@ -207,14 +197,6 @@ export interface BookInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "tradeRebatePct",
     values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "whitelistToken",
-    values: [PromiseOrValue<string>, PromiseOrValue<boolean>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "whitelistedTokens",
-    values: [PromiseOrValue<string>]
   ): string;
 
   decodeFunctionResult(
@@ -245,7 +227,7 @@ export interface BookInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "oracle", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "registry", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "relayerRefundPct",
     data: BytesLike
@@ -258,7 +240,6 @@ export interface BookInterface extends utils.Interface {
     functionFragment: "safeBlockThreshold",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "setOwner", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "settleTrade",
     data: BytesLike
@@ -268,21 +249,11 @@ export interface BookInterface extends utils.Interface {
     functionFragment: "tradeRebatePct",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "whitelistToken",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "whitelistedTokens",
-    data: BytesLike
-  ): Result;
 
   events: {
-    "FeeCombinationSet(uint256,uint256,uint256)": EventFragment;
     "FeePctSet(uint256)": EventFragment;
-    "OwnerUpdated(address,address)": EventFragment;
+    "ParamsCombinationSet(uint256,uint256,uint256)": EventFragment;
     "SafeBlockThresholdSet(uint256)": EventFragment;
-    "TokenWhitelisted(address,bool)": EventFragment;
     "TradeCancelled(uint256,bytes32,address)": EventFragment;
     "TradeDisputeSettled(address,uint256,bytes32,bool,address)": EventFragment;
     "TradeDisputed(address,uint256,bytes32,uint256,address)": EventFragment;
@@ -291,11 +262,9 @@ export interface BookInterface extends utils.Interface {
     "TradeSettled(address,uint256,uint256,address)": EventFragment;
   };
 
-  getEvent(nameOrSignatureOrTopic: "FeeCombinationSet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "FeePctSet"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "OwnerUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ParamsCombinationSet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SafeBlockThresholdSet"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "TokenWhitelisted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TradeCancelled"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TradeDisputeSettled"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TradeDisputed"): EventFragment;
@@ -304,19 +273,6 @@ export interface BookInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "TradeSettled"): EventFragment;
 }
 
-export interface FeeCombinationSetEventObject {
-  disputeBondPct: BigNumber;
-  tradeRebatePct: BigNumber;
-  relayerRefundPct: BigNumber;
-}
-export type FeeCombinationSetEvent = TypedEvent<
-  [BigNumber, BigNumber, BigNumber],
-  FeeCombinationSetEventObject
->;
-
-export type FeeCombinationSetEventFilter =
-  TypedEventFilter<FeeCombinationSetEvent>;
-
 export interface FeePctSetEventObject {
   feePct: BigNumber;
 }
@@ -324,16 +280,18 @@ export type FeePctSetEvent = TypedEvent<[BigNumber], FeePctSetEventObject>;
 
 export type FeePctSetEventFilter = TypedEventFilter<FeePctSetEvent>;
 
-export interface OwnerUpdatedEventObject {
-  user: string;
-  newOwner: string;
+export interface ParamsCombinationSetEventObject {
+  disputeBondPct: BigNumber;
+  tradeRebatePct: BigNumber;
+  relayerRefundPct: BigNumber;
 }
-export type OwnerUpdatedEvent = TypedEvent<
-  [string, string],
-  OwnerUpdatedEventObject
+export type ParamsCombinationSetEvent = TypedEvent<
+  [BigNumber, BigNumber, BigNumber],
+  ParamsCombinationSetEventObject
 >;
 
-export type OwnerUpdatedEventFilter = TypedEventFilter<OwnerUpdatedEvent>;
+export type ParamsCombinationSetEventFilter =
+  TypedEventFilter<ParamsCombinationSetEvent>;
 
 export interface SafeBlockThresholdSetEventObject {
   newSafeBlockThreshold: BigNumber;
@@ -345,18 +303,6 @@ export type SafeBlockThresholdSetEvent = TypedEvent<
 
 export type SafeBlockThresholdSetEventFilter =
   TypedEventFilter<SafeBlockThresholdSetEvent>;
-
-export interface TokenWhitelistedEventObject {
-  token: string;
-  whitelisted: boolean;
-}
-export type TokenWhitelistedEvent = TypedEvent<
-  [string, boolean],
-  TokenWhitelistedEventObject
->;
-
-export type TokenWhitelistedEventFilter =
-  TypedEventFilter<TokenWhitelistedEvent>;
 
 export interface TradeCancelledEventObject {
   tradeIndex: BigNumber;
@@ -526,7 +472,7 @@ export interface Book extends BaseContract {
 
     oracle(overrides?: CallOverrides): Promise<[string]>;
 
-    owner(overrides?: CallOverrides): Promise<[string]>;
+    registry(overrides?: CallOverrides): Promise<[string]>;
 
     relayerRefundPct(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -540,11 +486,6 @@ export interface Book extends BaseContract {
     ): Promise<ContractTransaction>;
 
     safeBlockThreshold(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    setOwner(
-      newOwner: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
 
     settleTrade(
       tokenIn: PromiseOrValue<string>,
@@ -563,17 +504,6 @@ export interface Book extends BaseContract {
     ): Promise<[number]>;
 
     tradeRebatePct(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    whitelistToken(
-      token: PromiseOrValue<string>,
-      whitelisted: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    whitelistedTokens(
-      arg0: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
   };
 
   cancelTrade(
@@ -634,7 +564,7 @@ export interface Book extends BaseContract {
 
   oracle(overrides?: CallOverrides): Promise<string>;
 
-  owner(overrides?: CallOverrides): Promise<string>;
+  registry(overrides?: CallOverrides): Promise<string>;
 
   relayerRefundPct(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -648,11 +578,6 @@ export interface Book extends BaseContract {
   ): Promise<ContractTransaction>;
 
   safeBlockThreshold(overrides?: CallOverrides): Promise<BigNumber>;
-
-  setOwner(
-    newOwner: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
 
   settleTrade(
     tokenIn: PromiseOrValue<string>,
@@ -671,17 +596,6 @@ export interface Book extends BaseContract {
   ): Promise<number>;
 
   tradeRebatePct(overrides?: CallOverrides): Promise<BigNumber>;
-
-  whitelistToken(
-    token: PromiseOrValue<string>,
-    whitelisted: PromiseOrValue<boolean>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  whitelistedTokens(
-    arg0: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
 
   callStatic: {
     cancelTrade(
@@ -742,7 +656,7 @@ export interface Book extends BaseContract {
 
     oracle(overrides?: CallOverrides): Promise<string>;
 
-    owner(overrides?: CallOverrides): Promise<string>;
+    registry(overrides?: CallOverrides): Promise<string>;
 
     relayerRefundPct(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -756,11 +670,6 @@ export interface Book extends BaseContract {
     ): Promise<void>;
 
     safeBlockThreshold(overrides?: CallOverrides): Promise<BigNumber>;
-
-    setOwner(
-      newOwner: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
 
     settleTrade(
       tokenIn: PromiseOrValue<string>,
@@ -779,42 +688,22 @@ export interface Book extends BaseContract {
     ): Promise<number>;
 
     tradeRebatePct(overrides?: CallOverrides): Promise<BigNumber>;
-
-    whitelistToken(
-      token: PromiseOrValue<string>,
-      whitelisted: PromiseOrValue<boolean>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    whitelistedTokens(
-      arg0: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
   };
 
   filters: {
-    "FeeCombinationSet(uint256,uint256,uint256)"(
-      disputeBondPct?: null,
-      tradeRebatePct?: null,
-      relayerRefundPct?: null
-    ): FeeCombinationSetEventFilter;
-    FeeCombinationSet(
-      disputeBondPct?: null,
-      tradeRebatePct?: null,
-      relayerRefundPct?: null
-    ): FeeCombinationSetEventFilter;
-
     "FeePctSet(uint256)"(feePct?: null): FeePctSetEventFilter;
     FeePctSet(feePct?: null): FeePctSetEventFilter;
 
-    "OwnerUpdated(address,address)"(
-      user?: PromiseOrValue<string> | null,
-      newOwner?: PromiseOrValue<string> | null
-    ): OwnerUpdatedEventFilter;
-    OwnerUpdated(
-      user?: PromiseOrValue<string> | null,
-      newOwner?: PromiseOrValue<string> | null
-    ): OwnerUpdatedEventFilter;
+    "ParamsCombinationSet(uint256,uint256,uint256)"(
+      disputeBondPct?: null,
+      tradeRebatePct?: null,
+      relayerRefundPct?: null
+    ): ParamsCombinationSetEventFilter;
+    ParamsCombinationSet(
+      disputeBondPct?: null,
+      tradeRebatePct?: null,
+      relayerRefundPct?: null
+    ): ParamsCombinationSetEventFilter;
 
     "SafeBlockThresholdSet(uint256)"(
       newSafeBlockThreshold?: null
@@ -822,15 +711,6 @@ export interface Book extends BaseContract {
     SafeBlockThresholdSet(
       newSafeBlockThreshold?: null
     ): SafeBlockThresholdSetEventFilter;
-
-    "TokenWhitelisted(address,bool)"(
-      token?: PromiseOrValue<string> | null,
-      whitelisted?: null
-    ): TokenWhitelistedEventFilter;
-    TokenWhitelisted(
-      token?: PromiseOrValue<string> | null,
-      whitelisted?: null
-    ): TokenWhitelistedEventFilter;
 
     "TradeCancelled(uint256,bytes32,address)"(
       tradeIndex?: PromiseOrValue<BigNumberish> | null,
@@ -978,7 +858,7 @@ export interface Book extends BaseContract {
 
     oracle(overrides?: CallOverrides): Promise<BigNumber>;
 
-    owner(overrides?: CallOverrides): Promise<BigNumber>;
+    registry(overrides?: CallOverrides): Promise<BigNumber>;
 
     relayerRefundPct(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -992,11 +872,6 @@ export interface Book extends BaseContract {
     ): Promise<BigNumber>;
 
     safeBlockThreshold(overrides?: CallOverrides): Promise<BigNumber>;
-
-    setOwner(
-      newOwner: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
 
     settleTrade(
       tokenIn: PromiseOrValue<string>,
@@ -1015,17 +890,6 @@ export interface Book extends BaseContract {
     ): Promise<BigNumber>;
 
     tradeRebatePct(overrides?: CallOverrides): Promise<BigNumber>;
-
-    whitelistToken(
-      token: PromiseOrValue<string>,
-      whitelisted: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    whitelistedTokens(
-      arg0: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -1087,7 +951,7 @@ export interface Book extends BaseContract {
 
     oracle(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    registry(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     relayerRefundPct(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -1102,11 +966,6 @@ export interface Book extends BaseContract {
 
     safeBlockThreshold(
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    setOwner(
-      newOwner: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     settleTrade(
@@ -1126,16 +985,5 @@ export interface Book extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     tradeRebatePct(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    whitelistToken(
-      token: PromiseOrValue<string>,
-      whitelisted: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    whitelistedTokens(
-      arg0: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
   };
 }

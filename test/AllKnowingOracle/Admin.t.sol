@@ -1,9 +1,9 @@
-// SPDX-License-Identifier: Unlicense
-pragma solidity ^0.8.15;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.17;
 
-import "src/AllKnowingOracle.sol";
-import "./Fixtures.sol";
 import "forge-std/Test.sol";
+import {IAllKnowingOracleEvents} from "src/AllKnowingOracle.sol";
+import {OracleFixture} from "./Fixtures.sol";
 
 contract AdminTest is IAllKnowingOracleEvents, OracleFixture {
     using stdStorage for StdStorage;
@@ -12,56 +12,19 @@ contract AdminTest is IAllKnowingOracleEvents, OracleFixture {
         super.setUp();
     }
 
-    function testWhitelistToken(address token, bool enabled) public {
-        vm.expectEmit(true, false, false, true, address(oracle));
-        emit TokenWhitelisted(token, enabled);
-        oracle.whitelistToken(token, enabled);
-
-        bool storageEnabled = stdstore.target(address(oracle)).sig(
-            oracle.whitelistedTokens.selector
-        ).with_key(token).read_bool();
-
-        assertEq(storageEnabled, enabled);
-    }
-
-    function testCannotWhitelistTokenIfNonOwner() public {
-        vm.expectRevert("UNAUTHORIZED");
-        vm.prank(alice);
-        oracle.whitelistToken(USDC, true);
-    }
-
     function testWhitelistSettler(address settler, bool enabled) public {
         vm.expectEmit(true, false, false, true, address(oracle));
         emit SettlerWhitelisted(settler, enabled);
         oracle.whitelistSettler(settler, enabled);
 
-        bool storageEnabled = stdstore.target(address(oracle)).sig(
-            oracle.settlers.selector
-        ).with_key(settler).read_bool();
+        bool storageEnabled =
+            stdstore.target(address(oracle)).sig(oracle.settlers.selector).with_key(settler).read_bool();
 
         assertEq(storageEnabled, enabled);
     }
 
     function testCannotWhitelistSettlerIfNonOwner() public {
-        vm.expectRevert("UNAUTHORIZED");
-        vm.prank(alice);
-        oracle.whitelistSettler(bob, true);
-    }
-
-    function testWhitelistRequester(address requester, bool enabled) public {
-        vm.expectEmit(true, false, false, true, address(oracle));
-        emit RequesterWhitelisted(requester, enabled);
-        oracle.whitelistRequester(requester, enabled);
-
-        bool storageEnabled = stdstore.target(address(oracle)).sig(
-            oracle.requesters.selector
-        ).with_key(requester).read_bool();
-
-        assertEq(storageEnabled, enabled);
-    }
-
-    function testCannotWhitelistRequesterIfNonOwner() public {
-        vm.expectRevert("UNAUTHORIZED");
+        vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(alice);
         oracle.whitelistSettler(bob, true);
     }

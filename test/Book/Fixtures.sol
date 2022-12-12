@@ -1,10 +1,10 @@
-// SPDX-License-Identifier: Unlicense
-pragma solidity ^0.8.15;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.17;
 
-import "../utils/BaseFixture.sol";
-import "../utils/TokenFixture.sol";
-import "../AllKnowingOracle/Fixtures.sol";
-import "src/Book.sol";
+import "forge-std/Test.sol";
+import {IERC20} from "@openzeppelin/token/ERC20/IERC20.sol";
+import {OracleFixture} from "../AllKnowingOracle/Fixtures.sol";
+import {Book, IBookEvents} from "src/Book.sol";
 
 contract BaseBookFixture is IBookEvents, OracleFixture {
     Book internal book;
@@ -17,7 +17,7 @@ contract BaseBookFixture is IBookEvents, OracleFixture {
     function setUp() public virtual override {
         super.setUp();
         book = new Book(
-            address(oracle),
+            registry,
             testSafeBlockThreashold,
             testDisputeBondPct,
             testTradeRebatePct,
@@ -34,29 +34,27 @@ contract TradeFixture is BaseBookFixture {
     address internal testTokenIn = WETH;
     address internal testTokenOut = USDC;
     uint256 internal testAmountIn = 1 ether;
-    uint256 internal testAmountOutMin = 900 * 10**6;
+    uint256 internal testAmountOutMin = 900 * 10 ** 6;
     address internal testRecipient = alice;
     address internal testTrader = alice;
 
     function setUp() public virtual override {
         BaseBookFixture.setUp();
-
-        book.whitelistToken(USDC, true);
-        book.whitelistToken(WETH, true);
-
         vm.label(USDC, "USDC");
         vm.label(WETH, "WETH");
+        registry.whitelistToken(USDC, true);
+        registry.whitelistToken(WETH, true);
         vm.startPrank(alice);
-        ERC20(USDC).approve(address(book), type(uint256).max);
-        ERC20(WETH).approve(address(book), type(uint256).max);
+        IERC20(USDC).approve(address(book), type(uint256).max);
+        IERC20(WETH).approve(address(book), type(uint256).max);
         vm.stopPrank();
         vm.startPrank(bob);
-        ERC20(USDC).approve(address(book), type(uint256).max);
-        ERC20(WETH).approve(address(book), type(uint256).max);
+        IERC20(USDC).approve(address(book), type(uint256).max);
+        IERC20(WETH).approve(address(book), type(uint256).max);
         vm.stopPrank();
         vm.startPrank(charlie);
-        ERC20(USDC).approve(address(book), type(uint256).max);
-        ERC20(WETH).approve(address(book), type(uint256).max);
+        IERC20(USDC).approve(address(book), type(uint256).max);
+        IERC20(WETH).approve(address(book), type(uint256).max);
         vm.stopPrank();
     }
 
@@ -69,15 +67,7 @@ contract TradeFixture is BaseBookFixture {
         address who
     ) internal returns (uint256, bytes32) {
         uint256 tradeIndex = book.numberOfTrades();
-        bytes32 tradeId = _getTradeId(
-            tokenIn,
-            tokenOut,
-            amountIn,
-            amountOutMin,
-            recipient,
-            tradeIndex,
-            who
-        );
+        bytes32 tradeId = _getTradeId(tokenIn, tokenOut, amountIn, amountOutMin, recipient, tradeIndex, who);
         vm.prank(who);
         book.requestTrade(tokenIn, tokenOut, amountIn, amountOutMin, recipient);
         return (tradeIndex, tradeId);
@@ -93,17 +83,7 @@ contract TradeFixture is BaseBookFixture {
         address _trader
     ) internal pure returns (bytes32) {
         return
-            keccak256(
-                abi.encodePacked(
-                    _tokenIn,
-                    _tokenOut,
-                    _amountIn,
-                    _amountOutMin,
-                    _recipient,
-                    _tradeIndex,
-                    _trader
-                )
-            );
+            keccak256(abi.encodePacked(_tokenIn, _tokenOut, _amountIn, _amountOutMin, _recipient, _tradeIndex, _trader));
     }
 
     function _fillTrade(
@@ -116,38 +96,16 @@ contract TradeFixture is BaseBookFixture {
         address _trader,
         uint256 _amountToSend
     ) internal {
-        book.fillTrade(
-            _tokenIn,
-            _tokenOut,
-            _amountIn,
-            _amountOutMin,
-            _recipient,
-            _tradeIndex,
-            _trader,
-            _amountToSend
-        );
+        book.fillTrade(_tokenIn, _tokenOut, _amountIn, _amountOutMin, _recipient, _tradeIndex, _trader, _amountToSend);
     }
 
-    function _checkFill(
-        bytes32 _tradeId,
-        address _filledBy,
-        int256 _filledAtBlock
-    ) internal {
+    function _checkFill(bytes32 _tradeId, address _filledBy, int256 _filledAtBlock) internal {
         assertEq(
-            _filledBy,
-            stdstore
-                .target(address(book))
-                .sig(book.filledBy.selector)
-                .with_key(_tradeId)
-                .read_address()
+            _filledBy, stdstore.target(address(book)).sig(book.filledBy.selector).with_key(_tradeId).read_address()
         );
         assertEq(
             _filledAtBlock,
-            stdstore
-                .target(address(book))
-                .sig(book.filledAtBlock.selector)
-                .with_key(_tradeId)
-                .read_int()
+            stdstore.target(address(book)).sig(book.filledAtBlock.selector).with_key(_tradeId).read_int()
         );
     }
 }
@@ -161,17 +119,11 @@ contract DisputeFixture is TradeFixture {
 
     function setUp() public virtual override {
         super.setUp();
-        oracle.whitelistRequester(address(book), true);
+
         deal(testTokenIn, alice, testAmountIn);
 
-        (tradeIndex, tradeId) = _requestTrade(
-            testTokenIn,
-            testTokenOut,
-            testAmountIn,
-            testAmountOutMin,
-            testRecipient,
-            alice
-        );
+        (tradeIndex, tradeId) =
+            _requestTrade(testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, alice);
 
         deal(testTokenOut, relayer, testAmountToSend);
         vm.prank(relayer);
@@ -188,7 +140,7 @@ contract DisputeFixture is TradeFixture {
         _checkFill(tradeId, relayer, int256(block.number));
 
         vm.prank(disputer);
-        ERC20(testTokenIn).approve(address(oracle), type(uint256).max);
+        IERC20(testTokenIn).approve(address(oracle), type(uint256).max);
     }
 
     function _disputeTrade(
@@ -201,14 +153,6 @@ contract DisputeFixture is TradeFixture {
         address _trader
     ) internal {
         vm.prank(disputer);
-        book.disputeTrade(
-            _tokenIn,
-            _tokenOut,
-            _amountIn,
-            _amountOutMin,
-            _recipient,
-            _tradeIndex,
-            _trader
-        );
+        book.disputeTrade(_tokenIn, _tokenOut, _amountIn, _amountOutMin, _recipient, _tradeIndex, _trader);
     }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@flood-protocol/contracts",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Typescript bindings to Flood Protocol contracts",
   "main": "lib/index.ts",
   "scripts": {
@@ -9,6 +9,9 @@
   },
   "module": "lib/index.ts",
   "types": "lib/index.ts",
+  "files": [
+    "lib/**/*"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/fulmin-labs/flood-contracts.git"

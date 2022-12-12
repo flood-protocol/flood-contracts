@@ -16,6 +16,19 @@ const _abi = [
       {
         indexed: false,
         internalType: "uint256",
+        name: "feePct",
+        type: "uint256",
+      },
+    ],
+    name: "FeePctSet",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "uint256",
         name: "disputeBondPct",
         type: "uint256",
       },
@@ -32,20 +45,7 @@ const _abi = [
         type: "uint256",
       },
     ],
-    name: "FeeCombinationSet",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "feePct",
-        type: "uint256",
-      },
-    ],
-    name: "FeePctSet",
+    name: "ParamsCombinationSet",
     type: "event",
   },
   {
@@ -59,25 +59,6 @@ const _abi = [
       },
     ],
     name: "SafeBlockThresholdSet",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "token",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "bool",
-        name: "whitelisted",
-        type: "bool",
-      },
-    ],
-    name: "TokenWhitelisted",
     type: "event",
   },
   {

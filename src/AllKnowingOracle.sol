@@ -1,15 +1,14 @@
-// SPDX-License-Identifier: Unlicense
-pragma solidity ^0.8.15;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.17;
 
-import "solmate/auth/Owned.sol";
-import "solmate/tokens/ERC20.sol";
-import "solmate/utils/SafeTransferLib.sol";
+import {FloodRegistry} from "./FloodRegistry.sol";
+import {IERC20} from "@openzeppelin/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/token/ERC20/utils/SafeERC20.sol";
+import {Ownable2Step} from "@openzeppelin/access/Ownable2Step.sol";
 
 error AllKnowingOracle__AlreadySettled(bytes32 id);
 error AllKnowingOracle__NonSettler();
-error AllKnowingOracle__NonRequester();
 error AllKnowingOracle__RequestAlreadyExists(bytes32 id);
-error AllKnowingOracle__TokenNotWhitelisted(address token);
 error AllKnowingOracle__BondTooSmall();
 
 enum RequestState {
@@ -22,7 +21,7 @@ struct Request {
     address requester; // who requested an answer.
     address proposer; // Address of the proposer.
     address disputer; // Address of the disputer.
-    ERC20 currency; // ERC20 token used to pay rewards and fees.
+    IERC20 currency; // ERC20 token used to pay rewards and fees.
     uint256 bond; // Bond that the proposer and disputer must pay.
     RequestState state; // State of the request.
     bool answer; // Answer to the request.
@@ -34,20 +33,16 @@ interface IOptimisticRequester {
 }
 
 /**
- ***************************************
+ *
  *                EVENTS                *
- ***************************************
+ *
  */
 interface IAllKnowingOracleEvents {
     event TokenWhitelisted(address indexed token, bool enabled);
     event SettlerWhitelisted(address indexed settler, bool enabled);
     event RequesterWhitelisted(address indexed requester, bool enabled);
     event NewRequest(
-        bytes32 indexed id,
-        address indexed proposer,
-        address indexed disputer,
-        address currency,
-        uint256 bond
+        bytes32 indexed id, address indexed proposer, address indexed disputer, address currency, uint256 bond
     );
     event RequestSettled(bytes32 indexed id, bool answer);
 }
@@ -58,13 +53,12 @@ interface IAllKnowingOracleEvents {
  * In implementation, only the owner of the contract can settle a request.
  * @dev This should be deployed before `BookSingleChain`
  */
-contract AllKnowingOracle is IAllKnowingOracleEvents, Owned {
-    using SafeTransferLib for ERC20;
+contract AllKnowingOracle is IAllKnowingOracleEvents, Ownable2Step {
+    using SafeERC20 for IERC20;
 
     mapping(bytes32 => Request) public requests;
-    mapping(address => bool) public whitelistedTokens;
     mapping(address => bool) public settlers;
-    mapping(address => bool) public requesters;
+    FloodRegistry public immutable registry;
 
     modifier onlySettler() {
         if (!settlers[msg.sender]) {
@@ -73,53 +67,25 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Owned {
         _;
     }
 
-    modifier onlyRequester() {
-        if (!requesters[msg.sender]) {
-            revert AllKnowingOracle__NonRequester();
-        }
-        _;
-    }
-
-    constructor() Owned(msg.sender) {
+    constructor(FloodRegistry _registry) {
         settlers[msg.sender] = true;
+        registry = _registry;
     }
 
     /**
-     *************************************
+     *
      *          ADMIN FUNCTIONS           *
-     *************************************
+     *
      */
-
-    /**
-     @notice Whitelist a token for use in the contract.
-     @param token Token to whitelist as currency
-     @param enabled Whether to enable or disable the token
-    */
-    function whitelistToken(address token, bool enabled) external onlyOwner {
-        whitelistedTokens[token] = enabled;
-        emit TokenWhitelisted(token, enabled);
-    }
-
-    function whitelistSettler(address settler, bool enabled)
-        external
-        onlyOwner
-    {
+    function whitelistSettler(address settler, bool enabled) external onlyOwner {
         settlers[settler] = enabled;
         emit SettlerWhitelisted(settler, enabled);
     }
 
-    function whitelistRequester(address requester, bool enabled)
-        external
-        onlyOwner
-    {
-        requesters[requester] = enabled;
-        emit RequesterWhitelisted(requester, enabled);
-    }
-
     /**
-     *************************************
+     *
      *          EXTERNAL FUNCTIONS         *
-     *************************************
+     *
      */
 
     /**
@@ -133,13 +99,7 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Owned {
      * @param bond Value of the bond
      * @return ID of the request
      */
-    function getRequestId(
-        address sender,
-        address proposer,
-        address disputer,
-        address currency,
-        uint256 bond
-    )
+    function getRequestId(address sender, address proposer, address disputer, address currency, uint256 bond)
         external
         pure
         returns (bytes32)
@@ -150,27 +110,16 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Owned {
     /**
      * @notice Requests and proposes a price to the oracle. Disputers should set their allowance at each dispute to safely pay the bond.
      * @dev The bond proposer bond is transferred from `msg.sender` rather than from `proposer` to allow contracts to sponsor proposals.
-     * For example, in `BookSingleChain`, the relayer has already sent funds to the contract, so they are pulled from the contract directly and the relayer is set as proposer.
+     * For example, in `BookSingleChain`, relayer and disputer have already sent funds to the contract, so they are pulled from the contract directly and the relayer is set as proposer.
      * @param proposer Address of the proposer
      * @param disputer Address of the disputer
      * @param currency Token to use for the bond
      * @param bond Bond value which must be posted to dispute
      */
-    function ask(
-        address proposer,
-        address disputer,
-        address currency,
-        uint256 bond,
-        bytes calldata data
-    )
+    function ask(address proposer, address disputer, address currency, uint256 bond, bytes calldata data)
         external
-        onlyRequester
         returns (bytes32 id)
     {
-        if (!whitelistedTokens[currency]) {
-            revert AllKnowingOracle__TokenNotWhitelisted(currency);
-        }
-
         id = _getRequestId(msg.sender, proposer, disputer, currency, bond);
         if (requests[id].state != RequestState.Uninitialized) {
             revert AllKnowingOracle__RequestAlreadyExists(id);
@@ -179,7 +128,7 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Owned {
             requester: msg.sender,
             proposer: proposer,
             disputer: disputer,
-            currency: ERC20(currency),
+            currency: IERC20(currency),
             bond: bond,
             state: RequestState.Pending,
             answer: false,
@@ -190,10 +139,7 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Owned {
 
         emit NewRequest(id, proposer, disputer, currency, bond);
 
-        ERC20(currency).safeTransferFrom(msg.sender, address(this), bond);
-        // Note: This is unsafe for the disputer as a requester could list someone as disputer and give the right answer, making the disputer lose the bond.
-        // However, as this method is permissioned and requesters are assumed to be trustworthy, this is "safe".
-        ERC20(currency).safeTransferFrom(disputer, address(this), bond);
+        IERC20(currency).safeTransferFrom(msg.sender, address(this), 2 * bond);
     }
 
     /**
@@ -209,16 +155,17 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Owned {
         }
         // Whoever wins gets the bond back plus the other party bond.
         uint256 payout = 2 * request.bond;
+        // Update the request state
+        request.state = RequestState.Settled;
+        request.answer = answer;
+        emit RequestSettled(id, answer);
+
         if (answer) {
             request.currency.safeTransfer(request.proposer, payout);
         } else {
             request.currency.safeTransfer(request.disputer, payout);
         }
-        // Update the request state
-        request.state = RequestState.Settled;
-        request.answer = answer;
 
-        emit RequestSettled(id, answer);
         // Callback into the proposer if its a contract
         if (request.requester.code.length != 0) {
             IOptimisticRequester(request.requester).onPriceSettled(id, request);
@@ -226,24 +173,16 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Owned {
     }
 
     /**
-     *************************************
+     *
      *          INTERNAL FUNCTIONS         *
-     *************************************
+     *
      */
 
-    function _getRequestId(
-        address requester,
-        address proposer,
-        address disputer,
-        address currency,
-        uint256 bond
-    )
+    function _getRequestId(address requester, address proposer, address disputer, address currency, uint256 bond)
         internal
         pure
         returns (bytes32)
     {
-        return keccak256(
-            abi.encodePacked(requester, proposer, disputer, currency, bond)
-        );
+        return keccak256(abi.encodePacked(requester, proposer, disputer, currency, bond));
     }
 }

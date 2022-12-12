@@ -17,7 +17,7 @@ pub mod book {
     use ethers::providers::Middleware;
     #[doc = "Book was auto-generated with ethers-rs Abigen. More information at: https://github.com/gakonst/ethers-rs"]
     use std::sync::Arc;
-    # [rustfmt :: skip] const __ABI : & str = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_oracle\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"_safeBlockThreshold\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"_disputeBondPct\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"_tradeRebatePct\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"_relayerRefundPct\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"_feePct\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"Book__AmountOutTooLow\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"blocksLeft\",\"type\":\"uint256\",\"components\":[]}],\"type\":\"error\",\"name\":\"Book__DisputePeriodNotOver\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"Book__DisputePeriodOver\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"Book__FeePctTooHigh\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"Book__InvalidFeeCombination\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\",\"components\":[]}],\"type\":\"error\",\"name\":\"Book__InvalidToken\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"caller\",\"type\":\"address\",\"components\":[]}],\"type\":\"error\",\"name\":\"Book__MaliciousCaller\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"Book__NotTrader\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"Book__SameToken\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"Book__SentToBlackHole\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"tradeId\",\"type\":\"bytes32\",\"components\":[]}],\"type\":\"error\",\"name\":\"Book__TradeNotCancelable\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"tradeId\",\"type\":\"bytes32\",\"components\":[]}],\"type\":\"error\",\"name\":\"Book__TradeNotFilled\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"tradeId\",\"type\":\"bytes32\",\"components\":[]}],\"type\":\"error\",\"name\":\"Book__TradeNotInFillableState\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\",\"components\":[]}],\"type\":\"error\",\"name\":\"Book__UnsafeTokenToWhitelist\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"Book__ZeroAmount\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"disputeBondPct\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"tradeRebatePct\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"relayerRefundPct\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"FeeCombinationSet\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"feePct\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"FeePctSet\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"OwnerUpdated\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"newSafeBlockThreshold\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"SafeBlockThresholdSet\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"bool\",\"name\":\"whitelisted\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"TokenWhitelisted\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"bytes32\",\"name\":\"tradeId\",\"type\":\"bytes32\",\"components\":[],\"indexed\":true},{\"internalType\":\"address\",\"name\":\"trader\",\"type\":\"address\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"TradeCancelled\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"relayer\",\"type\":\"address\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"bytes32\",\"name\":\"disputeId\",\"type\":\"bytes32\",\"components\":[],\"indexed\":true},{\"internalType\":\"bool\",\"name\":\"answer\",\"type\":\"bool\",\"components\":[],\"indexed\":false},{\"internalType\":\"address\",\"name\":\"trader\",\"type\":\"address\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"TradeDisputeSettled\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"relayer\",\"type\":\"address\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"bytes32\",\"name\":\"disputeId\",\"type\":\"bytes32\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"filledAtBlock\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"address\",\"name\":\"trader\",\"type\":\"address\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"TradeDisputed\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"relayer\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"amountOut\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"address\",\"name\":\"trader\",\"type\":\"address\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"TradeFilled\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenIn\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"address\",\"name\":\"tokenOut\",\"type\":\"address\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"amountIn\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"minAmountOut\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"address\",\"name\":\"trader\",\"type\":\"address\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"TradeRequested\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"relayer\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"filledAtBlock\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"address\",\"name\":\"trader\",\"type\":\"address\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"TradeSettled\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenIn\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"tokenOut\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amountIn\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"minAmountOut\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"trader\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"cancelTrade\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"disputeBondPct\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenIn\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"tokenOut\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amountIn\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"minAmountOut\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"trader\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"disputeTrade\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"feePct\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenIn\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"tokenOut\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amountIn\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"minAmountOut\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"trader\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amountToSend\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"fillTrade\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"filledAtBlock\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"filledBy\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"numberOfTrades\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"id\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"struct Request\",\"name\":\"request\",\"type\":\"tuple\",\"components\":[{\"internalType\":\"address\",\"name\":\"requester\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"proposer\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"disputer\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"contract ERC20\",\"name\":\"currency\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"bond\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"enum RequestState\",\"name\":\"state\",\"type\":\"uint8\",\"components\":[]},{\"internalType\":\"bool\",\"name\":\"answer\",\"type\":\"bool\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\",\"components\":[]}]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"onPriceSettled\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"oracle\",\"outputs\":[{\"internalType\":\"contract AllKnowingOracle\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"relayerRefundPct\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenIn\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"tokenOut\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amountIn\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"minAmountOut\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"requestTrade\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"safeBlockThreshold\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setOwner\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenIn\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"tokenOut\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amountIn\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"minAmountOut\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"trader\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"settleTrade\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"status\",\"outputs\":[{\"internalType\":\"enum TradeStatus\",\"name\":\"\",\"type\":\"uint8\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"tradeRebatePct\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"bool\",\"name\":\"whitelisted\",\"type\":\"bool\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"whitelistToken\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"whitelistedTokens\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]}]" ;
+    # [rustfmt :: skip] const __ABI : & str = "[{\"inputs\":[{\"internalType\":\"contract FloodRegistry\",\"name\":\"_registry\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"_safeBlockThreshold\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"_disputeBondPct\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"_tradeRebatePct\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"_relayerRefundPct\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"_feePct\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"Book__AmountOutTooLow\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"blocksLeft\",\"type\":\"uint256\",\"components\":[]}],\"type\":\"error\",\"name\":\"Book__DisputePeriodNotOver\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"Book__DisputePeriodOver\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"Book__FeePctTooHigh\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"Book__InvalidParamsCombination\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\",\"components\":[]}],\"type\":\"error\",\"name\":\"Book__InvalidToken\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"caller\",\"type\":\"address\",\"components\":[]}],\"type\":\"error\",\"name\":\"Book__MaliciousCaller\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"Book__NotTrader\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"Book__SameToken\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"Book__SentToBlackHole\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"tradeId\",\"type\":\"bytes32\",\"components\":[]}],\"type\":\"error\",\"name\":\"Book__TradeNotCancelable\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"tradeId\",\"type\":\"bytes32\",\"components\":[]}],\"type\":\"error\",\"name\":\"Book__TradeNotFilled\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"tradeId\",\"type\":\"bytes32\",\"components\":[]}],\"type\":\"error\",\"name\":\"Book__TradeNotInFillableState\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"Book__ZeroAmount\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"feePct\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"FeePctSet\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"disputeBondPct\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"tradeRebatePct\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"relayerRefundPct\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"ParamsCombinationSet\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"newSafeBlockThreshold\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"SafeBlockThresholdSet\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"bytes32\",\"name\":\"tradeId\",\"type\":\"bytes32\",\"components\":[],\"indexed\":true},{\"internalType\":\"address\",\"name\":\"trader\",\"type\":\"address\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"TradeCancelled\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"relayer\",\"type\":\"address\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"bytes32\",\"name\":\"disputeId\",\"type\":\"bytes32\",\"components\":[],\"indexed\":true},{\"internalType\":\"bool\",\"name\":\"answer\",\"type\":\"bool\",\"components\":[],\"indexed\":false},{\"internalType\":\"address\",\"name\":\"trader\",\"type\":\"address\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"TradeDisputeSettled\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"relayer\",\"type\":\"address\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"bytes32\",\"name\":\"disputeId\",\"type\":\"bytes32\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"filledAtBlock\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"address\",\"name\":\"trader\",\"type\":\"address\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"TradeDisputed\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"relayer\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"amountOut\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"address\",\"name\":\"trader\",\"type\":\"address\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"TradeFilled\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenIn\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"address\",\"name\":\"tokenOut\",\"type\":\"address\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"amountIn\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"minAmountOut\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"address\",\"name\":\"trader\",\"type\":\"address\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"TradeRequested\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"relayer\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"filledAtBlock\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"address\",\"name\":\"trader\",\"type\":\"address\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"TradeSettled\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenIn\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"tokenOut\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amountIn\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"minAmountOut\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"trader\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"cancelTrade\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"disputeBondPct\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenIn\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"tokenOut\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amountIn\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"minAmountOut\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"trader\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"disputeTrade\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"feePct\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenIn\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"tokenOut\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amountIn\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"minAmountOut\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"trader\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amountToSend\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"fillTrade\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"filledAtBlock\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"filledBy\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"numberOfTrades\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"id\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"struct Request\",\"name\":\"request\",\"type\":\"tuple\",\"components\":[{\"internalType\":\"address\",\"name\":\"requester\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"proposer\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"disputer\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"contract IERC20\",\"name\":\"currency\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"bond\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"enum RequestState\",\"name\":\"state\",\"type\":\"uint8\",\"components\":[]},{\"internalType\":\"bool\",\"name\":\"answer\",\"type\":\"bool\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\",\"components\":[]}]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"onPriceSettled\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"oracle\",\"outputs\":[{\"internalType\":\"contract AllKnowingOracle\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"registry\",\"outputs\":[{\"internalType\":\"contract FloodRegistry\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"relayerRefundPct\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenIn\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"tokenOut\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amountIn\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"minAmountOut\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"requestTrade\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"safeBlockThreshold\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenIn\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"tokenOut\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amountIn\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"minAmountOut\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"tradeIndex\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"trader\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"settleTrade\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"status\",\"outputs\":[{\"internalType\":\"enum TradeStatus\",\"name\":\"\",\"type\":\"uint8\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"tradeRebatePct\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]}]" ;
     #[doc = r" The parsed JSON-ABI of the contract."]
     pub static BOOK_ABI: ethers::contract::Lazy<ethers::core::abi::Abi> =
         ethers::contract::Lazy::new(|| {
@@ -26,21 +26,21 @@ pub mod book {
     #[doc = r" Bytecode of the #name contract"]
     pub static BOOK_BYTECODE: ethers::contract::Lazy<ethers::core::types::Bytes> =
         ethers::contract::Lazy::new(|| {
-            "0x61014060405260006001553480156200001757600080fd5b506040516200191e3803806200191e8339810160408190526200003a91620001b4565b600080546001600160a01b031916339081178255604051909182917f8292fce18fa69edf4db7b94ea2e58241df0ae57f97e0a6c9b29067028bf92d76908290a3506001600160a01b0386166101205260808590526040518581527f882885d0e4612a71677644a9d70e58ca05fc5a1ea1b0875f6e46c315241bfe149060200160405180910390a181620000ce848662000215565b620000da919062000215565b606414620000fb57604051636683d88d60e01b815260040160405180910390fd5b60a084905260c083905260e082905260408051858152602081018590529081018390527ff33486d12ebec978385318eaf8163e096679d7eab14d4def8f26b7a5fda0f5829060600160405180910390a16109c48111156200016f5760405163b768880160e01b815260040160405180910390fd5b6101008190526040518181527f9e67c173f0d1bf66a955764a6b072d74e095af185e539f9f6570fb91d788fca59060200160405180910390a15050505050506200023d565b60008060008060008060c08789031215620001ce57600080fd5b86516001600160a01b0381168114620001e657600080fd5b6020880151604089015160608a015160808b015160a0909b0151939c929b509099909850965090945092505050565b808201808211156200023757634e487b7160e01b600052601160045260246000fd5b92915050565b60805160a05160c05160e0516101005161012051611644620002da6000396000818161024f01528181610482015281816104ab01528181610598015281816106860152610983015260006102e7015260008181610215015281816109270152610e8901526000818161030e01526109f00152600081816101be015261043901526000818161014b01528181610e1c0152610fb301526116446000f3fe608060405234801561001057600080fd5b506004361061012c5760003560e01c80638b2cdb9d116100ad578063c16402bb11610071578063c16402bb14610309578063cd805d5e14610330578063d70e3dfd14610339578063daf9c21014610362578063e66a34ee1461039557600080fd5b80638b2cdb9d146102895780638da5cb5b1461029c5780639170c05b146102af5780639501325f146102c2578063a02cf937146102e257600080fd5b8063391fe4e2116100f4578063391fe4e2146101b957806352ad0d5e146101e057806353906a5914610210578063734d1627146102375780637dc0d1d01461024a57600080fd5b806309796dff146101315780630ff0c00e146101465780630ffb1d8b1461018057806313af4035146101935780632d7e8e1c146101a6575b600080fd5b61014461013f3660046111b0565b6103a8565b005b61016d7f000000000000000000000000000000000000000000000000000000000000000081565b6040519081526020015b60405180910390f35b61014461018e366004611239565b610616565b6101446101a1366004611272565b61077b565b6101446101b4366004611296565b61080f565b61016d7f000000000000000000000000000000000000000000000000000000000000000081565b6102036101ee36600461131b565b60056020526000908152604090205460ff1681565b604051610177919061134a565b61016d7f000000000000000000000000000000000000000000000000000000000000000081565b610144610245366004611372565b610978565b6102717f000000000000000000000000000000000000000000000000000000000000000081565b6040516001600160a01b039091168152602001610177565b6101446102973660046111b0565b610b01565b600054610271906001600160a01b031681565b6101446102bd3660046113b6565b610be2565b61016d6102d036600461131b565b60036020526000908152604090205481565b61016d7f000000000000000000000000000000000000000000000000000000000000000081565b61016d7f000000000000000000000000000000000000000000000000000000000000000081565b61016d60015481565b61027161034736600461131b565b6004602052600090815260409020546001600160a01b031681565b610385610370366004611272565b60026020526000908152604090205460ff1681565b6040519015158152602001610177565b6101446103a33660046111b0565b610da9565b60006103b988888888888888610f33565b6000818152600360205260408120549192508190036103f357604051630f70cbe360e41b8152600481018390526024015b60405180910390fd5b6103fc81610fab565b61041957604051632fe1403160e21b815260040160405180910390fd5b6000828152600460205260408120546001600160a01b031690606461045e7f00000000000000000000000000000000000000000000000000000000000000008b61142b565b6104689190611448565b905061047384610fdf565b6104a76001600160a01b038c167f000000000000000000000000000000000000000000000000000000000000000083611019565b60007f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031663f7d3b58b84338f868f8e8e8e60405160200161051594939291909384526001600160a01b039283166020850152604084019190915216606082015260800190565b6040516020818303038152906040526040518663ffffffff1660e01b815260040161054495949392919061146a565b6020604051808303816000875af1158015610563573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061058791906114e4565b90506105be6001600160a01b038d167f00000000000000000000000000000000000000000000000000000000000000006000611019565b604080516001600160a01b0385811682526020820187905288169183918a917f611d2790eebc2dfbd3329eb8ce89302d94d2b42c489cfd3ba8dae42977a3f942910160405180910390a4505050505050505050505050565b6000546001600160a01b0316331461065f5760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b60448201526064016103ea565b8080156106f35750604051630daf9c2160e41b81526001600160a01b0383811660048301527f0000000000000000000000000000000000000000000000000000000000000000169063daf9c21090602401602060405180830381865afa1580156106cd573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906106f191906114fd565b155b1561071c576040516335e4dbd960e11b81526001600160a01b03831660048201526024016103ea565b6001600160a01b038216600081815260026020908152604091829020805460ff191685151590811790915591519182527fef81a9943b96c8df4ef243401c9bf5159146166211356898b52d382086168d92910160405180910390a25050565b6000546001600160a01b031633146107c45760405162461bcd60e51b815260206004820152600c60248201526b15539055551213d49256915160a21b60448201526064016103ea565b600080546001600160a01b0319166001600160a01b0383169081178255604051909133917f8292fce18fa69edf4db7b94ea2e58241df0ae57f97e0a6c9b29067028bf92d769190a350565b600061082089898989898989610f33565b9050600160008281526005602052604090205460ff16600281111561084757610847611334565b14610868576040516337d6ee8b60e11b8152600481018290526024016103ea565b858210156108895760405163122e33cf60e31b815260040160405180910390fd5b6000818152600360209081526040808320439055600482528083208054336001600160a01b031990911681179091556005835292819020805460ff19166002179055518481526001600160a01b03861692879290917f81f3dddde62cb8d590d391999bc1a4c362a03cf74718fb3bd8195b46fc1c1009910160405180910390a461091e6001600160a01b038916338785611096565b6000606461094c7f00000000000000000000000000000000000000000000000000000000000000008a61142b565b6109569190611448565b905061096c6001600160a01b038b163383611120565b50505050505050505050565b336001600160a01b037f000000000000000000000000000000000000000000000000000000000000000016146109c35760405163347b0c3360e11b81523360048201526024016103ea565b60008080806109d560e086018661151a565b8101906109e29190611568565b9350935093509350600060647f000000000000000000000000000000000000000000000000000000000000000086610a1a919061142b565b610a249190611448565b9050610a3660e0870160c088016115b2565b15610a7457610a6f610a4e6040880160208901611272565b82610a5f60808a0160608b01611272565b6001600160a01b03169190611120565b610a89565b610a898482610a5f60808a0160608b01611272565b6001600160a01b03821687847ff27fbe6db06bb8ac8a2b4206eef25be7c007d9fd8d53a772c5ffa4d7487952b2610ac660408b0160208c01611272565b610ad660e08c0160c08d016115b2565b604080516001600160a01b03909316835290151560208301520160405180910390a450505050505050565b336001600160a01b03821614610b2a57604051630e020a8960e31b815260040160405180910390fd5b6000610b3b88888888888888610f33565b9050600160008281526005602052604090205460ff166002811115610b6257610b62611334565b14610b835760405163069572a960e21b8152600481018290526024016103ea565b610b8c81610fdf565b816001600160a01b031681847f4aaea9d289fcf796ee2d93ab7730c9a0afa79d03debf6528dd7f13a83613b7f460405160405180910390a4610bd86001600160a01b0389168388611120565b5050505050505050565b6001600160a01b03851660009081526002602052604090205460ff16610c26576040516378abcf6760e11b81526001600160a01b03861660048201526024016103ea565b6001600160a01b03841660009081526002602052604090205460ff16610c6a576040516378abcf6760e11b81526001600160a01b03851660048201526024016103ea565b836001600160a01b0316856001600160a01b031603610c9c57604051636f8f06d360e01b815260040160405180910390fd5b821580610ca7575081155b15610cc5576040516305dc4f8360e21b815260040160405180910390fd5b6001600160a01b038116610cec576040516325f5bdf760e21b815260040160405180910390fd5b600154604080516001600160a01b0387811682526020820187905291810185905283821660608201523392918816907f8a923a6574cd5d908fa4e840c47fb64b874b2116a88d073e5fdbd834033932769060800160405180910390a46000610d5b868686868660015433610f33565b6000818152600560205260408120805460ff19166001908117909155805492935090610d86836115cf565b90915550610da190506001600160a01b038716333087611096565b505050505050565b6000610dba88888888888888610f33565b600081815260036020526040812054919250819003610def57604051630f70cbe360e41b8152600481018390526024016103ea565b610df881610fab565b15610e5f57600082815260036020526040812054610e1690436115e8565b610e40907f00000000000000000000000000000000000000000000000000000000000000006115e8565b905080604051637be8522f60e01b81526004016103ea91815260200190565b6000828152600460205260409020546001600160a01b0316610e8083610fdf565b60006064610eae7f0000000000000000000000000000000000000000000000000000000000000000826115e8565b610eb8908b61142b565b610ec29190611448565b9050610ed86001600160a01b038c168383611120565b846001600160a01b031686836001600160a01b03167fdeb6ee1bbbaaac1d6b7873a679d462110dd54d72915436622cc00525c2561cab86604051610f1e91815260200190565b60405180910390a45050505050505050505050565b6040516bffffffffffffffffffffffff19606089811b8216602084015288811b82166034840152604883018890526068830187905285811b82166088840152609c830185905283901b1660bc82015260009060d001604051602081830303815290604052805190602001209050979650505050505050565b6000610fd7827f00000000000000000000000000000000000000000000000000000000000000006115fb565b431092915050565b60009081526003602090815260408083208390556004825280832080546001600160a01b031916905560059091529020805460ff19169055565b600060405163095ea7b360e01b8152836004820152826024820152602060006044836000895af13d15601f3d11600160005114161716915050806110905760405162461bcd60e51b815260206004820152600e60248201526d1054141493d59157d1905253115160921b60448201526064016103ea565b50505050565b60006040516323b872dd60e01b81528460048201528360248201528260448201526020600060648360008a5af13d15601f3d11600160005114161716915050806111195760405162461bcd60e51b81526020600482015260146024820152731514905394d1915497d19493d357d1905253115160621b60448201526064016103ea565b5050505050565b600060405163a9059cbb60e01b8152836004820152826024820152602060006044836000895af13d15601f3d11600160005114161716915050806110905760405162461bcd60e51b815260206004820152600f60248201526e1514905394d1915497d19052531151608a1b60448201526064016103ea565b6001600160a01b03811681146111ad57600080fd5b50565b600080600080600080600060e0888a0312156111cb57600080fd5b87356111d681611198565b965060208801356111e681611198565b95506040880135945060608801359350608088013561120481611198565b925060a0880135915060c088013561121b81611198565b8091505092959891949750929550565b80151581146111ad57600080fd5b6000806040838503121561124c57600080fd5b823561125781611198565b915060208301356112678161122b565b809150509250929050565b60006020828403121561128457600080fd5b813561128f81611198565b9392505050565b600080600080600080600080610100898b0312156112b357600080fd5b88356112be81611198565b975060208901356112ce81611198565b9650604089013595506060890135945060808901356112ec81611198565b935060a0890135925060c089013561130381611198565b8092505060e089013590509295985092959890939650565b60006020828403121561132d57600080fd5b5035919050565b634e487b7160e01b600052602160045260246000fd5b602081016003831061136c57634e487b7160e01b600052602160045260246000fd5b91905290565b6000806040838503121561138557600080fd5b82359150602083013567ffffffffffffffff8111156113a357600080fd5b8301610100818603121561126757600080fd5b600080600080600060a086880312156113ce57600080fd5b85356113d981611198565b945060208601356113e981611198565b93506040860135925060608601359150608086013561140781611198565b809150509295509295909350565b634e487b7160e01b600052601160045260246000fd5b808202811582820484141761144257611442611415565b92915050565b60008261146557634e487b7160e01b600052601260045260246000fd5b500490565b600060018060a01b038088168352602081881681850152818716604085015285606085015260a06080850152845191508160a085015260005b828110156114bf5785810182015185820160c0015281016114a3565b5050600060c0828501015260c0601f19601f8301168401019150509695505050505050565b6000602082840312156114f657600080fd5b5051919050565b60006020828403121561150f57600080fd5b815161128f8161122b565b6000808335601e1984360301811261153157600080fd5b83018035915067ffffffffffffffff82111561154c57600080fd5b60200191503681900382131561156157600080fd5b9250929050565b6000806000806080858703121561157e57600080fd5b84359350602085013561159081611198565b92506040850135915060608501356115a781611198565b939692955090935050565b6000602082840312156115c457600080fd5b813561128f8161122b565b6000600182016115e1576115e1611415565b5060010190565b8181038181111561144257611442611415565b808201808211156114425761144261141556fea26469706673582212207ebce0f3d27945c68bf3f36c874c52000a09e8b45a8e5b43efa94c87ea2443dd64736f6c63430008110033" . parse () . expect ("invalid bytecode")
+            "0x610160604052600080553480156200001657600080fd5b5060405162001b4c38038062001b4c83398101604081905262000039916200020e565b6001600160a01b03861661012081905260408051630175727b60e51b81529051632eae4f60916004808201926020929091908290030181865afa15801562000085573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190620000ab919062000264565b6001600160a01b03166101405260808590526040518581527f882885d0e4612a71677644a9d70e58ca05fc5a1ea1b0875f6e46c315241bfe149060200160405180910390a1620000fd848484620001b6565b60a084905260c083905260e082905260408051858152602081018590529081018390527f8be1eb1cba497386c77933500158ebaaef9e51125fa5ebdfaa92139d320d43299060600160405180910390a16109c4811115620001715760405163b768880160e01b815260040160405180910390fd5b6101008190526040518181527f9e67c173f0d1bf66a955764a6b072d74e095af185e539f9f6570fb91d788fca59060200160405180910390a1505050505050620002b3565b80620001c383856200028b565b620001cf91906200028b565b606414620001f057604051639327bc8760e01b815260040160405180910390fd5b505050565b6001600160a01b03811681146200020b57600080fd5b50565b60008060008060008060c087890312156200022857600080fd5b86516200023581620001f5565b6020880151604089015160608a015160808b015160a0909b0151939c929b509099909850965090945092505050565b6000602082840312156200027757600080fd5b81516200028481620001f5565b9392505050565b80820180821115620002ad57634e487b7160e01b600052601160045260246000fd5b92915050565b60805160a05160c05160e0516101005161012051610140516117e36200036960003960008181610247015281816104270152818161049d015281816105e3015261078b01526000818161020801528181610f7a015261102c015260006102b40152600081816101ce0152818161072f0152610bde0152600081816102db01526107f8015260008181610177015281816103d3015261044a01526000818161012a01528181610b710152610d0801526117e36000f3fe608060405234801561001057600080fd5b506004361061010b5760003560e01c80637dc0d1d0116100a2578063a02cf93711610071578063a02cf937146102af578063c16402bb146102d6578063cd805d5e146102fd578063d70e3dfd14610306578063e66a34ee1461032f57600080fd5b80637dc0d1d0146102425780638b2cdb9d146102695780639170c05b1461027c5780639501325f1461028f57600080fd5b806352ad0d5e116100de57806352ad0d5e1461019957806353906a59146101c9578063734d1627146101f05780637b1039991461020357600080fd5b806309796dff146101105780630ff0c00e146101255780632d7e8e1c1461015f578063391fe4e214610172575b600080fd5b61012361011e36600461133d565b610342565b005b61014c7f000000000000000000000000000000000000000000000000000000000000000081565b6040519081526020015b60405180910390f35b61012361016d3660046113b8565b610617565b61014c7f000000000000000000000000000000000000000000000000000000000000000081565b6101bc6101a736600461143d565b60036020526000908152604090205460ff1681565b604051610156919061146c565b61014c7f000000000000000000000000000000000000000000000000000000000000000081565b6101236101fe366004611494565b610780565b61022a7f000000000000000000000000000000000000000000000000000000000000000081565b6040516001600160a01b039091168152602001610156565b61022a7f000000000000000000000000000000000000000000000000000000000000000081565b61012361027736600461133d565b610909565b61012361028a3660046114e3565b6109ea565b61014c61029d36600461143d565b60016020526000908152604090205481565b61014c7f000000000000000000000000000000000000000000000000000000000000000081565b61014c7f000000000000000000000000000000000000000000000000000000000000000081565b61014c60005481565b61022a61031436600461143d565b6002602052600090815260409020546001600160a01b031681565b61012361033d36600461133d565b610afe565b600061035388888888888888610c88565b60008181526001602052604081205491925081900361038d57604051630f70cbe360e41b8152600481018390526024015b60405180910390fd5b61039681610d00565b6103b357604051632fe1403160e21b815260040160405180910390fd5b6000828152600260205260408120546001600160a01b03169060646103f87f00000000000000000000000000000000000000000000000000000000000000008b611558565b6104029190611575565b905061040d84610d34565b6104226001600160a01b038c16333084610d6e565b6104997f000000000000000000000000000000000000000000000000000000000000000060647f00000000000000000000000000000000000000000000000000000000000000006104748d6002611558565b61047e9190611558565b6104889190611575565b6001600160a01b038e169190610ddf565b60007f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031663f7d3b58b84338f868f8e8e8e60405160200161050794939291909384526001600160a01b039283166020850152604084019190915216606082015260800190565b6040516020818303038152906040526040518663ffffffff1660e01b81526004016105369594939291906115e7565b6020604051808303816000875af1158015610555573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906105799190611622565b9050856001600160a01b031681887f611d2790eebc2dfbd3329eb8ce89302d94d2b42c489cfd3ba8dae42977a3f94286886040516105cc9291906001600160a01b03929092168252602082015260400190565b60405180910390a46106096001600160a01b038d167f00000000000000000000000000000000000000000000000000000000000000006000610ddf565b505050505050505050505050565b600061062889898989898989610c88565b9050600160008281526003602052604090205460ff16600281111561064f5761064f611456565b14610670576040516337d6ee8b60e11b815260048101829052602401610384565b858210156106915760405163122e33cf60e31b815260040160405180910390fd5b6000818152600160209081526040808320439055600280835281842080546001600160a01b031916339081179091556003845293829020805460ff19169091179055518481526001600160a01b03861692879290917f81f3dddde62cb8d590d391999bc1a4c362a03cf74718fb3bd8195b46fc1c1009910160405180910390a46107266001600160a01b038916338785610d6e565b600060646107547f00000000000000000000000000000000000000000000000000000000000000008a611558565b61075e9190611575565b90506107746001600160a01b038b163383610ef9565b50505050505050505050565b336001600160a01b037f000000000000000000000000000000000000000000000000000000000000000016146107cb5760405163347b0c3360e11b8152336004820152602401610384565b60008080806107dd60e086018661163b565b8101906107ea9190611689565b9350935093509350600060647f0000000000000000000000000000000000000000000000000000000000000000866108229190611558565b61082c9190611575565b90506001600160a01b03821687847ff27fbe6db06bb8ac8a2b4206eef25be7c007d9fd8d53a772c5ffa4d7487952b261086b60408b0160208c016116d3565b61087b60e08c0160c08d01611705565b604080516001600160a01b03909316835290151560208301520160405180910390a46108ad60e0870160c08801611705565b156108eb576108e66108c560408801602089016116d3565b826108d660808a0160608b016116d3565b6001600160a01b03169190610ef9565b610900565b61090084826108d660808a0160608b016116d3565b50505050505050565b336001600160a01b0382161461093257604051630e020a8960e31b815260040160405180910390fd5b600061094388888888888888610c88565b9050600160008281526003602052604090205460ff16600281111561096a5761096a611456565b1461098b5760405163069572a960e21b815260048101829052602401610384565b61099481610d34565b816001600160a01b031681847f4aaea9d289fcf796ee2d93ab7730c9a0afa79d03debf6528dd7f13a83613b7f460405160405180910390a46109e06001600160a01b0389168388610ef9565b5050505050505050565b6109f48585610f29565b8215806109ff575081155b15610a1d576040516305dc4f8360e21b815260040160405180910390fd5b6001600160a01b038116610a44576040516325f5bdf760e21b815260040160405180910390fd5b600054604080516001600160a01b0387811682526020820187905291810185905283821660608201523392918816907f8a923a6574cd5d908fa4e840c47fb64b874b2116a88d073e5fdbd834033932769060800160405180910390a46000610ab3868686868660005433610c88565b6000818152600360205260408120805460ff19166001179055805491925080610adb83611722565b90915550610af690506001600160a01b038716333087610d6e565b505050505050565b6000610b0f88888888888888610c88565b600081815260016020526040812054919250819003610b4457604051630f70cbe360e41b815260048101839052602401610384565b610b4d81610d00565b15610bb457600082815260016020526040812054610b6b904361173b565b610b95907f000000000000000000000000000000000000000000000000000000000000000061173b565b905080604051637be8522f60e01b815260040161038491815260200190565b6000828152600260205260409020546001600160a01b0316610bd583610d34565b60006064610c037f00000000000000000000000000000000000000000000000000000000000000008261173b565b610c0d908b611558565b610c179190611575565b9050846001600160a01b031686836001600160a01b03167fdeb6ee1bbbaaac1d6b7873a679d462110dd54d72915436622cc00525c2561cab86604051610c5f91815260200190565b60405180910390a4610c7b6001600160a01b038c168383610ef9565b5050505050505050505050565b6040516bffffffffffffffffffffffff19606089811b8216602084015288811b82166034840152604883018890526068830187905285811b82166088840152609c830185905283901b1660bc82015260009060d001604051602081830303815290604052805190602001209050979650505050505050565b6000610d2c827f000000000000000000000000000000000000000000000000000000000000000061174e565b431092915050565b60009081526001602090815260408083208390556002825280832080546001600160a01b031916905560039091529020805460ff19169055565b6040516001600160a01b0380851660248301528316604482015260648101829052610dd99085906323b872dd60e01b906084015b60408051601f198184030181529190526020810180516001600160e01b03166001600160e01b0319909316929092179091526110c3565b50505050565b801580610e595750604051636eb1769f60e11b81523060048201526001600160a01b03838116602483015284169063dd62ed3e90604401602060405180830381865afa158015610e33573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610e579190611622565b155b610ec45760405162461bcd60e51b815260206004820152603660248201527f5361666545524332303a20617070726f76652066726f6d206e6f6e2d7a65726f60448201527520746f206e6f6e2d7a65726f20616c6c6f77616e636560501b6064820152608401610384565b6040516001600160a01b038316602482015260448101829052610ef490849063095ea7b360e01b90606401610da2565b505050565b6040516001600160a01b038316602482015260448101829052610ef490849063a9059cbb60e01b90606401610da2565b806001600160a01b0316826001600160a01b031603610f5b57604051636f8f06d360e01b815260040160405180910390fd5b60405163b5af090f60e01b81526001600160a01b0383811660048301527f0000000000000000000000000000000000000000000000000000000000000000169063b5af090f90602401602060405180830381865afa158015610fc1573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610fe59190611761565b61100d576040516378abcf6760e11b81526001600160a01b0383166004820152602401610384565b60405163b5af090f60e01b81526001600160a01b0382811660048301527f0000000000000000000000000000000000000000000000000000000000000000169063b5af090f90602401602060405180830381865afa158015611073573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906110979190611761565b6110bf576040516378abcf6760e11b81526001600160a01b0382166004820152602401610384565b5050565b6000611118826040518060400160405280602081526020017f5361666545524332303a206c6f772d6c6576656c2063616c6c206661696c6564815250856001600160a01b03166111959092919063ffffffff16565b805190915015610ef457808060200190518101906111369190611761565b610ef45760405162461bcd60e51b815260206004820152602a60248201527f5361666545524332303a204552433230206f7065726174696f6e20646964206e6044820152691bdd081cdd58d8d9595960b21b6064820152608401610384565b60606111a484846000856111ac565b949350505050565b60608247101561120d5760405162461bcd60e51b815260206004820152602660248201527f416464726573733a20696e73756666696369656e742062616c616e636520666f6044820152651c8818d85b1b60d21b6064820152608401610384565b600080866001600160a01b03168587604051611229919061177e565b60006040518083038185875af1925050503d8060008114611266576040519150601f19603f3d011682016040523d82523d6000602084013e61126b565b606091505b509150915061127c87838387611287565b979650505050505050565b606083156112f65782516000036112ef576001600160a01b0385163b6112ef5760405162461bcd60e51b815260206004820152601d60248201527f416464726573733a2063616c6c20746f206e6f6e2d636f6e74726163740000006044820152606401610384565b50816111a4565b6111a4838381511561130b5781518083602001fd5b8060405162461bcd60e51b8152600401610384919061179a565b6001600160a01b038116811461133a57600080fd5b50565b600080600080600080600060e0888a03121561135857600080fd5b873561136381611325565b9650602088013561137381611325565b95506040880135945060608801359350608088013561139181611325565b925060a0880135915060c08801356113a881611325565b8091505092959891949750929550565b600080600080600080600080610100898b0312156113d557600080fd5b88356113e081611325565b975060208901356113f081611325565b96506040890135955060608901359450608089013561140e81611325565b935060a0890135925060c089013561142581611325565b8092505060e089013590509295985092959890939650565b60006020828403121561144f57600080fd5b5035919050565b634e487b7160e01b600052602160045260246000fd5b602081016003831061148e57634e487b7160e01b600052602160045260246000fd5b91905290565b600080604083850312156114a757600080fd5b82359150602083013567ffffffffffffffff8111156114c557600080fd5b830161010081860312156114d857600080fd5b809150509250929050565b600080600080600060a086880312156114fb57600080fd5b853561150681611325565b9450602086013561151681611325565b93506040860135925060608601359150608086013561153481611325565b809150509295509295909350565b634e487b7160e01b600052601160045260246000fd5b808202811582820484141761156f5761156f611542565b92915050565b60008261159257634e487b7160e01b600052601260045260246000fd5b500490565b60005b838110156115b257818101518382015260200161159a565b50506000910152565b600081518084526115d3816020860160208601611597565b601f01601f19169290920160200192915050565b6001600160a01b0386811682528581166020830152841660408201526060810183905260a06080820181905260009061127c908301846115bb565b60006020828403121561163457600080fd5b5051919050565b6000808335601e1984360301811261165257600080fd5b83018035915067ffffffffffffffff82111561166d57600080fd5b60200191503681900382131561168257600080fd5b9250929050565b6000806000806080858703121561169f57600080fd5b8435935060208501356116b181611325565b92506040850135915060608501356116c881611325565b939692955090935050565b6000602082840312156116e557600080fd5b81356116f081611325565b9392505050565b801515811461133a57600080fd5b60006020828403121561171757600080fd5b81356116f0816116f7565b60006001820161173457611734611542565b5060010190565b8181038181111561156f5761156f611542565b8082018082111561156f5761156f611542565b60006020828403121561177357600080fd5b81516116f0816116f7565b60008251611790818460208701611597565b9190910192915050565b6020815260006116f060208301846115bb56fea264697066735822122049b963fbdaa0e416cf20094ae74e607c663af49a12df7bddb5ca3f39533846ca64736f6c63430008110033" . parse () . expect ("invalid bytecode")
         });
     pub struct Book<M>(ethers::contract::Contract<M>);
-    impl<M:Middleware> Clone for Book<M> {
+    impl<M> Clone for Book<M> {
         fn clone(&self) -> Self {
             Book(self.0.clone())
         }
     }
-    impl<M:Middleware> std::ops::Deref for Book<M> {
+    impl<M> std::ops::Deref for Book<M> {
         type Target = ethers::contract::Contract<M>;
         fn deref(&self) -> &Self::Target {
             &self.0
         }
     }
-    impl<M:Middleware> std::fmt::Debug for Book<M> {
+    impl<M> std::fmt::Debug for Book<M> {
         fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
             f.debug_tuple(stringify!(Book))
                 .field(&self.address())
@@ -236,12 +236,12 @@ pub mod book {
                 .method_hash([125, 192, 209, 208], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `owner` (0x8da5cb5b) function"]
-        pub fn owner(
+        #[doc = "Calls the contract's `registry` (0x7b103999) function"]
+        pub fn registry(
             &self,
         ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::Address> {
             self.0
-                .method_hash([141, 165, 203, 91], ())
+                .method_hash([123, 16, 57, 153], ())
                 .expect("method not found (this should never happen)")
         }
         #[doc = "Calls the contract's `relayerRefundPct` (0x53906a59) function"]
@@ -274,15 +274,6 @@ pub mod book {
         ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::U256> {
             self.0
                 .method_hash([15, 240, 192, 14], ())
-                .expect("method not found (this should never happen)")
-        }
-        #[doc = "Calls the contract's `setOwner` (0x13af4035) function"]
-        pub fn set_owner(
-            &self,
-            new_owner: ethers::core::types::Address,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
-            self.0
-                .method_hash([19, 175, 64, 53], new_owner)
                 .expect("method not found (this should never happen)")
         }
         #[doc = "Calls the contract's `settleTrade` (0xe66a34ee) function"]
@@ -325,51 +316,20 @@ pub mod book {
                 .method_hash([193, 100, 2, 187], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `whitelistToken` (0x0ffb1d8b) function"]
-        pub fn whitelist_token(
-            &self,
-            token: ethers::core::types::Address,
-            whitelisted: bool,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
-            self.0
-                .method_hash([15, 251, 29, 139], (token, whitelisted))
-                .expect("method not found (this should never happen)")
-        }
-        #[doc = "Calls the contract's `whitelistedTokens` (0xdaf9c210) function"]
-        pub fn whitelisted_tokens(
-            &self,
-            p0: ethers::core::types::Address,
-        ) -> ethers::contract::builders::ContractCall<M, bool> {
-            self.0
-                .method_hash([218, 249, 194, 16], p0)
-                .expect("method not found (this should never happen)")
-        }
-        #[doc = "Gets the contract's `FeeCombinationSet` event"]
-        pub fn fee_combination_set_filter(
-            &self,
-        ) -> ethers::contract::builders::Event<M, FeeCombinationSetFilter> {
-            self.0.event()
-        }
         #[doc = "Gets the contract's `FeePctSet` event"]
         pub fn fee_pct_set_filter(&self) -> ethers::contract::builders::Event<M, FeePctSetFilter> {
             self.0.event()
         }
-        #[doc = "Gets the contract's `OwnerUpdated` event"]
-        pub fn owner_updated_filter(
+        #[doc = "Gets the contract's `ParamsCombinationSet` event"]
+        pub fn params_combination_set_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, OwnerUpdatedFilter> {
+        ) -> ethers::contract::builders::Event<M, ParamsCombinationSetFilter> {
             self.0.event()
         }
         #[doc = "Gets the contract's `SafeBlockThresholdSet` event"]
         pub fn safe_block_threshold_set_filter(
             &self,
         ) -> ethers::contract::builders::Event<M, SafeBlockThresholdSetFilter> {
-            self.0.event()
-        }
-        #[doc = "Gets the contract's `TokenWhitelisted` event"]
-        pub fn token_whitelisted_filter(
-            &self,
-        ) -> ethers::contract::builders::Event<M, TokenWhitelistedFilter> {
             self.0.event()
         }
         #[doc = "Gets the contract's `TradeCancelled` event"]
@@ -418,25 +378,405 @@ pub mod book {
             Self(contract)
         }
     }
- 
-    
+    #[doc = "Custom Error type `Book__AmountOutTooLow` with signature `Book__AmountOutTooLow()` and selector `[145, 113, 158, 120]`"]
     #[derive(
         Clone,
         Debug,
+        Default,
         Eq,
         PartialEq,
-        ethers :: contract :: EthEvent,
+        ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+    )]
+    #[etherror(name = "Book__AmountOutTooLow", abi = "Book__AmountOutTooLow()")]
+    pub struct Book__AmountOutTooLow;
+    #[doc = "Custom Error type `Book__DisputePeriodNotOver` with signature `Book__DisputePeriodNotOver(uint256)` and selector `[123, 232, 82, 47]`"]
+    #[derive(
+        Clone,
+        Debug,
         Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthError,
+        ethers :: contract :: EthDisplay,
     )]
-    #[ethevent(
-        name = "FeeCombinationSet",
-        abi = "FeeCombinationSet(uint256,uint256,uint256)"
+    #[etherror(
+        name = "Book__DisputePeriodNotOver",
+        abi = "Book__DisputePeriodNotOver(uint256)"
     )]
-    pub struct FeeCombinationSetFilter {
-        pub dispute_bond_pct: ethers::core::types::U256,
-        pub trade_rebate_pct: ethers::core::types::U256,
-        pub relayer_refund_pct: ethers::core::types::U256,
+    pub struct Book__DisputePeriodNotOver {
+        pub blocks_left: ethers::core::types::U256,
+    }
+    #[doc = "Custom Error type `Book__DisputePeriodOver` with signature `Book__DisputePeriodOver()` and selector `[191, 133, 0, 196]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthError,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[etherror(name = "Book__DisputePeriodOver", abi = "Book__DisputePeriodOver()")]
+    pub struct Book__DisputePeriodOver;
+    #[doc = "Custom Error type `Book__FeePctTooHigh` with signature `Book__FeePctTooHigh()` and selector `[183, 104, 136, 1]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthError,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[etherror(name = "Book__FeePctTooHigh", abi = "Book__FeePctTooHigh()")]
+    pub struct Book__FeePctTooHigh;
+    #[doc = "Custom Error type `Book__InvalidParamsCombination` with signature `Book__InvalidParamsCombination()` and selector `[147, 39, 188, 135]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthError,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[etherror(
+        name = "Book__InvalidParamsCombination",
+        abi = "Book__InvalidParamsCombination()"
+    )]
+    pub struct Book__InvalidParamsCombination;
+    #[doc = "Custom Error type `Book__InvalidToken` with signature `Book__InvalidToken(address)` and selector `[241, 87, 158, 206]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthError,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[etherror(name = "Book__InvalidToken", abi = "Book__InvalidToken(address)")]
+    pub struct Book__InvalidToken {
+        pub token: ethers::core::types::Address,
+    }
+    #[doc = "Custom Error type `Book__MaliciousCaller` with signature `Book__MaliciousCaller(address)` and selector `[104, 246, 24, 102]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthError,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[etherror(name = "Book__MaliciousCaller", abi = "Book__MaliciousCaller(address)")]
+    pub struct Book__MaliciousCaller {
+        pub caller: ethers::core::types::Address,
+    }
+    #[doc = "Custom Error type `Book__NotTrader` with signature `Book__NotTrader()` and selector `[112, 16, 84, 72]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthError,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[etherror(name = "Book__NotTrader", abi = "Book__NotTrader()")]
+    pub struct Book__NotTrader;
+    #[doc = "Custom Error type `Book__SameToken` with signature `Book__SameToken()` and selector `[111, 143, 6, 211]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthError,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[etherror(name = "Book__SameToken", abi = "Book__SameToken()")]
+    pub struct Book__SameToken;
+    #[doc = "Custom Error type `Book__SentToBlackHole` with signature `Book__SentToBlackHole()` and selector `[151, 214, 247, 220]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthError,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[etherror(name = "Book__SentToBlackHole", abi = "Book__SentToBlackHole()")]
+    pub struct Book__SentToBlackHole;
+    #[doc = "Custom Error type `Book__TradeNotCancelable` with signature `Book__TradeNotCancelable(bytes32)` and selector `[26, 85, 202, 164]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthError,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[etherror(
+        name = "Book__TradeNotCancelable",
+        abi = "Book__TradeNotCancelable(bytes32)"
+    )]
+    pub struct Book__TradeNotCancelable {
+        pub trade_id: [u8; 32],
+    }
+    #[doc = "Custom Error type `Book__TradeNotFilled` with signature `Book__TradeNotFilled(bytes32)` and selector `[247, 12, 190, 48]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthError,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[etherror(name = "Book__TradeNotFilled", abi = "Book__TradeNotFilled(bytes32)")]
+    pub struct Book__TradeNotFilled {
+        pub trade_id: [u8; 32],
+    }
+    #[doc = "Custom Error type `Book__TradeNotInFillableState` with signature `Book__TradeNotInFillableState(bytes32)` and selector `[111, 173, 221, 22]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthError,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[etherror(
+        name = "Book__TradeNotInFillableState",
+        abi = "Book__TradeNotInFillableState(bytes32)"
+    )]
+    pub struct Book__TradeNotInFillableState {
+        pub trade_id: [u8; 32],
+    }
+    #[doc = "Custom Error type `Book__ZeroAmount` with signature `Book__ZeroAmount()` and selector `[23, 113, 62, 12]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Default,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthError,
+        ethers :: contract :: EthDisplay,
+    )]
+    #[etherror(name = "Book__ZeroAmount", abi = "Book__ZeroAmount()")]
+    pub struct Book__ZeroAmount;
+    #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
+    pub enum BookErrors {
+        Book__AmountOutTooLow(Book__AmountOutTooLow),
+        Book__DisputePeriodNotOver(Book__DisputePeriodNotOver),
+        Book__DisputePeriodOver(Book__DisputePeriodOver),
+        Book__FeePctTooHigh(Book__FeePctTooHigh),
+        Book__InvalidParamsCombination(Book__InvalidParamsCombination),
+        Book__InvalidToken(Book__InvalidToken),
+        Book__MaliciousCaller(Book__MaliciousCaller),
+        Book__NotTrader(Book__NotTrader),
+        Book__SameToken(Book__SameToken),
+        Book__SentToBlackHole(Book__SentToBlackHole),
+        Book__TradeNotCancelable(Book__TradeNotCancelable),
+        Book__TradeNotFilled(Book__TradeNotFilled),
+        Book__TradeNotInFillableState(Book__TradeNotInFillableState),
+        Book__ZeroAmount(Book__ZeroAmount),
+    }
+    impl ethers::core::abi::AbiDecode for BookErrors {
+        fn decode(
+            data: impl AsRef<[u8]>,
+        ) -> ::std::result::Result<Self, ethers::core::abi::AbiError> {
+            if let Ok(decoded) =
+                <Book__AmountOutTooLow as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(BookErrors::Book__AmountOutTooLow(decoded));
+            }
+            if let Ok(decoded) =
+                <Book__DisputePeriodNotOver as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(BookErrors::Book__DisputePeriodNotOver(decoded));
+            }
+            if let Ok(decoded) =
+                <Book__DisputePeriodOver as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(BookErrors::Book__DisputePeriodOver(decoded));
+            }
+            if let Ok(decoded) =
+                <Book__FeePctTooHigh as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(BookErrors::Book__FeePctTooHigh(decoded));
+            }
+            if let Ok(decoded) =
+                <Book__InvalidParamsCombination as ethers::core::abi::AbiDecode>::decode(
+                    data.as_ref(),
+                )
+            {
+                return Ok(BookErrors::Book__InvalidParamsCombination(decoded));
+            }
+            if let Ok(decoded) =
+                <Book__InvalidToken as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(BookErrors::Book__InvalidToken(decoded));
+            }
+            if let Ok(decoded) =
+                <Book__MaliciousCaller as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(BookErrors::Book__MaliciousCaller(decoded));
+            }
+            if let Ok(decoded) =
+                <Book__NotTrader as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(BookErrors::Book__NotTrader(decoded));
+            }
+            if let Ok(decoded) =
+                <Book__SameToken as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(BookErrors::Book__SameToken(decoded));
+            }
+            if let Ok(decoded) =
+                <Book__SentToBlackHole as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(BookErrors::Book__SentToBlackHole(decoded));
+            }
+            if let Ok(decoded) =
+                <Book__TradeNotCancelable as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(BookErrors::Book__TradeNotCancelable(decoded));
+            }
+            if let Ok(decoded) =
+                <Book__TradeNotFilled as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(BookErrors::Book__TradeNotFilled(decoded));
+            }
+            if let Ok(decoded) =
+                <Book__TradeNotInFillableState as ethers::core::abi::AbiDecode>::decode(
+                    data.as_ref(),
+                )
+            {
+                return Ok(BookErrors::Book__TradeNotInFillableState(decoded));
+            }
+            if let Ok(decoded) =
+                <Book__ZeroAmount as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(BookErrors::Book__ZeroAmount(decoded));
+            }
+            Err(ethers::core::abi::Error::InvalidData.into())
+        }
+    }
+    impl ethers::core::abi::AbiEncode for BookErrors {
+        fn encode(self) -> Vec<u8> {
+            match self {
+                BookErrors::Book__AmountOutTooLow(element) => element.encode(),
+                BookErrors::Book__DisputePeriodNotOver(element) => element.encode(),
+                BookErrors::Book__DisputePeriodOver(element) => element.encode(),
+                BookErrors::Book__FeePctTooHigh(element) => element.encode(),
+                BookErrors::Book__InvalidParamsCombination(element) => element.encode(),
+                BookErrors::Book__InvalidToken(element) => element.encode(),
+                BookErrors::Book__MaliciousCaller(element) => element.encode(),
+                BookErrors::Book__NotTrader(element) => element.encode(),
+                BookErrors::Book__SameToken(element) => element.encode(),
+                BookErrors::Book__SentToBlackHole(element) => element.encode(),
+                BookErrors::Book__TradeNotCancelable(element) => element.encode(),
+                BookErrors::Book__TradeNotFilled(element) => element.encode(),
+                BookErrors::Book__TradeNotInFillableState(element) => element.encode(),
+                BookErrors::Book__ZeroAmount(element) => element.encode(),
+            }
+        }
+    }
+    impl ::std::fmt::Display for BookErrors {
+        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+            match self {
+                BookErrors::Book__AmountOutTooLow(element) => element.fmt(f),
+                BookErrors::Book__DisputePeriodNotOver(element) => element.fmt(f),
+                BookErrors::Book__DisputePeriodOver(element) => element.fmt(f),
+                BookErrors::Book__FeePctTooHigh(element) => element.fmt(f),
+                BookErrors::Book__InvalidParamsCombination(element) => element.fmt(f),
+                BookErrors::Book__InvalidToken(element) => element.fmt(f),
+                BookErrors::Book__MaliciousCaller(element) => element.fmt(f),
+                BookErrors::Book__NotTrader(element) => element.fmt(f),
+                BookErrors::Book__SameToken(element) => element.fmt(f),
+                BookErrors::Book__SentToBlackHole(element) => element.fmt(f),
+                BookErrors::Book__TradeNotCancelable(element) => element.fmt(f),
+                BookErrors::Book__TradeNotFilled(element) => element.fmt(f),
+                BookErrors::Book__TradeNotInFillableState(element) => element.fmt(f),
+                BookErrors::Book__ZeroAmount(element) => element.fmt(f),
+            }
+        }
+    }
+    impl ::std::convert::From<Book__AmountOutTooLow> for BookErrors {
+        fn from(var: Book__AmountOutTooLow) -> Self {
+            BookErrors::Book__AmountOutTooLow(var)
+        }
+    }
+    impl ::std::convert::From<Book__DisputePeriodNotOver> for BookErrors {
+        fn from(var: Book__DisputePeriodNotOver) -> Self {
+            BookErrors::Book__DisputePeriodNotOver(var)
+        }
+    }
+    impl ::std::convert::From<Book__DisputePeriodOver> for BookErrors {
+        fn from(var: Book__DisputePeriodOver) -> Self {
+            BookErrors::Book__DisputePeriodOver(var)
+        }
+    }
+    impl ::std::convert::From<Book__FeePctTooHigh> for BookErrors {
+        fn from(var: Book__FeePctTooHigh) -> Self {
+            BookErrors::Book__FeePctTooHigh(var)
+        }
+    }
+    impl ::std::convert::From<Book__InvalidParamsCombination> for BookErrors {
+        fn from(var: Book__InvalidParamsCombination) -> Self {
+            BookErrors::Book__InvalidParamsCombination(var)
+        }
+    }
+    impl ::std::convert::From<Book__InvalidToken> for BookErrors {
+        fn from(var: Book__InvalidToken) -> Self {
+            BookErrors::Book__InvalidToken(var)
+        }
+    }
+    impl ::std::convert::From<Book__MaliciousCaller> for BookErrors {
+        fn from(var: Book__MaliciousCaller) -> Self {
+            BookErrors::Book__MaliciousCaller(var)
+        }
+    }
+    impl ::std::convert::From<Book__NotTrader> for BookErrors {
+        fn from(var: Book__NotTrader) -> Self {
+            BookErrors::Book__NotTrader(var)
+        }
+    }
+    impl ::std::convert::From<Book__SameToken> for BookErrors {
+        fn from(var: Book__SameToken) -> Self {
+            BookErrors::Book__SameToken(var)
+        }
+    }
+    impl ::std::convert::From<Book__SentToBlackHole> for BookErrors {
+        fn from(var: Book__SentToBlackHole) -> Self {
+            BookErrors::Book__SentToBlackHole(var)
+        }
+    }
+    impl ::std::convert::From<Book__TradeNotCancelable> for BookErrors {
+        fn from(var: Book__TradeNotCancelable) -> Self {
+            BookErrors::Book__TradeNotCancelable(var)
+        }
+    }
+    impl ::std::convert::From<Book__TradeNotFilled> for BookErrors {
+        fn from(var: Book__TradeNotFilled) -> Self {
+            BookErrors::Book__TradeNotFilled(var)
+        }
+    }
+    impl ::std::convert::From<Book__TradeNotInFillableState> for BookErrors {
+        fn from(var: Book__TradeNotInFillableState) -> Self {
+            BookErrors::Book__TradeNotInFillableState(var)
+        }
+    }
+    impl ::std::convert::From<Book__ZeroAmount> for BookErrors {
+        fn from(var: Book__ZeroAmount) -> Self {
+            BookErrors::Book__ZeroAmount(var)
+        }
     }
     #[derive(
         Clone,
@@ -460,12 +800,14 @@ pub mod book {
         ethers :: contract :: EthDisplay,
         Default,
     )]
-    #[ethevent(name = "OwnerUpdated", abi = "OwnerUpdated(address,address)")]
-    pub struct OwnerUpdatedFilter {
-        #[ethevent(indexed)]
-        pub user: ethers::core::types::Address,
-        #[ethevent(indexed)]
-        pub new_owner: ethers::core::types::Address,
+    #[ethevent(
+        name = "ParamsCombinationSet",
+        abi = "ParamsCombinationSet(uint256,uint256,uint256)"
+    )]
+    pub struct ParamsCombinationSetFilter {
+        pub dispute_bond_pct: ethers::core::types::U256,
+        pub trade_rebate_pct: ethers::core::types::U256,
+        pub relayer_refund_pct: ethers::core::types::U256,
     }
     #[derive(
         Clone,
@@ -479,21 +821,6 @@ pub mod book {
     #[ethevent(name = "SafeBlockThresholdSet", abi = "SafeBlockThresholdSet(uint256)")]
     pub struct SafeBlockThresholdSetFilter {
         pub new_safe_block_threshold: ethers::core::types::U256,
-    }
-    #[derive(
-        Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        Default,
-    )]
-    #[ethevent(name = "TokenWhitelisted", abi = "TokenWhitelisted(address,bool)")]
-    pub struct TokenWhitelistedFilter {
-        #[ethevent(indexed)]
-        pub token: ethers::core::types::Address,
-        pub whitelisted: bool,
     }
     #[derive(
         Clone,
@@ -633,11 +960,9 @@ pub mod book {
     }
     #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
     pub enum BookEvents {
-        FeeCombinationSetFilter(FeeCombinationSetFilter),
         FeePctSetFilter(FeePctSetFilter),
-        OwnerUpdatedFilter(OwnerUpdatedFilter),
+        ParamsCombinationSetFilter(ParamsCombinationSetFilter),
         SafeBlockThresholdSetFilter(SafeBlockThresholdSetFilter),
-        TokenWhitelistedFilter(TokenWhitelistedFilter),
         TradeCancelledFilter(TradeCancelledFilter),
         TradeDisputeSettledFilter(TradeDisputeSettledFilter),
         TradeDisputedFilter(TradeDisputedFilter),
@@ -652,20 +977,14 @@ pub mod book {
         where
             Self: Sized,
         {
-            if let Ok(decoded) = FeeCombinationSetFilter::decode_log(log) {
-                return Ok(BookEvents::FeeCombinationSetFilter(decoded));
-            }
             if let Ok(decoded) = FeePctSetFilter::decode_log(log) {
                 return Ok(BookEvents::FeePctSetFilter(decoded));
             }
-            if let Ok(decoded) = OwnerUpdatedFilter::decode_log(log) {
-                return Ok(BookEvents::OwnerUpdatedFilter(decoded));
+            if let Ok(decoded) = ParamsCombinationSetFilter::decode_log(log) {
+                return Ok(BookEvents::ParamsCombinationSetFilter(decoded));
             }
             if let Ok(decoded) = SafeBlockThresholdSetFilter::decode_log(log) {
                 return Ok(BookEvents::SafeBlockThresholdSetFilter(decoded));
-            }
-            if let Ok(decoded) = TokenWhitelistedFilter::decode_log(log) {
-                return Ok(BookEvents::TokenWhitelistedFilter(decoded));
             }
             if let Ok(decoded) = TradeCancelledFilter::decode_log(log) {
                 return Ok(BookEvents::TradeCancelledFilter(decoded));
@@ -691,11 +1010,9 @@ pub mod book {
     impl ::std::fmt::Display for BookEvents {
         fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
             match self {
-                BookEvents::FeeCombinationSetFilter(element) => element.fmt(f),
                 BookEvents::FeePctSetFilter(element) => element.fmt(f),
-                BookEvents::OwnerUpdatedFilter(element) => element.fmt(f),
+                BookEvents::ParamsCombinationSetFilter(element) => element.fmt(f),
                 BookEvents::SafeBlockThresholdSetFilter(element) => element.fmt(f),
-                BookEvents::TokenWhitelistedFilter(element) => element.fmt(f),
                 BookEvents::TradeCancelledFilter(element) => element.fmt(f),
                 BookEvents::TradeDisputeSettledFilter(element) => element.fmt(f),
                 BookEvents::TradeDisputedFilter(element) => element.fmt(f),
@@ -865,7 +1182,7 @@ pub mod book {
     )]
     #[ethcall(name = "oracle", abi = "oracle()")]
     pub struct OracleCall;
-    #[doc = "Container type for all input parameters for the `owner` function with signature `owner()` and selector `[141, 165, 203, 91]`"]
+    #[doc = "Container type for all input parameters for the `registry` function with signature `registry()` and selector `[123, 16, 57, 153]`"]
     #[derive(
         Clone,
         Debug,
@@ -875,8 +1192,8 @@ pub mod book {
         ethers :: contract :: EthDisplay,
         Default,
     )]
-    #[ethcall(name = "owner", abi = "owner()")]
-    pub struct OwnerCall;
+    #[ethcall(name = "registry", abi = "registry()")]
+    pub struct RegistryCall;
     #[doc = "Container type for all input parameters for the `relayerRefundPct` function with signature `relayerRefundPct()` and selector `[83, 144, 106, 89]`"]
     #[derive(
         Clone,
@@ -922,20 +1239,6 @@ pub mod book {
     )]
     #[ethcall(name = "safeBlockThreshold", abi = "safeBlockThreshold()")]
     pub struct SafeBlockThresholdCall;
-    #[doc = "Container type for all input parameters for the `setOwner` function with signature `setOwner(address)` and selector `[19, 175, 64, 53]`"]
-    #[derive(
-        Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        Default,
-    )]
-    #[ethcall(name = "setOwner", abi = "setOwner(address)")]
-    pub struct SetOwnerCall {
-        pub new_owner: ethers::core::types::Address,
-    }
     #[doc = "Container type for all input parameters for the `settleTrade` function with signature `settleTrade(address,address,uint256,uint256,address,uint256,address)` and selector `[230, 106, 52, 238]`"]
     #[derive(
         Clone,
@@ -983,33 +1286,6 @@ pub mod book {
     )]
     #[ethcall(name = "tradeRebatePct", abi = "tradeRebatePct()")]
     pub struct TradeRebatePctCall;
-    #[doc = "Container type for all input parameters for the `whitelistToken` function with signature `whitelistToken(address,bool)` and selector `[15, 251, 29, 139]`"]
-    #[derive(
-        Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        Default,
-    )]
-    #[ethcall(name = "whitelistToken", abi = "whitelistToken(address,bool)")]
-    pub struct WhitelistTokenCall {
-        pub token: ethers::core::types::Address,
-        pub whitelisted: bool,
-    }
-    #[doc = "Container type for all input parameters for the `whitelistedTokens` function with signature `whitelistedTokens(address)` and selector `[218, 249, 194, 16]`"]
-    #[derive(
-        Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        Default,
-    )]
-    #[ethcall(name = "whitelistedTokens", abi = "whitelistedTokens(address)")]
-    pub struct WhitelistedTokensCall(pub ethers::core::types::Address);
     #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
     pub enum BookCalls {
         CancelTrade(CancelTradeCall),
@@ -1022,16 +1298,13 @@ pub mod book {
         NumberOfTrades(NumberOfTradesCall),
         OnPriceSettled(OnPriceSettledCall),
         Oracle(OracleCall),
-        Owner(OwnerCall),
+        Registry(RegistryCall),
         RelayerRefundPct(RelayerRefundPctCall),
         RequestTrade(RequestTradeCall),
         SafeBlockThreshold(SafeBlockThresholdCall),
-        SetOwner(SetOwnerCall),
         SettleTrade(SettleTradeCall),
         Status(StatusCall),
         TradeRebatePct(TradeRebatePctCall),
-        WhitelistToken(WhitelistTokenCall),
-        WhitelistedTokens(WhitelistedTokensCall),
     }
     impl ethers::core::abi::AbiDecode for BookCalls {
         fn decode(
@@ -1085,9 +1358,10 @@ pub mod book {
             {
                 return Ok(BookCalls::Oracle(decoded));
             }
-            if let Ok(decoded) = <OwnerCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            if let Ok(decoded) =
+                <RegistryCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
             {
-                return Ok(BookCalls::Owner(decoded));
+                return Ok(BookCalls::Registry(decoded));
             }
             if let Ok(decoded) =
                 <RelayerRefundPctCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
@@ -1105,11 +1379,6 @@ pub mod book {
                 return Ok(BookCalls::SafeBlockThreshold(decoded));
             }
             if let Ok(decoded) =
-                <SetOwnerCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(BookCalls::SetOwner(decoded));
-            }
-            if let Ok(decoded) =
                 <SettleTradeCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
             {
                 return Ok(BookCalls::SettleTrade(decoded));
@@ -1122,16 +1391,6 @@ pub mod book {
                 <TradeRebatePctCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
             {
                 return Ok(BookCalls::TradeRebatePct(decoded));
-            }
-            if let Ok(decoded) =
-                <WhitelistTokenCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(BookCalls::WhitelistToken(decoded));
-            }
-            if let Ok(decoded) =
-                <WhitelistedTokensCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(BookCalls::WhitelistedTokens(decoded));
             }
             Err(ethers::core::abi::Error::InvalidData.into())
         }
@@ -1149,16 +1408,13 @@ pub mod book {
                 BookCalls::NumberOfTrades(element) => element.encode(),
                 BookCalls::OnPriceSettled(element) => element.encode(),
                 BookCalls::Oracle(element) => element.encode(),
-                BookCalls::Owner(element) => element.encode(),
+                BookCalls::Registry(element) => element.encode(),
                 BookCalls::RelayerRefundPct(element) => element.encode(),
                 BookCalls::RequestTrade(element) => element.encode(),
                 BookCalls::SafeBlockThreshold(element) => element.encode(),
-                BookCalls::SetOwner(element) => element.encode(),
                 BookCalls::SettleTrade(element) => element.encode(),
                 BookCalls::Status(element) => element.encode(),
                 BookCalls::TradeRebatePct(element) => element.encode(),
-                BookCalls::WhitelistToken(element) => element.encode(),
-                BookCalls::WhitelistedTokens(element) => element.encode(),
             }
         }
     }
@@ -1175,16 +1431,13 @@ pub mod book {
                 BookCalls::NumberOfTrades(element) => element.fmt(f),
                 BookCalls::OnPriceSettled(element) => element.fmt(f),
                 BookCalls::Oracle(element) => element.fmt(f),
-                BookCalls::Owner(element) => element.fmt(f),
+                BookCalls::Registry(element) => element.fmt(f),
                 BookCalls::RelayerRefundPct(element) => element.fmt(f),
                 BookCalls::RequestTrade(element) => element.fmt(f),
                 BookCalls::SafeBlockThreshold(element) => element.fmt(f),
-                BookCalls::SetOwner(element) => element.fmt(f),
                 BookCalls::SettleTrade(element) => element.fmt(f),
                 BookCalls::Status(element) => element.fmt(f),
                 BookCalls::TradeRebatePct(element) => element.fmt(f),
-                BookCalls::WhitelistToken(element) => element.fmt(f),
-                BookCalls::WhitelistedTokens(element) => element.fmt(f),
             }
         }
     }
@@ -1238,9 +1491,9 @@ pub mod book {
             BookCalls::Oracle(var)
         }
     }
-    impl ::std::convert::From<OwnerCall> for BookCalls {
-        fn from(var: OwnerCall) -> Self {
-            BookCalls::Owner(var)
+    impl ::std::convert::From<RegistryCall> for BookCalls {
+        fn from(var: RegistryCall) -> Self {
+            BookCalls::Registry(var)
         }
     }
     impl ::std::convert::From<RelayerRefundPctCall> for BookCalls {
@@ -1258,11 +1511,6 @@ pub mod book {
             BookCalls::SafeBlockThreshold(var)
         }
     }
-    impl ::std::convert::From<SetOwnerCall> for BookCalls {
-        fn from(var: SetOwnerCall) -> Self {
-            BookCalls::SetOwner(var)
-        }
-    }
     impl ::std::convert::From<SettleTradeCall> for BookCalls {
         fn from(var: SettleTradeCall) -> Self {
             BookCalls::SettleTrade(var)
@@ -1276,16 +1524,6 @@ pub mod book {
     impl ::std::convert::From<TradeRebatePctCall> for BookCalls {
         fn from(var: TradeRebatePctCall) -> Self {
             BookCalls::TradeRebatePct(var)
-        }
-    }
-    impl ::std::convert::From<WhitelistTokenCall> for BookCalls {
-        fn from(var: WhitelistTokenCall) -> Self {
-            BookCalls::WhitelistToken(var)
-        }
-    }
-    impl ::std::convert::From<WhitelistedTokensCall> for BookCalls {
-        fn from(var: WhitelistedTokensCall) -> Self {
-            BookCalls::WhitelistedTokens(var)
         }
     }
     #[doc = "Container type for all return fields from the `disputeBondPct` function with signature `disputeBondPct()` and selector `[57, 31, 228, 226]`"]
@@ -1354,7 +1592,7 @@ pub mod book {
         Default,
     )]
     pub struct OracleReturn(pub ethers::core::types::Address);
-    #[doc = "Container type for all return fields from the `owner` function with signature `owner()` and selector `[141, 165, 203, 91]`"]
+    #[doc = "Container type for all return fields from the `registry` function with signature `registry()` and selector `[123, 16, 57, 153]`"]
     #[derive(
         Clone,
         Debug,
@@ -1364,7 +1602,7 @@ pub mod book {
         ethers :: contract :: EthAbiCodec,
         Default,
     )]
-    pub struct OwnerReturn(pub ethers::core::types::Address);
+    pub struct RegistryReturn(pub ethers::core::types::Address);
     #[doc = "Container type for all return fields from the `relayerRefundPct` function with signature `relayerRefundPct()` and selector `[83, 144, 106, 89]`"]
     #[derive(
         Clone,
@@ -1409,15 +1647,4 @@ pub mod book {
         Default,
     )]
     pub struct TradeRebatePctReturn(pub ethers::core::types::U256);
-    #[doc = "Container type for all return fields from the `whitelistedTokens` function with signature `whitelistedTokens(address)` and selector `[218, 249, 194, 16]`"]
-    #[derive(
-        Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        Default,
-    )]
-    pub struct WhitelistedTokensReturn(pub bool);
 }

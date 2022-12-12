@@ -35,7 +35,7 @@ const _abi = [
             type: "address",
           },
           {
-            internalType: "contract ERC20",
+            internalType: "contract IERC20",
             name: "currency",
             type: "address",
           },
