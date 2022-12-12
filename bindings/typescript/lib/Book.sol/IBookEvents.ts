@@ -23,10 +23,9 @@ export interface IBookEventsInterface extends utils.Interface {
   functions: {};
 
   events: {
-    "FeeCombinationSet(uint256,uint256,uint256)": EventFragment;
     "FeePctSet(uint256)": EventFragment;
+    "ParamsCombinationSet(uint256,uint256,uint256)": EventFragment;
     "SafeBlockThresholdSet(uint256)": EventFragment;
-    "TokenWhitelisted(address,bool)": EventFragment;
     "TradeCancelled(uint256,bytes32,address)": EventFragment;
     "TradeDisputeSettled(address,uint256,bytes32,bool,address)": EventFragment;
     "TradeDisputed(address,uint256,bytes32,uint256,address)": EventFragment;
@@ -35,10 +34,9 @@ export interface IBookEventsInterface extends utils.Interface {
     "TradeSettled(address,uint256,uint256,address)": EventFragment;
   };
 
-  getEvent(nameOrSignatureOrTopic: "FeeCombinationSet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "FeePctSet"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ParamsCombinationSet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SafeBlockThresholdSet"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "TokenWhitelisted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TradeCancelled"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TradeDisputeSettled"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TradeDisputed"): EventFragment;
@@ -47,25 +45,25 @@ export interface IBookEventsInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "TradeSettled"): EventFragment;
 }
 
-export interface FeeCombinationSetEventObject {
-  disputeBondPct: BigNumber;
-  tradeRebatePct: BigNumber;
-  relayerRefundPct: BigNumber;
-}
-export type FeeCombinationSetEvent = TypedEvent<
-  [BigNumber, BigNumber, BigNumber],
-  FeeCombinationSetEventObject
->;
-
-export type FeeCombinationSetEventFilter =
-  TypedEventFilter<FeeCombinationSetEvent>;
-
 export interface FeePctSetEventObject {
   feePct: BigNumber;
 }
 export type FeePctSetEvent = TypedEvent<[BigNumber], FeePctSetEventObject>;
 
 export type FeePctSetEventFilter = TypedEventFilter<FeePctSetEvent>;
+
+export interface ParamsCombinationSetEventObject {
+  disputeBondPct: BigNumber;
+  tradeRebatePct: BigNumber;
+  relayerRefundPct: BigNumber;
+}
+export type ParamsCombinationSetEvent = TypedEvent<
+  [BigNumber, BigNumber, BigNumber],
+  ParamsCombinationSetEventObject
+>;
+
+export type ParamsCombinationSetEventFilter =
+  TypedEventFilter<ParamsCombinationSetEvent>;
 
 export interface SafeBlockThresholdSetEventObject {
   newSafeBlockThreshold: BigNumber;
@@ -77,18 +75,6 @@ export type SafeBlockThresholdSetEvent = TypedEvent<
 
 export type SafeBlockThresholdSetEventFilter =
   TypedEventFilter<SafeBlockThresholdSetEvent>;
-
-export interface TokenWhitelistedEventObject {
-  token: string;
-  whitelisted: boolean;
-}
-export type TokenWhitelistedEvent = TypedEvent<
-  [string, boolean],
-  TokenWhitelistedEventObject
->;
-
-export type TokenWhitelistedEventFilter =
-  TypedEventFilter<TokenWhitelistedEvent>;
 
 export interface TradeCancelledEventObject {
   tradeIndex: BigNumber;
@@ -204,19 +190,19 @@ export interface IBookEvents extends BaseContract {
   callStatic: {};
 
   filters: {
-    "FeeCombinationSet(uint256,uint256,uint256)"(
-      disputeBondPct?: null,
-      tradeRebatePct?: null,
-      relayerRefundPct?: null
-    ): FeeCombinationSetEventFilter;
-    FeeCombinationSet(
-      disputeBondPct?: null,
-      tradeRebatePct?: null,
-      relayerRefundPct?: null
-    ): FeeCombinationSetEventFilter;
-
     "FeePctSet(uint256)"(feePct?: null): FeePctSetEventFilter;
     FeePctSet(feePct?: null): FeePctSetEventFilter;
+
+    "ParamsCombinationSet(uint256,uint256,uint256)"(
+      disputeBondPct?: null,
+      tradeRebatePct?: null,
+      relayerRefundPct?: null
+    ): ParamsCombinationSetEventFilter;
+    ParamsCombinationSet(
+      disputeBondPct?: null,
+      tradeRebatePct?: null,
+      relayerRefundPct?: null
+    ): ParamsCombinationSetEventFilter;
 
     "SafeBlockThresholdSet(uint256)"(
       newSafeBlockThreshold?: null
@@ -224,15 +210,6 @@ export interface IBookEvents extends BaseContract {
     SafeBlockThresholdSet(
       newSafeBlockThreshold?: null
     ): SafeBlockThresholdSetEventFilter;
-
-    "TokenWhitelisted(address,bool)"(
-      token?: PromiseOrValue<string> | null,
-      whitelisted?: null
-    ): TokenWhitelistedEventFilter;
-    TokenWhitelisted(
-      token?: PromiseOrValue<string> | null,
-      whitelisted?: null
-    ): TokenWhitelistedEventFilter;
 
     "TradeCancelled(uint256,bytes32,address)"(
       tradeIndex?: PromiseOrValue<BigNumberish> | null,

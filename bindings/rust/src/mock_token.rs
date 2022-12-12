@@ -16,7 +16,7 @@ pub mod mock_token {
     use ethers::providers::Middleware;
     #[doc = "MockToken was auto-generated with ethers-rs Abigen. More information at: https://github.com/gakonst/ethers-rs"]
     use std::sync::Arc;
-    # [rustfmt :: skip] const __ABI : & str = "[{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"uint8\",\"name\":\"decimals\",\"type\":\"uint8\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"Approval\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"Transfer\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"DOMAIN_SEPARATOR\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"allowance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"approve\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"balanceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"decimals\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"name\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"nonces\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"deadline\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\",\"components\":[]},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"permit\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"symbol\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"totalSupply\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"transfer\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"transferFrom\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]}]" ;
+    # [rustfmt :: skip] const __ABI : & str = "[{\"inputs\":[{\"internalType\":\"string\",\"name\":\"_name\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"_symbol\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"uint8\",\"name\":\"_decimals\",\"type\":\"uint8\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"Approval\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"Transfer\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"allowance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"approve\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"balanceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"decimals\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"subtractedValue\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"decreaseAllowance\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"addedValue\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"increaseAllowance\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"name\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"symbol\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"totalSupply\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"transfer\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"transferFrom\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]}]" ;
     #[doc = r" The parsed JSON-ABI of the contract."]
     pub static MOCKTOKEN_ABI: ethers::contract::Lazy<ethers::core::abi::Abi> =
         ethers::contract::Lazy::new(|| {
@@ -25,7 +25,7 @@ pub mod mock_token {
     #[doc = r" Bytecode of the #name contract"]
     pub static MOCKTOKEN_BYTECODE: ethers::contract::Lazy<ethers::core::types::Bytes> =
         ethers::contract::Lazy::new(|| {
-            "0x60e06040523480156200001157600080fd5b5060405162000ee138038062000ee18339810160408190526200003491620001db565b8282826000620000458482620002ef565b506001620000548382620002ef565b5060ff81166080524660a0526200006a6200007a565b60c0525062000439945050505050565b60007f8b73c3c69bb8fe3d512ecc4cf759cc79239f7b179b0ffacaa9a75d522b39400f6000604051620000ae9190620003bb565b6040805191829003822060208301939093528101919091527fc89efdaa54c0f20c7adf612882df0950f5a951637e0307cdcb4c672f298b8bc660608201524660808201523060a082015260c00160405160208183030381529060405280519060200120905090565b634e487b7160e01b600052604160045260246000fd5b600082601f8301126200013e57600080fd5b81516001600160401b03808211156200015b576200015b62000116565b604051601f8301601f19908116603f0116810190828211818310171562000186576200018662000116565b81604052838152602092508683858801011115620001a357600080fd5b600091505b83821015620001c75785820183015181830184015290820190620001a8565b600093810190920192909252949350505050565b600080600060608486031215620001f157600080fd5b83516001600160401b03808211156200020957600080fd5b62000217878388016200012c565b945060208601519150808211156200022e57600080fd5b506200023d868287016200012c565b925050604084015160ff811681146200025557600080fd5b809150509250925092565b600181811c908216806200027557607f821691505b6020821081036200029657634e487b7160e01b600052602260045260246000fd5b50919050565b601f821115620002ea57600081815260208120601f850160051c81016020861015620002c55750805b601f850160051c820191505b81811015620002e657828155600101620002d1565b5050505b505050565b81516001600160401b038111156200030b576200030b62000116565b62000323816200031c845462000260565b846200029c565b602080601f8311600181146200035b5760008415620003425750858301515b600019600386901b1c1916600185901b178555620002e6565b600085815260208120601f198616915b828110156200038c578886015182559484019460019091019084016200036b565b5085821015620003ab5787850151600019600388901b60f8161c191681555b5050505050600190811b01905550565b6000808354620003cb8162000260565b60018281168015620003e65760018114620003fc576200042d565b60ff19841687528215158302870194506200042d565b8760005260208060002060005b85811015620004245781548a82015290840190820162000409565b50505082870194505b50929695505050505050565b60805160a05160c051610a78620004696000396000610426015260006103f1015260006101290152610a786000f3fe608060405234801561001057600080fd5b50600436106100b45760003560e01c806370a082311161007157806370a08231146101655780637ecebe001461018557806395d89b41146101a5578063a9059cbb146101ad578063d505accf146101c0578063dd62ed3e146101d557600080fd5b806306fdde03146100b9578063095ea7b3146100d757806318160ddd146100fa57806323b872dd14610111578063313ce567146101245780633644e5151461015d575b600080fd5b6100c1610200565b6040516100ce91906107b0565b60405180910390f35b6100ea6100e536600461081a565b61028e565b60405190151581526020016100ce565b61010360025481565b6040519081526020016100ce565b6100ea61011f366004610844565b6102fb565b61014b7f000000000000000000000000000000000000000000000000000000000000000081565b60405160ff90911681526020016100ce565b6101036103ed565b610103610173366004610880565b60036020526000908152604090205481565b610103610193366004610880565b60056020526000908152604090205481565b6100c1610448565b6100ea6101bb36600461081a565b610455565b6101d36101ce3660046108a2565b6104cd565b005b6101036101e3366004610915565b600460209081526000928352604080842090915290825290205481565b6000805461020d90610948565b80601f016020809104026020016040519081016040528092919081815260200182805461023990610948565b80156102865780601f1061025b57610100808354040283529160200191610286565b820191906000526020600020905b81548152906001019060200180831161026957829003601f168201915b505050505081565b3360008181526004602090815260408083206001600160a01b038716808552925280832085905551919290917f8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925906102e99086815260200190565b60405180910390a35060015b92915050565b6001600160a01b03831660009081526004602090815260408083203384529091528120546000198114610357576103328382610982565b6001600160a01b03861660009081526004602090815260408083203384529091529020555b6001600160a01b0385166000908152600360205260408120805485929061037f908490610982565b90915550506001600160a01b03808516600081815260036020526040908190208054870190555190918716907fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef906103da9087815260200190565b60405180910390a3506001949350505050565b60007f000000000000000000000000000000000000000000000000000000000000000046146104235761041e610716565b905090565b507f000000000000000000000000000000000000000000000000000000000000000090565b6001805461020d90610948565b33600090815260036020526040812080548391908390610476908490610982565b90915550506001600160a01b038316600081815260036020526040908190208054850190555133907fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef906102e99086815260200190565b428410156105225760405162461bcd60e51b815260206004820152601760248201527f5045524d49545f444541444c494e455f4558504952454400000000000000000060448201526064015b60405180910390fd5b6000600161052e6103ed565b6001600160a01b038a811660008181526005602090815260409182902080546001810190915582517f6e71edae12b1b97f4d1f60370fef10105fa2faae0126114a169c64845d6126c98184015280840194909452938d166060840152608083018c905260a083019390935260c08083018b90528151808403909101815260e08301909152805192019190912061190160f01b6101008301526101028201929092526101228101919091526101420160408051601f198184030181528282528051602091820120600084529083018083525260ff871690820152606081018590526080810184905260a0016020604051602081039080840390855afa15801561063a573d6000803e3d6000fd5b5050604051601f1901519150506001600160a01b038116158015906106705750876001600160a01b0316816001600160a01b0316145b6106ad5760405162461bcd60e51b815260206004820152600e60248201526d24a72b20a624a22fa9a4a3a722a960911b6044820152606401610519565b6001600160a01b0390811660009081526004602090815260408083208a8516808552908352928190208990555188815291928a16917f8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925910160405180910390a350505050505050565b60007f8b73c3c69bb8fe3d512ecc4cf759cc79239f7b179b0ffacaa9a75d522b39400f600060405161074891906109a3565b6040805191829003822060208301939093528101919091527fc89efdaa54c0f20c7adf612882df0950f5a951637e0307cdcb4c672f298b8bc660608201524660808201523060a082015260c00160405160208183030381529060405280519060200120905090565b600060208083528351808285015260005b818110156107dd578581018301518582016040015282016107c1565b506000604082860101526040601f19601f8301168501019250505092915050565b80356001600160a01b038116811461081557600080fd5b919050565b6000806040838503121561082d57600080fd5b610836836107fe565b946020939093013593505050565b60008060006060848603121561085957600080fd5b610862846107fe565b9250610870602085016107fe565b9150604084013590509250925092565b60006020828403121561089257600080fd5b61089b826107fe565b9392505050565b600080600080600080600060e0888a0312156108bd57600080fd5b6108c6886107fe565b96506108d4602089016107fe565b95506040880135945060608801359350608088013560ff811681146108f857600080fd5b9699959850939692959460a0840135945060c09093013592915050565b6000806040838503121561092857600080fd5b610931836107fe565b915061093f602084016107fe565b90509250929050565b600181811c9082168061095c57607f821691505b60208210810361097c57634e487b7160e01b600052602260045260246000fd5b50919050565b818103818111156102f557634e487b7160e01b600052601160045260246000fd5b600080835481600182811c9150808316806109bf57607f831692505b602080841082036109de57634e487b7160e01b86526022600452602486fd5b8180156109f25760018114610a0757610a34565b60ff1986168952841515850289019650610a34565b60008a81526020902060005b86811015610a2c5781548b820152908501908301610a13565b505084890196505b50949897505050505050505056fea26469706673582212209d10efaed3d30c62b8ef33d2fecc8b25fe3862fec753bc6182aa77a51a6cb15864736f6c63430008110033" . parse () . expect ("invalid bytecode")
+            "0x60806040523480156200001157600080fd5b5060405162000b8138038062000b81833981016040819052620000349162000139565b828260036200004483826200024d565b5060046200005382826200024d565b50506005805460ff191660ff93909316929092179091555062000319915050565b634e487b7160e01b600052604160045260246000fd5b600082601f8301126200009c57600080fd5b81516001600160401b0380821115620000b957620000b962000074565b604051601f8301601f19908116603f01168101908282118183101715620000e457620000e462000074565b816040528381526020925086838588010111156200010157600080fd5b600091505b8382101562000125578582018301518183018401529082019062000106565b600093810190920192909252949350505050565b6000806000606084860312156200014f57600080fd5b83516001600160401b03808211156200016757600080fd5b62000175878388016200008a565b945060208601519150808211156200018c57600080fd5b506200019b868287016200008a565b925050604084015160ff81168114620001b357600080fd5b809150509250925092565b600181811c90821680620001d357607f821691505b602082108103620001f457634e487b7160e01b600052602260045260246000fd5b50919050565b601f8211156200024857600081815260208120601f850160051c81016020861015620002235750805b601f850160051c820191505b8181101562000244578281556001016200022f565b5050505b505050565b81516001600160401b0381111562000269576200026962000074565b62000281816200027a8454620001be565b84620001fa565b602080601f831160018114620002b95760008415620002a05750858301515b600019600386901b1c1916600185901b17855562000244565b600085815260208120601f198616915b82811015620002ea57888601518255948401946001909101908401620002c9565b5085821015620003095787850151600019600388901b60f8161c191681555b5050505050600190811b01905550565b61085880620003296000396000f3fe608060405234801561001057600080fd5b50600436106100a95760003560e01c80633950935111610071578063395093511461012957806370a082311461013c57806395d89b4114610165578063a457c2d71461016d578063a9059cbb14610180578063dd62ed3e1461019357600080fd5b806306fdde03146100ae578063095ea7b3146100cc57806318160ddd146100ef57806323b872dd14610101578063313ce56714610114575b600080fd5b6100b66101a6565b6040516100c391906106a2565b60405180910390f35b6100df6100da36600461070c565b610238565b60405190151581526020016100c3565b6002545b6040519081526020016100c3565b6100df61010f366004610736565b610252565b60055460405160ff90911681526020016100c3565b6100df61013736600461070c565b610276565b6100f361014a366004610772565b6001600160a01b031660009081526020819052604090205490565b6100b6610298565b6100df61017b36600461070c565b6102a7565b6100df61018e36600461070c565b610327565b6100f36101a1366004610794565b610335565b6060600380546101b5906107c7565b80601f01602080910402602001604051908101604052809291908181526020018280546101e1906107c7565b801561022e5780601f106102035761010080835404028352916020019161022e565b820191906000526020600020905b81548152906001019060200180831161021157829003601f168201915b5050505050905090565b600033610246818585610360565b60019150505b92915050565b600033610260858285610484565b61026b8585856104fe565b506001949350505050565b6000336102468185856102898383610335565b6102939190610801565b610360565b6060600480546101b5906107c7565b600033816102b58286610335565b90508381101561031a5760405162461bcd60e51b815260206004820152602560248201527f45524332303a2064656372656173656420616c6c6f77616e63652062656c6f77604482015264207a65726f60d81b60648201526084015b60405180910390fd5b61026b8286868403610360565b6000336102468185856104fe565b6001600160a01b03918216600090815260016020908152604080832093909416825291909152205490565b6001600160a01b0383166103c25760405162461bcd60e51b8152602060048201526024808201527f45524332303a20617070726f76652066726f6d20746865207a65726f206164646044820152637265737360e01b6064820152608401610311565b6001600160a01b0382166104235760405162461bcd60e51b815260206004820152602260248201527f45524332303a20617070726f766520746f20746865207a65726f206164647265604482015261737360f01b6064820152608401610311565b6001600160a01b0383811660008181526001602090815260408083209487168084529482529182902085905590518481527f8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925910160405180910390a3505050565b60006104908484610335565b905060001981146104f857818110156104eb5760405162461bcd60e51b815260206004820152601d60248201527f45524332303a20696e73756666696369656e7420616c6c6f77616e63650000006044820152606401610311565b6104f88484848403610360565b50505050565b6001600160a01b0383166105625760405162461bcd60e51b815260206004820152602560248201527f45524332303a207472616e736665722066726f6d20746865207a65726f206164604482015264647265737360d81b6064820152608401610311565b6001600160a01b0382166105c45760405162461bcd60e51b815260206004820152602360248201527f45524332303a207472616e7366657220746f20746865207a65726f206164647260448201526265737360e81b6064820152608401610311565b6001600160a01b0383166000908152602081905260409020548181101561063c5760405162461bcd60e51b815260206004820152602660248201527f45524332303a207472616e7366657220616d6f756e7420657863656564732062604482015265616c616e636560d01b6064820152608401610311565b6001600160a01b03848116600081815260208181526040808320878703905593871680835291849020805487019055925185815290927fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef910160405180910390a36104f8565b600060208083528351808285015260005b818110156106cf578581018301518582016040015282016106b3565b506000604082860101526040601f19601f8301168501019250505092915050565b80356001600160a01b038116811461070757600080fd5b919050565b6000806040838503121561071f57600080fd5b610728836106f0565b946020939093013593505050565b60008060006060848603121561074b57600080fd5b610754846106f0565b9250610762602085016106f0565b9150604084013590509250925092565b60006020828403121561078457600080fd5b61078d826106f0565b9392505050565b600080604083850312156107a757600080fd5b6107b0836106f0565b91506107be602084016106f0565b90509250929050565b600181811c908216806107db57607f821691505b6020821081036107fb57634e487b7160e01b600052602260045260246000fd5b50919050565b8082018082111561024c57634e487b7160e01b600052601160045260246000fdfea26469706673582212207f7e0c4487d1286b597b6591ebbe851f7c71c097323147ebff2391a65f1c373f64736f6c63430008110033" . parse () . expect ("invalid bytecode")
         });
     pub struct MockToken<M>(ethers::contract::Contract<M>);
     impl<M> Clone for MockToken<M> {
@@ -95,20 +95,14 @@ pub mod mock_token {
             let deployer = ethers::contract::ContractDeployer::new(deployer);
             Ok(deployer)
         }
-        #[doc = "Calls the contract's `DOMAIN_SEPARATOR` (0x3644e515) function"]
-        pub fn domain_separator(&self) -> ethers::contract::builders::ContractCall<M, [u8; 32]> {
-            self.0
-                .method_hash([54, 68, 229, 21], ())
-                .expect("method not found (this should never happen)")
-        }
         #[doc = "Calls the contract's `allowance` (0xdd62ed3e) function"]
         pub fn allowance(
             &self,
-            p0: ethers::core::types::Address,
-            p1: ethers::core::types::Address,
+            owner: ethers::core::types::Address,
+            spender: ethers::core::types::Address,
         ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::U256> {
             self.0
-                .method_hash([221, 98, 237, 62], (p0, p1))
+                .method_hash([221, 98, 237, 62], (owner, spender))
                 .expect("method not found (this should never happen)")
         }
         #[doc = "Calls the contract's `approve` (0x095ea7b3) function"]
@@ -124,10 +118,10 @@ pub mod mock_token {
         #[doc = "Calls the contract's `balanceOf` (0x70a08231) function"]
         pub fn balance_of(
             &self,
-            p0: ethers::core::types::Address,
+            account: ethers::core::types::Address,
         ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::U256> {
             self.0
-                .method_hash([112, 160, 130, 49], p0)
+                .method_hash([112, 160, 130, 49], account)
                 .expect("method not found (this should never happen)")
         }
         #[doc = "Calls the contract's `decimals` (0x313ce567) function"]
@@ -136,37 +130,30 @@ pub mod mock_token {
                 .method_hash([49, 60, 229, 103], ())
                 .expect("method not found (this should never happen)")
         }
+        #[doc = "Calls the contract's `decreaseAllowance` (0xa457c2d7) function"]
+        pub fn decrease_allowance(
+            &self,
+            spender: ethers::core::types::Address,
+            subtracted_value: ethers::core::types::U256,
+        ) -> ethers::contract::builders::ContractCall<M, bool> {
+            self.0
+                .method_hash([164, 87, 194, 215], (spender, subtracted_value))
+                .expect("method not found (this should never happen)")
+        }
+        #[doc = "Calls the contract's `increaseAllowance` (0x39509351) function"]
+        pub fn increase_allowance(
+            &self,
+            spender: ethers::core::types::Address,
+            added_value: ethers::core::types::U256,
+        ) -> ethers::contract::builders::ContractCall<M, bool> {
+            self.0
+                .method_hash([57, 80, 147, 81], (spender, added_value))
+                .expect("method not found (this should never happen)")
+        }
         #[doc = "Calls the contract's `name` (0x06fdde03) function"]
         pub fn name(&self) -> ethers::contract::builders::ContractCall<M, String> {
             self.0
                 .method_hash([6, 253, 222, 3], ())
-                .expect("method not found (this should never happen)")
-        }
-        #[doc = "Calls the contract's `nonces` (0x7ecebe00) function"]
-        pub fn nonces(
-            &self,
-            p0: ethers::core::types::Address,
-        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::U256> {
-            self.0
-                .method_hash([126, 206, 190, 0], p0)
-                .expect("method not found (this should never happen)")
-        }
-        #[doc = "Calls the contract's `permit` (0xd505accf) function"]
-        pub fn permit(
-            &self,
-            owner: ethers::core::types::Address,
-            spender: ethers::core::types::Address,
-            value: ethers::core::types::U256,
-            deadline: ethers::core::types::U256,
-            v: u8,
-            r: [u8; 32],
-            s: [u8; 32],
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
-            self.0
-                .method_hash(
-                    [213, 5, 172, 207],
-                    (owner, spender, value, deadline, v, r, s),
-                )
                 .expect("method not found (this should never happen)")
         }
         #[doc = "Calls the contract's `symbol` (0x95d89b41) function"]
@@ -237,7 +224,7 @@ pub mod mock_token {
         pub owner: ethers::core::types::Address,
         #[ethevent(indexed)]
         pub spender: ethers::core::types::Address,
-        pub amount: ethers::core::types::U256,
+        pub value: ethers::core::types::U256,
     }
     #[derive(
         Clone,
@@ -254,7 +241,7 @@ pub mod mock_token {
         pub from: ethers::core::types::Address,
         #[ethevent(indexed)]
         pub to: ethers::core::types::Address,
-        pub amount: ethers::core::types::U256,
+        pub value: ethers::core::types::U256,
     }
     #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
     pub enum MockTokenEvents {
@@ -285,18 +272,6 @@ pub mod mock_token {
             }
         }
     }
-    #[doc = "Container type for all input parameters for the `DOMAIN_SEPARATOR` function with signature `DOMAIN_SEPARATOR()` and selector `[54, 68, 229, 21]`"]
-    #[derive(
-        Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        Default,
-    )]
-    #[ethcall(name = "DOMAIN_SEPARATOR", abi = "DOMAIN_SEPARATOR()")]
-    pub struct DomainSeparatorCall;
     #[doc = "Container type for all input parameters for the `allowance` function with signature `allowance(address,address)` and selector `[221, 98, 237, 62]`"]
     #[derive(
         Clone,
@@ -308,10 +283,10 @@ pub mod mock_token {
         Default,
     )]
     #[ethcall(name = "allowance", abi = "allowance(address,address)")]
-    pub struct AllowanceCall(
-        pub ethers::core::types::Address,
-        pub ethers::core::types::Address,
-    );
+    pub struct AllowanceCall {
+        pub owner: ethers::core::types::Address,
+        pub spender: ethers::core::types::Address,
+    }
     #[doc = "Container type for all input parameters for the `approve` function with signature `approve(address,uint256)` and selector `[9, 94, 167, 179]`"]
     #[derive(
         Clone,
@@ -338,7 +313,9 @@ pub mod mock_token {
         Default,
     )]
     #[ethcall(name = "balanceOf", abi = "balanceOf(address)")]
-    pub struct BalanceOfCall(pub ethers::core::types::Address);
+    pub struct BalanceOfCall {
+        pub account: ethers::core::types::Address,
+    }
     #[doc = "Container type for all input parameters for the `decimals` function with signature `decimals()` and selector `[49, 60, 229, 103]`"]
     #[derive(
         Clone,
@@ -351,6 +328,36 @@ pub mod mock_token {
     )]
     #[ethcall(name = "decimals", abi = "decimals()")]
     pub struct DecimalsCall;
+    #[doc = "Container type for all input parameters for the `decreaseAllowance` function with signature `decreaseAllowance(address,uint256)` and selector `[164, 87, 194, 215]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+        Default,
+    )]
+    #[ethcall(name = "decreaseAllowance", abi = "decreaseAllowance(address,uint256)")]
+    pub struct DecreaseAllowanceCall {
+        pub spender: ethers::core::types::Address,
+        pub subtracted_value: ethers::core::types::U256,
+    }
+    #[doc = "Container type for all input parameters for the `increaseAllowance` function with signature `increaseAllowance(address,uint256)` and selector `[57, 80, 147, 81]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+        Default,
+    )]
+    #[ethcall(name = "increaseAllowance", abi = "increaseAllowance(address,uint256)")]
+    pub struct IncreaseAllowanceCall {
+        pub spender: ethers::core::types::Address,
+        pub added_value: ethers::core::types::U256,
+    }
     #[doc = "Container type for all input parameters for the `name` function with signature `name()` and selector `[6, 253, 222, 3]`"]
     #[derive(
         Clone,
@@ -363,41 +370,6 @@ pub mod mock_token {
     )]
     #[ethcall(name = "name", abi = "name()")]
     pub struct NameCall;
-    #[doc = "Container type for all input parameters for the `nonces` function with signature `nonces(address)` and selector `[126, 206, 190, 0]`"]
-    #[derive(
-        Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        Default,
-    )]
-    #[ethcall(name = "nonces", abi = "nonces(address)")]
-    pub struct NoncesCall(pub ethers::core::types::Address);
-    #[doc = "Container type for all input parameters for the `permit` function with signature `permit(address,address,uint256,uint256,uint8,bytes32,bytes32)` and selector `[213, 5, 172, 207]`"]
-    #[derive(
-        Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        Default,
-    )]
-    #[ethcall(
-        name = "permit",
-        abi = "permit(address,address,uint256,uint256,uint8,bytes32,bytes32)"
-    )]
-    pub struct PermitCall {
-        pub owner: ethers::core::types::Address,
-        pub spender: ethers::core::types::Address,
-        pub value: ethers::core::types::U256,
-        pub deadline: ethers::core::types::U256,
-        pub v: u8,
-        pub r: [u8; 32],
-        pub s: [u8; 32],
-    }
     #[doc = "Container type for all input parameters for the `symbol` function with signature `symbol()` and selector `[149, 216, 155, 65]`"]
     #[derive(
         Clone,
@@ -455,14 +427,13 @@ pub mod mock_token {
     }
     #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
     pub enum MockTokenCalls {
-        DomainSeparator(DomainSeparatorCall),
         Allowance(AllowanceCall),
         Approve(ApproveCall),
         BalanceOf(BalanceOfCall),
         Decimals(DecimalsCall),
+        DecreaseAllowance(DecreaseAllowanceCall),
+        IncreaseAllowance(IncreaseAllowanceCall),
         Name(NameCall),
-        Nonces(NoncesCall),
-        Permit(PermitCall),
         Symbol(SymbolCall),
         TotalSupply(TotalSupplyCall),
         Transfer(TransferCall),
@@ -472,11 +443,6 @@ pub mod mock_token {
         fn decode(
             data: impl AsRef<[u8]>,
         ) -> ::std::result::Result<Self, ethers::core::abi::AbiError> {
-            if let Ok(decoded) =
-                <DomainSeparatorCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MockTokenCalls::DomainSeparator(decoded));
-            }
             if let Ok(decoded) =
                 <AllowanceCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
             {
@@ -497,16 +463,18 @@ pub mod mock_token {
             {
                 return Ok(MockTokenCalls::Decimals(decoded));
             }
+            if let Ok(decoded) =
+                <DecreaseAllowanceCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(MockTokenCalls::DecreaseAllowance(decoded));
+            }
+            if let Ok(decoded) =
+                <IncreaseAllowanceCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            {
+                return Ok(MockTokenCalls::IncreaseAllowance(decoded));
+            }
             if let Ok(decoded) = <NameCall as ethers::core::abi::AbiDecode>::decode(data.as_ref()) {
                 return Ok(MockTokenCalls::Name(decoded));
-            }
-            if let Ok(decoded) = <NoncesCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MockTokenCalls::Nonces(decoded));
-            }
-            if let Ok(decoded) = <PermitCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MockTokenCalls::Permit(decoded));
             }
             if let Ok(decoded) = <SymbolCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
             {
@@ -533,14 +501,13 @@ pub mod mock_token {
     impl ethers::core::abi::AbiEncode for MockTokenCalls {
         fn encode(self) -> Vec<u8> {
             match self {
-                MockTokenCalls::DomainSeparator(element) => element.encode(),
                 MockTokenCalls::Allowance(element) => element.encode(),
                 MockTokenCalls::Approve(element) => element.encode(),
                 MockTokenCalls::BalanceOf(element) => element.encode(),
                 MockTokenCalls::Decimals(element) => element.encode(),
+                MockTokenCalls::DecreaseAllowance(element) => element.encode(),
+                MockTokenCalls::IncreaseAllowance(element) => element.encode(),
                 MockTokenCalls::Name(element) => element.encode(),
-                MockTokenCalls::Nonces(element) => element.encode(),
-                MockTokenCalls::Permit(element) => element.encode(),
                 MockTokenCalls::Symbol(element) => element.encode(),
                 MockTokenCalls::TotalSupply(element) => element.encode(),
                 MockTokenCalls::Transfer(element) => element.encode(),
@@ -551,24 +518,18 @@ pub mod mock_token {
     impl ::std::fmt::Display for MockTokenCalls {
         fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
             match self {
-                MockTokenCalls::DomainSeparator(element) => element.fmt(f),
                 MockTokenCalls::Allowance(element) => element.fmt(f),
                 MockTokenCalls::Approve(element) => element.fmt(f),
                 MockTokenCalls::BalanceOf(element) => element.fmt(f),
                 MockTokenCalls::Decimals(element) => element.fmt(f),
+                MockTokenCalls::DecreaseAllowance(element) => element.fmt(f),
+                MockTokenCalls::IncreaseAllowance(element) => element.fmt(f),
                 MockTokenCalls::Name(element) => element.fmt(f),
-                MockTokenCalls::Nonces(element) => element.fmt(f),
-                MockTokenCalls::Permit(element) => element.fmt(f),
                 MockTokenCalls::Symbol(element) => element.fmt(f),
                 MockTokenCalls::TotalSupply(element) => element.fmt(f),
                 MockTokenCalls::Transfer(element) => element.fmt(f),
                 MockTokenCalls::TransferFrom(element) => element.fmt(f),
             }
-        }
-    }
-    impl ::std::convert::From<DomainSeparatorCall> for MockTokenCalls {
-        fn from(var: DomainSeparatorCall) -> Self {
-            MockTokenCalls::DomainSeparator(var)
         }
     }
     impl ::std::convert::From<AllowanceCall> for MockTokenCalls {
@@ -591,19 +552,19 @@ pub mod mock_token {
             MockTokenCalls::Decimals(var)
         }
     }
+    impl ::std::convert::From<DecreaseAllowanceCall> for MockTokenCalls {
+        fn from(var: DecreaseAllowanceCall) -> Self {
+            MockTokenCalls::DecreaseAllowance(var)
+        }
+    }
+    impl ::std::convert::From<IncreaseAllowanceCall> for MockTokenCalls {
+        fn from(var: IncreaseAllowanceCall) -> Self {
+            MockTokenCalls::IncreaseAllowance(var)
+        }
+    }
     impl ::std::convert::From<NameCall> for MockTokenCalls {
         fn from(var: NameCall) -> Self {
             MockTokenCalls::Name(var)
-        }
-    }
-    impl ::std::convert::From<NoncesCall> for MockTokenCalls {
-        fn from(var: NoncesCall) -> Self {
-            MockTokenCalls::Nonces(var)
-        }
-    }
-    impl ::std::convert::From<PermitCall> for MockTokenCalls {
-        fn from(var: PermitCall) -> Self {
-            MockTokenCalls::Permit(var)
         }
     }
     impl ::std::convert::From<SymbolCall> for MockTokenCalls {
@@ -626,17 +587,6 @@ pub mod mock_token {
             MockTokenCalls::TransferFrom(var)
         }
     }
-    #[doc = "Container type for all return fields from the `DOMAIN_SEPARATOR` function with signature `DOMAIN_SEPARATOR()` and selector `[54, 68, 229, 21]`"]
-    #[derive(
-        Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        Default,
-    )]
-    pub struct DomainSeparatorReturn(pub [u8; 32]);
     #[doc = "Container type for all return fields from the `allowance` function with signature `allowance(address,address)` and selector `[221, 98, 237, 62]`"]
     #[derive(
         Clone,
@@ -681,6 +631,28 @@ pub mod mock_token {
         Default,
     )]
     pub struct DecimalsReturn(pub u8);
+    #[doc = "Container type for all return fields from the `decreaseAllowance` function with signature `decreaseAllowance(address,uint256)` and selector `[164, 87, 194, 215]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthAbiType,
+        ethers :: contract :: EthAbiCodec,
+        Default,
+    )]
+    pub struct DecreaseAllowanceReturn(pub bool);
+    #[doc = "Container type for all return fields from the `increaseAllowance` function with signature `increaseAllowance(address,uint256)` and selector `[57, 80, 147, 81]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthAbiType,
+        ethers :: contract :: EthAbiCodec,
+        Default,
+    )]
+    pub struct IncreaseAllowanceReturn(pub bool);
     #[doc = "Container type for all return fields from the `name` function with signature `name()` and selector `[6, 253, 222, 3]`"]
     #[derive(
         Clone,
@@ -692,17 +664,6 @@ pub mod mock_token {
         Default,
     )]
     pub struct NameReturn(pub String);
-    #[doc = "Container type for all return fields from the `nonces` function with signature `nonces(address)` and selector `[126, 206, 190, 0]`"]
-    #[derive(
-        Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        Default,
-    )]
-    pub struct NoncesReturn(pub ethers::core::types::U256);
     #[doc = "Container type for all return fields from the `symbol` function with signature `symbol()` and selector `[149, 216, 155, 65]`"]
     #[derive(
         Clone,

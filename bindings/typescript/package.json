@@ -9,6 +9,7 @@
   },
   "module": "lib/index.ts",
   "types": "lib/index.ts",
+  "files": ["lib/**/*"],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/fulmin-labs/flood-contracts.git"

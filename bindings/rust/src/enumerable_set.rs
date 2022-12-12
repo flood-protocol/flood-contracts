@@ -1,6 +1,6 @@
-pub use console_2::*;
+pub use enumerable_set::*;
 #[allow(clippy::too_many_arguments, non_camel_case_types)]
-pub mod console_2 {
+pub mod enumerable_set {
     #![allow(clippy::enum_variant_names)]
     #![allow(dead_code)]
     #![allow(clippy::type_complexity)]
@@ -14,39 +14,39 @@ pub mod console_2 {
         types::*,
     };
     use ethers::providers::Middleware;
-    #[doc = "console2 was auto-generated with ethers-rs Abigen. More information at: https://github.com/gakonst/ethers-rs"]
+    #[doc = "EnumerableSet was auto-generated with ethers-rs Abigen. More information at: https://github.com/gakonst/ethers-rs"]
     use std::sync::Arc;
     # [rustfmt :: skip] const __ABI : & str = "[]" ;
     #[doc = r" The parsed JSON-ABI of the contract."]
-    pub static CONSOLE2_ABI: ethers::contract::Lazy<ethers::core::abi::Abi> =
+    pub static ENUMERABLESET_ABI: ethers::contract::Lazy<ethers::core::abi::Abi> =
         ethers::contract::Lazy::new(|| {
             ethers::core::utils::__serde_json::from_str(__ABI).expect("invalid abi")
         });
     #[doc = r" Bytecode of the #name contract"]
-    pub static CONSOLE2_BYTECODE: ethers::contract::Lazy<ethers::core::types::Bytes> =
+    pub static ENUMERABLESET_BYTECODE: ethers::contract::Lazy<ethers::core::types::Bytes> =
         ethers::contract::Lazy::new(|| {
-            "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220e4a7b37cc481fc0a2eec4f89cfb44b964d2ad94489cd90c6ffa1e039120fc91a64736f6c63430008110033" . parse () . expect ("invalid bytecode")
+            "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220978f62b8c59a4d11c67e6f85e280a08105f80b9cb7d1f0e77a24f5955aaba2ac64736f6c63430008110033" . parse () . expect ("invalid bytecode")
         });
-    pub struct console2<M>(ethers::contract::Contract<M>);
-    impl<M> Clone for console2<M> {
+    pub struct EnumerableSet<M>(ethers::contract::Contract<M>);
+    impl<M> Clone for EnumerableSet<M> {
         fn clone(&self) -> Self {
-            console2(self.0.clone())
+            EnumerableSet(self.0.clone())
         }
     }
-    impl<M> std::ops::Deref for console2<M> {
+    impl<M> std::ops::Deref for EnumerableSet<M> {
         type Target = ethers::contract::Contract<M>;
         fn deref(&self) -> &Self::Target {
             &self.0
         }
     }
-    impl<M> std::fmt::Debug for console2<M> {
+    impl<M> std::fmt::Debug for EnumerableSet<M> {
         fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-            f.debug_tuple(stringify!(console2))
+            f.debug_tuple(stringify!(EnumerableSet))
                 .field(&self.address())
                 .finish()
         }
     }
-    impl<M: ethers::providers::Middleware> console2<M> {
+    impl<M: ethers::providers::Middleware> EnumerableSet<M> {
         #[doc = r" Creates a new contract instance with the specified `ethers`"]
         #[doc = r" client at the given `Address`. The contract derefs to a `ethers::Contract`"]
         #[doc = r" object"]
@@ -54,7 +54,8 @@ pub mod console_2 {
             address: T,
             client: ::std::sync::Arc<M>,
         ) -> Self {
-            ethers::contract::Contract::new(address.into(), CONSOLE2_ABI.clone(), client).into()
+            ethers::contract::Contract::new(address.into(), ENUMERABLESET_ABI.clone(), client)
+                .into()
         }
         #[doc = r" Constructs the general purpose `Deployer` instance based on the provided constructor arguments and sends it."]
         #[doc = r" Returns a new instance of a deployer that returns an instance of this contract after sending the transaction"]
@@ -87,8 +88,8 @@ pub mod console_2 {
             ethers::contract::ContractError<M>,
         > {
             let factory = ethers::contract::ContractFactory::new(
-                CONSOLE2_ABI.clone(),
-                CONSOLE2_BYTECODE.clone().into(),
+                ENUMERABLESET_ABI.clone(),
+                ENUMERABLESET_BYTECODE.clone().into(),
                 client,
             );
             let deployer = factory.deploy(constructor_args)?;
@@ -96,7 +97,7 @@ pub mod console_2 {
             Ok(deployer)
         }
     }
-    impl<M: ethers::providers::Middleware> From<ethers::contract::Contract<M>> for console2<M> {
+    impl<M: ethers::providers::Middleware> From<ethers::contract::Contract<M>> for EnumerableSet<M> {
         fn from(contract: ethers::contract::Contract<M>) -> Self {
             Self(contract)
         }

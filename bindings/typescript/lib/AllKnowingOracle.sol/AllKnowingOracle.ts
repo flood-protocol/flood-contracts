@@ -29,36 +29,40 @@ import type {
 
 export interface AllKnowingOracleInterface extends utils.Interface {
   functions: {
+    "acceptOwnership()": FunctionFragment;
     "ask(address,address,address,uint256,bytes)": FunctionFragment;
     "getRequestId(address,address,address,address,uint256)": FunctionFragment;
     "owner()": FunctionFragment;
-    "requesters(address)": FunctionFragment;
+    "pendingOwner()": FunctionFragment;
+    "registry()": FunctionFragment;
+    "renounceOwnership()": FunctionFragment;
     "requests(bytes32)": FunctionFragment;
-    "setOwner(address)": FunctionFragment;
     "settle(bytes32,bool)": FunctionFragment;
     "settlers(address)": FunctionFragment;
-    "whitelistRequester(address,bool)": FunctionFragment;
+    "transferOwnership(address)": FunctionFragment;
     "whitelistSettler(address,bool)": FunctionFragment;
-    "whitelistToken(address,bool)": FunctionFragment;
-    "whitelistedTokens(address)": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
+      | "acceptOwnership"
       | "ask"
       | "getRequestId"
       | "owner"
-      | "requesters"
+      | "pendingOwner"
+      | "registry"
+      | "renounceOwnership"
       | "requests"
-      | "setOwner"
       | "settle"
       | "settlers"
-      | "whitelistRequester"
+      | "transferOwnership"
       | "whitelistSettler"
-      | "whitelistToken"
-      | "whitelistedTokens"
   ): FunctionFragment;
 
+  encodeFunctionData(
+    functionFragment: "acceptOwnership",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "ask",
     values: [
@@ -81,16 +85,17 @@ export interface AllKnowingOracleInterface extends utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "requesters",
-    values: [PromiseOrValue<string>]
+    functionFragment: "pendingOwner",
+    values?: undefined
+  ): string;
+  encodeFunctionData(functionFragment: "registry", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "renounceOwnership",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "requests",
     values: [PromiseOrValue<BytesLike>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setOwner",
-    values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
     functionFragment: "settle",
@@ -101,53 +106,49 @@ export interface AllKnowingOracleInterface extends utils.Interface {
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
-    functionFragment: "whitelistRequester",
-    values: [PromiseOrValue<string>, PromiseOrValue<boolean>]
+    functionFragment: "transferOwnership",
+    values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
     functionFragment: "whitelistSettler",
     values: [PromiseOrValue<string>, PromiseOrValue<boolean>]
   ): string;
-  encodeFunctionData(
-    functionFragment: "whitelistToken",
-    values: [PromiseOrValue<string>, PromiseOrValue<boolean>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "whitelistedTokens",
-    values: [PromiseOrValue<string>]
-  ): string;
 
+  decodeFunctionResult(
+    functionFragment: "acceptOwnership",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "ask", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getRequestId",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "requesters", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "pendingOwner",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "registry", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "renounceOwnership",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "requests", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "setOwner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "settle", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "settlers", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "whitelistRequester",
+    functionFragment: "transferOwnership",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "whitelistSettler",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "whitelistToken",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "whitelistedTokens",
-    data: BytesLike
-  ): Result;
 
   events: {
     "NewRequest(bytes32,address,address,address,uint256)": EventFragment;
-    "OwnerUpdated(address,address)": EventFragment;
+    "OwnershipTransferStarted(address,address)": EventFragment;
+    "OwnershipTransferred(address,address)": EventFragment;
     "RequestSettled(bytes32,bool)": EventFragment;
     "RequesterWhitelisted(address,bool)": EventFragment;
     "SettlerWhitelisted(address,bool)": EventFragment;
@@ -155,7 +156,8 @@ export interface AllKnowingOracleInterface extends utils.Interface {
   };
 
   getEvent(nameOrSignatureOrTopic: "NewRequest"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "OwnerUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "OwnershipTransferStarted"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RequestSettled"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RequesterWhitelisted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SettlerWhitelisted"): EventFragment;
@@ -176,16 +178,29 @@ export type NewRequestEvent = TypedEvent<
 
 export type NewRequestEventFilter = TypedEventFilter<NewRequestEvent>;
 
-export interface OwnerUpdatedEventObject {
-  user: string;
+export interface OwnershipTransferStartedEventObject {
+  previousOwner: string;
   newOwner: string;
 }
-export type OwnerUpdatedEvent = TypedEvent<
+export type OwnershipTransferStartedEvent = TypedEvent<
   [string, string],
-  OwnerUpdatedEventObject
+  OwnershipTransferStartedEventObject
 >;
 
-export type OwnerUpdatedEventFilter = TypedEventFilter<OwnerUpdatedEvent>;
+export type OwnershipTransferStartedEventFilter =
+  TypedEventFilter<OwnershipTransferStartedEvent>;
+
+export interface OwnershipTransferredEventObject {
+  previousOwner: string;
+  newOwner: string;
+}
+export type OwnershipTransferredEvent = TypedEvent<
+  [string, string],
+  OwnershipTransferredEventObject
+>;
+
+export type OwnershipTransferredEventFilter =
+  TypedEventFilter<OwnershipTransferredEvent>;
 
 export interface RequestSettledEventObject {
   id: string;
@@ -261,6 +276,10 @@ export interface AllKnowingOracle extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    acceptOwnership(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     ask(
       proposer: PromiseOrValue<string>,
       disputer: PromiseOrValue<string>,
@@ -281,10 +300,13 @@ export interface AllKnowingOracle extends BaseContract {
 
     owner(overrides?: CallOverrides): Promise<[string]>;
 
-    requesters(
-      arg0: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
+    pendingOwner(overrides?: CallOverrides): Promise<[string]>;
+
+    registry(overrides?: CallOverrides): Promise<[string]>;
+
+    renounceOwnership(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
     requests(
       arg0: PromiseOrValue<BytesLike>,
@@ -302,11 +324,6 @@ export interface AllKnowingOracle extends BaseContract {
       }
     >;
 
-    setOwner(
-      newOwner: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
     settle(
       id: PromiseOrValue<BytesLike>,
       answer: PromiseOrValue<boolean>,
@@ -318,9 +335,8 @@ export interface AllKnowingOracle extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
-    whitelistRequester(
-      requester: PromiseOrValue<string>,
-      enabled: PromiseOrValue<boolean>,
+    transferOwnership(
+      newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -329,18 +345,11 @@ export interface AllKnowingOracle extends BaseContract {
       enabled: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
-
-    whitelistToken(
-      token: PromiseOrValue<string>,
-      enabled: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    whitelistedTokens(
-      arg0: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
   };
+
+  acceptOwnership(
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   ask(
     proposer: PromiseOrValue<string>,
@@ -362,10 +371,13 @@ export interface AllKnowingOracle extends BaseContract {
 
   owner(overrides?: CallOverrides): Promise<string>;
 
-  requesters(
-    arg0: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
+  pendingOwner(overrides?: CallOverrides): Promise<string>;
+
+  registry(overrides?: CallOverrides): Promise<string>;
+
+  renounceOwnership(
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   requests(
     arg0: PromiseOrValue<BytesLike>,
@@ -383,11 +395,6 @@ export interface AllKnowingOracle extends BaseContract {
     }
   >;
 
-  setOwner(
-    newOwner: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
   settle(
     id: PromiseOrValue<BytesLike>,
     answer: PromiseOrValue<boolean>,
@@ -399,9 +406,8 @@ export interface AllKnowingOracle extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  whitelistRequester(
-    requester: PromiseOrValue<string>,
-    enabled: PromiseOrValue<boolean>,
+  transferOwnership(
+    newOwner: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -411,18 +417,9 @@ export interface AllKnowingOracle extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  whitelistToken(
-    token: PromiseOrValue<string>,
-    enabled: PromiseOrValue<boolean>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  whitelistedTokens(
-    arg0: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
-
   callStatic: {
+    acceptOwnership(overrides?: CallOverrides): Promise<void>;
+
     ask(
       proposer: PromiseOrValue<string>,
       disputer: PromiseOrValue<string>,
@@ -443,10 +440,11 @@ export interface AllKnowingOracle extends BaseContract {
 
     owner(overrides?: CallOverrides): Promise<string>;
 
-    requesters(
-      arg0: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
+    pendingOwner(overrides?: CallOverrides): Promise<string>;
+
+    registry(overrides?: CallOverrides): Promise<string>;
+
+    renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
     requests(
       arg0: PromiseOrValue<BytesLike>,
@@ -464,11 +462,6 @@ export interface AllKnowingOracle extends BaseContract {
       }
     >;
 
-    setOwner(
-      newOwner: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     settle(
       id: PromiseOrValue<BytesLike>,
       answer: PromiseOrValue<boolean>,
@@ -480,9 +473,8 @@ export interface AllKnowingOracle extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    whitelistRequester(
-      requester: PromiseOrValue<string>,
-      enabled: PromiseOrValue<boolean>,
+    transferOwnership(
+      newOwner: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -491,17 +483,6 @@ export interface AllKnowingOracle extends BaseContract {
       enabled: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<void>;
-
-    whitelistToken(
-      token: PromiseOrValue<string>,
-      enabled: PromiseOrValue<boolean>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    whitelistedTokens(
-      arg0: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
   };
 
   filters: {
@@ -520,14 +501,23 @@ export interface AllKnowingOracle extends BaseContract {
       bond?: null
     ): NewRequestEventFilter;
 
-    "OwnerUpdated(address,address)"(
-      user?: PromiseOrValue<string> | null,
+    "OwnershipTransferStarted(address,address)"(
+      previousOwner?: PromiseOrValue<string> | null,
       newOwner?: PromiseOrValue<string> | null
-    ): OwnerUpdatedEventFilter;
-    OwnerUpdated(
-      user?: PromiseOrValue<string> | null,
+    ): OwnershipTransferStartedEventFilter;
+    OwnershipTransferStarted(
+      previousOwner?: PromiseOrValue<string> | null,
       newOwner?: PromiseOrValue<string> | null
-    ): OwnerUpdatedEventFilter;
+    ): OwnershipTransferStartedEventFilter;
+
+    "OwnershipTransferred(address,address)"(
+      previousOwner?: PromiseOrValue<string> | null,
+      newOwner?: PromiseOrValue<string> | null
+    ): OwnershipTransferredEventFilter;
+    OwnershipTransferred(
+      previousOwner?: PromiseOrValue<string> | null,
+      newOwner?: PromiseOrValue<string> | null
+    ): OwnershipTransferredEventFilter;
 
     "RequestSettled(bytes32,bool)"(
       id?: PromiseOrValue<BytesLike> | null,
@@ -567,6 +557,10 @@ export interface AllKnowingOracle extends BaseContract {
   };
 
   estimateGas: {
+    acceptOwnership(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     ask(
       proposer: PromiseOrValue<string>,
       disputer: PromiseOrValue<string>,
@@ -587,19 +581,17 @@ export interface AllKnowingOracle extends BaseContract {
 
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
-    requesters(
-      arg0: PromiseOrValue<string>,
-      overrides?: CallOverrides
+    pendingOwner(overrides?: CallOverrides): Promise<BigNumber>;
+
+    registry(overrides?: CallOverrides): Promise<BigNumber>;
+
+    renounceOwnership(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     requests(
       arg0: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    setOwner(
-      newOwner: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     settle(
@@ -613,9 +605,8 @@ export interface AllKnowingOracle extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    whitelistRequester(
-      requester: PromiseOrValue<string>,
-      enabled: PromiseOrValue<boolean>,
+    transferOwnership(
+      newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -624,20 +615,13 @@ export interface AllKnowingOracle extends BaseContract {
       enabled: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
-
-    whitelistToken(
-      token: PromiseOrValue<string>,
-      enabled: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    whitelistedTokens(
-      arg0: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
+    acceptOwnership(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     ask(
       proposer: PromiseOrValue<string>,
       disputer: PromiseOrValue<string>,
@@ -658,19 +642,17 @@ export interface AllKnowingOracle extends BaseContract {
 
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    requesters(
-      arg0: PromiseOrValue<string>,
-      overrides?: CallOverrides
+    pendingOwner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    registry(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    renounceOwnership(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     requests(
       arg0: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    setOwner(
-      newOwner: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     settle(
@@ -684,9 +666,8 @@ export interface AllKnowingOracle extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    whitelistRequester(
-      requester: PromiseOrValue<string>,
-      enabled: PromiseOrValue<boolean>,
+    transferOwnership(
+      newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -694,17 +675,6 @@ export interface AllKnowingOracle extends BaseContract {
       settler: PromiseOrValue<string>,
       enabled: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    whitelistToken(
-      token: PromiseOrValue<string>,
-      enabled: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    whitelistedTokens(
-      arg0: PromiseOrValue<string>,
-      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };
 }

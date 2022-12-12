@@ -16,7 +16,7 @@ pub mod i_flood_registry_events {
     use ethers::providers::Middleware;
     #[doc = "IFloodRegistryEvents was auto-generated with ethers-rs Abigen. More information at: https://github.com/gakonst/ethers-rs"]
     use std::sync::Arc;
-    # [rustfmt :: skip] const __ABI : & str = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"bool\",\"name\":\"whitelisted\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"TokenWhitelisted\",\"outputs\":[],\"anonymous\":false}]" ;
+    # [rustfmt :: skip] const __ABI : & str = "[{\"inputs\":[{\"internalType\":\"contract AllKnowingOracle\",\"name\":\"oracle\",\"type\":\"address\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"OracleChanged\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"bool\",\"name\":\"whitelisted\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"TokenWhitelisted\",\"outputs\":[],\"anonymous\":false}]" ;
     #[doc = r" The parsed JSON-ABI of the contract."]
     pub static IFLOODREGISTRYEVENTS_ABI: ethers::contract::Lazy<ethers::core::abi::Abi> =
         ethers::contract::Lazy::new(|| {
@@ -56,6 +56,12 @@ pub mod i_flood_registry_events {
             )
             .into()
         }
+        #[doc = "Gets the contract's `OracleChanged` event"]
+        pub fn oracle_changed_filter(
+            &self,
+        ) -> ethers::contract::builders::Event<M, OracleChangedFilter> {
+            self.0.event()
+        }
         #[doc = "Gets the contract's `TokenWhitelisted` event"]
         pub fn token_whitelisted_filter(
             &self,
@@ -63,7 +69,7 @@ pub mod i_flood_registry_events {
             self.0.event()
         }
         #[doc = r" Returns an [`Event`](#ethers_contract::builders::Event) builder for all events of this contract"]
-        pub fn events(&self) -> ethers::contract::builders::Event<M, TokenWhitelistedFilter> {
+        pub fn events(&self) -> ethers::contract::builders::Event<M, IFloodRegistryEventsEvents> {
             self.0.event_with_filter(Default::default())
         }
     }
@@ -83,10 +89,53 @@ pub mod i_flood_registry_events {
         ethers :: contract :: EthDisplay,
         Default,
     )]
+    #[ethevent(name = "OracleChanged", abi = "OracleChanged(address)")]
+    pub struct OracleChangedFilter {
+        #[ethevent(indexed)]
+        pub oracle: ethers::core::types::Address,
+    }
+    #[derive(
+        Clone,
+        Debug,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthEvent,
+        ethers :: contract :: EthDisplay,
+        Default,
+    )]
     #[ethevent(name = "TokenWhitelisted", abi = "TokenWhitelisted(address,bool)")]
     pub struct TokenWhitelistedFilter {
         #[ethevent(indexed)]
         pub token: ethers::core::types::Address,
         pub whitelisted: bool,
+    }
+    #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
+    pub enum IFloodRegistryEventsEvents {
+        OracleChangedFilter(OracleChangedFilter),
+        TokenWhitelistedFilter(TokenWhitelistedFilter),
+    }
+    impl ethers::contract::EthLogDecode for IFloodRegistryEventsEvents {
+        fn decode_log(
+            log: &ethers::core::abi::RawLog,
+        ) -> ::std::result::Result<Self, ethers::core::abi::Error>
+        where
+            Self: Sized,
+        {
+            if let Ok(decoded) = OracleChangedFilter::decode_log(log) {
+                return Ok(IFloodRegistryEventsEvents::OracleChangedFilter(decoded));
+            }
+            if let Ok(decoded) = TokenWhitelistedFilter::decode_log(log) {
+                return Ok(IFloodRegistryEventsEvents::TokenWhitelistedFilter(decoded));
+            }
+            Err(ethers::core::abi::Error::InvalidData)
+        }
+    }
+    impl ::std::fmt::Display for IFloodRegistryEventsEvents {
+        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+            match self {
+                IFloodRegistryEventsEvents::OracleChangedFilter(element) => element.fmt(f),
+                IFloodRegistryEventsEvents::TokenWhitelistedFilter(element) => element.fmt(f),
+            }
+        }
     }
 }
