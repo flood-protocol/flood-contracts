@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2022-12-12
+
+### Added
+- Added a `FloodRegistry` contract which is now responsible for holding all protocol related information like tokens whitelisted and the latest oracle in use.
+
+
+### Changed
+- The oracle now pulls both bonds from the book. This means disputers only need to approve the book and not the oracle anymore.
+- The book and oracle don't maintain an internal whitelist of allowed tokens anymore, but rely on the registry instead. 
+- Deploy Scripts have been broken up and refactored
+
+
+### Fixed
+- Addressed some minor reentrancy bugs
+
 ## [0.2.2] - 2022-11-18
 
 ### Fixed

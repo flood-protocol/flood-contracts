@@ -23,6 +23,13 @@ contract BookScript is Script {
         uint256 tradeRebatePct,
         uint256 relayerRefundPct,
         uint256 feePct) internal returns (Book book) {
+        require(disputeBondPct + tradeRebatePct + relayerRefundPct == 100, "invalid fee combination");
+        require(feePct < 2500);
+        require(disputeBondPct > 0);
+        require(tradeRebatePct > 0);
+        require(relayerRefundPct > 0);
+        require(safeBlockThreshold > 0);
+
         book = new Book(registry, safeBlockThreshold, disputeBondPct, tradeRebatePct, relayerRefundPct, feePct);
     }
 }

@@ -408,4 +408,5 @@ contract Book is IOptimisticRequester, IBookEvents {
     ) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked(tokenIn, tokenOut, amountIn, minAmountOut, recipient, tradeIndex, trader));
     }
+
 }
