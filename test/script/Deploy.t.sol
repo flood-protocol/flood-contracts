@@ -64,23 +64,23 @@ contract DeployScriptTest is DeployScript {
 
     function testCannotDeployIfFeePctTooHigh(uint256 feePct) public {
         vm.assume(feePct > 2500);
-        vm.expectRevert(stdError.assertionError);
+        vm.expectRevert("fee pct too high");
         _deployBook(
             testRegistry, testSafeBlockThreshold, testDisputeBondPct, testTradeRebatePct, testRelayerRefundPct, feePct
         );
     }
 
     function testCannotDeployIfSafeThresholdIsZero() public {
-        vm.expectRevert(stdError.assertionError);
+        vm.expectRevert("safe block threshold cant be 0");
         _deployBook(testRegistry, 0, testDisputeBondPct, testTradeRebatePct, testRelayerRefundPct, testFeePct);
     }
 
     function testCannotDeployBookIfAnyFeeIsZero() public {
-        vm.expectRevert(stdError.assertionError);
+        vm.expectRevert("dispute bond pct cant be 0");
         _deployBook(testRegistry, testSafeBlockThreshold, 0, testTradeRebatePct, testRelayerRefundPct, testFeePct);
-        vm.expectRevert(stdError.assertionError);
+        vm.expectRevert("trade rebate pct cant be 0");
         _deployBook(testRegistry, testSafeBlockThreshold, testDisputeBondPct, 0, testRelayerRefundPct, testFeePct);
-        vm.expectRevert(stdError.assertionError);
+        vm.expectRevert("relayer refund pct cant be 0");
         _deployBook(testRegistry, testSafeBlockThreshold, testDisputeBondPct, testTradeRebatePct, 0, testFeePct);
     }
 
@@ -93,6 +93,7 @@ contract DeployScriptTest is DeployScript {
         if (!_enable && !_registry.isTokenWhitelisted(_token)) {
             vm.expectRevert(FloodRegistry__TokenNotWhitelisted.selector);
         }
-        whitelistToken(_registry, _token, _enable);
+      
+        _registry.whitelistToken(_token, _enable);
     }
 }
