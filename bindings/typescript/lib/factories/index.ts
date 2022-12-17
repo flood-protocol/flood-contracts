@@ -4,8 +4,8 @@
 export * as allKnowingOracleSol from "./AllKnowingOracle.sol";
 export * as bookSol from "./Book.sol";
 export * as floodRegistrySol from "./FloodRegistry.sol";
-export * as tokenWhitelistSol from "./TokenWhitelist.sol";
 export { ERC20__factory } from "./ERC20__factory";
+export { IERC20__factory } from "./IERC20__factory";
 export { IERC20Metadata__factory } from "./IERC20Metadata__factory";
 export { IERC20Permit__factory } from "./IERC20Permit__factory";
 export { Ownable__factory } from "./Ownable__factory";
