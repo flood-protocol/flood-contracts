@@ -64,12 +64,13 @@ contract TradeFixture is BaseBookFixture {
         uint256 amountIn,
         uint256 amountOutMin,
         address recipient,
-        address who
+        address who,
+        bool unwrapOutput
     ) internal returns (uint256, bytes32) {
         uint256 tradeIndex = book.numberOfTrades();
         bytes32 tradeId = _getTradeId(tokenIn, tokenOut, amountIn, amountOutMin, recipient, tradeIndex, who);
         vm.prank(who);
-        book.requestTrade(tokenIn, tokenOut, amountIn, amountOutMin, recipient);
+        book.requestTrade(tokenIn, tokenOut, amountIn, amountOutMin, recipient, unwrapOutput);
         return (tradeIndex, tradeId);
     }
 
@@ -94,9 +95,12 @@ contract TradeFixture is BaseBookFixture {
         address _recipient,
         uint256 _tradeIndex,
         address _trader,
-        uint256 _amountToSend
+        uint256 _amountToSend,
+        bytes memory _data
     ) internal {
-        book.fillTrade(_tokenIn, _tokenOut, _amountIn, _amountOutMin, _recipient, _tradeIndex, _trader, _amountToSend);
+        book.fillTrade(
+            _tokenIn, _tokenOut, _amountIn, _amountOutMin, _recipient, _tradeIndex, _trader, _amountToSend, _data
+        );
     }
 
     function _checkFill(bytes32 _tradeId, address _filledBy, int256 _filledAtBlock) internal {
@@ -123,7 +127,7 @@ contract DisputeFixture is TradeFixture {
         deal(testTokenIn, alice, testAmountIn);
 
         (tradeIndex, tradeId) =
-            _requestTrade(testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, alice);
+            _requestTrade(testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, alice, false);
 
         deal(testTokenOut, relayer, testAmountToSend);
         vm.prank(relayer);
@@ -135,7 +139,8 @@ contract DisputeFixture is TradeFixture {
             testRecipient,
             tradeIndex,
             alice,
-            testAmountToSend
+            testAmountToSend,
+            bytes("")
         );
         _checkFill(tradeId, relayer, int256(block.number));
 

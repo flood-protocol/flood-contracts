@@ -4,6 +4,7 @@ pragma solidity ^0.8.17;
 import {AllKnowingOracle} from "./AllKnowingOracle.sol";
 import {Ownable2Step} from "@openzeppelin/access/Ownable2Step.sol";
 import {EnumerableSet} from "@openzeppelin/utils/structs/EnumerableSet.sol";
+import {IWETH9} from "./interfaces/IWETH9.sol";
 
 interface IFloodRegistryEvents {
     event TokenWhitelisted(address indexed token, bool whitelisted);
@@ -25,6 +26,12 @@ contract FloodRegistry is IFloodRegistryEvents, Ownable2Step {
     EnumerableSet.AddressSet private _whitelistedTokens;
     // The latest oracle used in the protocol.
     AllKnowingOracle public latestOracle;
+    // The address of the WETH token on the current network.
+    IWETH9 public immutable WETH;
+
+    constructor(IWETH9 weth) {
+        WETH = weth;
+    }
 
     /**
      * @notice Whitelists a token. Reverts if trying to add a token that is already whitelisted or if trying to remove a token that is not whitelisted.
