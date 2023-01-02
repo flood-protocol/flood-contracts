@@ -7,6 +7,7 @@ import {
     FloodRegistry__TokenAlreadyWhitelisted,
     FloodRegistry__TokenNotWhitelisted
 } from "src/FloodRegistry.sol";
+import {IWETH9} from "src/interfaces/IWETH9.sol";
 import {AllKnowingOracle} from "src/AllKnowingOracle.sol";
 import {Book} from "src/Book.sol";
 import {DeployScript} from "script/Deploy.s.sol";
@@ -14,6 +15,7 @@ import {DeployScript} from "script/Deploy.s.sol";
 contract DeployScriptTest is DeployScript {
     AllKnowingOracle internal testOracle = AllKnowingOracle(address(0));
     FloodRegistry internal testRegistry = FloodRegistry(address(1));
+    IWETH9 internal testWeth = IWETH9(address(2));
     uint256 internal testSafeBlockThreshold = 100;
     uint256 internal testDisputeBondPct = 10;
     uint256 internal testTradeRebatePct = 10;
@@ -85,7 +87,7 @@ contract DeployScriptTest is DeployScript {
     }
 
     function testWhitelistToken(address _token, bool _enable) public {
-        FloodRegistry _registry = _deployRegistry();
+        FloodRegistry _registry = _deployRegistry(IWETH9(testWeth));
 
         if (_enable && _registry.isTokenWhitelisted(_token)) {
             vm.expectRevert(FloodRegistry__TokenAlreadyWhitelisted.selector);
@@ -93,7 +95,7 @@ contract DeployScriptTest is DeployScript {
         if (!_enable && !_registry.isTokenWhitelisted(_token)) {
             vm.expectRevert(FloodRegistry__TokenNotWhitelisted.selector);
         }
-      
+
         _registry.whitelistToken(_token, _enable);
     }
 }

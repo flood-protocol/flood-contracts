@@ -3,6 +3,7 @@ pragma solidity ^0.8.17;
 
 import "forge-std/Script.sol";
 import "forge-std/Test.sol";
+import {IWETH9} from "src/interfaces/IWETH9.sol";
 import {FloodRegistry} from "src/FloodRegistry.sol";
 import {AllKnowingOracle} from "src/AllKnowingOracle.sol";
 import {Book} from "src/Book.sol";
@@ -14,7 +15,7 @@ contract DeployScript is BookScript, AllKnowingOracleScript, FloodRegistryScript
     AllKnowingOracle internal oracle;
     FloodRegistry internal registry;
 
-    function run() override public {
+    function run() public override {
         uint256 safeBlockThreshold = vm.envUint("SAFE_BLOCK_THRESHOLD");
         uint256 disputeBondPct = vm.envUint("DISPUTE_BOND_PCT");
         uint256 tradeRebatePct = vm.envUint("TRADE_REBATE_PCT");
@@ -22,10 +23,11 @@ contract DeployScript is BookScript, AllKnowingOracleScript, FloodRegistryScript
         uint256 feePct = vm.envUint("FEE_PCT");
         address REGISTRY_ADDRESS = vm.envAddress("REGISTRY_ADDRESS");
         address ORACLE_ADDRESS = vm.envAddress("ORACLE_ADDRESS");
+        address WETH_ADDRESS = vm.envAddress("WETH_ADDRESS");
         vm.startBroadcast();
 
-        if (REGISTRY_ADDRESS == address(0)) {registry = _deployRegistry();}
-        else {registry = FloodRegistry(REGISTRY_ADDRESS);}
+        if (REGISTRY_ADDRESS == address(0)) registry = _deployRegistry(IWETH9(WETH_ADDRESS));
+        else registry = FloodRegistry(REGISTRY_ADDRESS);
 
         if (ORACLE_ADDRESS == address(0)) {
             oracle = _deployOracle(registry);
@@ -36,5 +38,4 @@ contract DeployScript is BookScript, AllKnowingOracleScript, FloodRegistryScript
         _deployBook(registry, safeBlockThreshold, disputeBondPct, tradeRebatePct, relayerRefundPct, feePct);
         vm.stopBroadcast();
     }
-  
 }

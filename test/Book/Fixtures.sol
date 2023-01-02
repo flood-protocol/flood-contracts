@@ -64,12 +64,13 @@ contract TradeFixture is BaseBookFixture {
         uint256 amountIn,
         uint256 amountOutMin,
         address recipient,
-        address who
+        address who,
+        bool unwrapOutput
     ) internal returns (uint256, bytes32) {
         uint256 tradeIndex = book.numberOfTrades();
         bytes32 tradeId = _getTradeId(tokenIn, tokenOut, amountIn, amountOutMin, recipient, tradeIndex, who);
         vm.prank(who);
-        book.requestTrade(tokenIn, tokenOut, amountIn, amountOutMin, recipient);
+        book.requestTrade(tokenIn, tokenOut, amountIn, amountOutMin, recipient, unwrapOutput);
         return (tradeIndex, tradeId);
     }
 
@@ -123,7 +124,7 @@ contract DisputeFixture is TradeFixture {
         deal(testTokenIn, alice, testAmountIn);
 
         (tradeIndex, tradeId) =
-            _requestTrade(testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, alice);
+            _requestTrade(testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, alice, false);
 
         deal(testTokenOut, relayer, testAmountToSend);
         vm.prank(relayer);

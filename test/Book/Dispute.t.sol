@@ -66,7 +66,7 @@ contract DisputeTest is DisputeFixture {
         assertEq(uint256(_reqState), uint256(RequestState.Pending), "State should be Pending");
         assertEq(
             _reqData,
-            abi.encode(testAmountIn, testRecipient, tradeIndex, testTrader),
+            abi.encode(testAmountIn, testRecipient, tradeIndex, testTrader, tradeId),
             "Request Data should equal request data"
         );
 

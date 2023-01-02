@@ -2,6 +2,7 @@
 pragma solidity ^0.8.17;
 
 import {IERC20} from "@openzeppelin/interfaces/IERC20.sol";
+import {IWETH9} from "src/interfaces/IWETH9.sol";
 import {AllKnowingOracle, FloodRegistry} from "src/AllKnowingOracle.sol";
 import {BaseFixture} from "../utils/BaseFixture.sol";
 import {TokenFixture} from "../utils/TokenFixture.sol";
@@ -12,7 +13,7 @@ contract OracleFixture is BaseFixture, TokenFixture {
 
     function setUp() public virtual override {
         super.setUp();
-        registry = new FloodRegistry();
+        registry = new FloodRegistry(IWETH9(WETH));
         oracle = new AllKnowingOracle(registry);
         registry.setOracle(oracle);
         IERC20(USDC).approve(address(oracle), type(uint256).max);

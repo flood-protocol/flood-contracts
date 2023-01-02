@@ -5,6 +5,7 @@ import {IERC20} from "@openzeppelin/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/token/ERC20/utils/SafeERC20.sol";
 import {AllKnowingOracle, Request, IOptimisticRequester} from "./AllKnowingOracle.sol";
 import {FloodRegistry} from "./FloodRegistry.sol";
+import {IWETH9} from "./interfaces/IWETH9.sol";
 
 interface IBookEvents {
     event SafeBlockThresholdSet(uint256 newSafeBlockThreshold);
@@ -39,6 +40,7 @@ interface IBookEvents {
 error Book__InvalidToken(address token);
 error Book__SameToken();
 error Book__ZeroAmount();
+error Book__NotWeth();
 // the recipient of a transfer was the 0 address
 error Book__SentToBlackHole();
 error Book__InvalidParamsCombination();
@@ -76,6 +78,7 @@ contract Book is IOptimisticRequester, IBookEvents {
     FloodRegistry public immutable registry;
     // The oracle to use for dispute resolution. At deployment, this is the latest oracle used in the protocol and it cannot be changed.
     AllKnowingOracle public immutable oracle;
+    IWETH9 private immutable weth;
 
     uint256 public numberOfTrades = 0;
     // Maps each trade id to the block it was filled at. A value of 0 means it was not filled yet.
@@ -84,6 +87,9 @@ contract Book is IOptimisticRequester, IBookEvents {
     mapping(bytes32 => address) public filledBy;
     // A mapping from trade id to an enum representing the state of the trade.
     mapping(bytes32 => TradeStatus) public status;
+
+    // A mapping from a trade id to if the recipient wants to unwrap their output token.
+    mapping(bytes32 => bool) public unwrapOutput;
 
     constructor(
         FloodRegistry _registry,
@@ -95,6 +101,7 @@ contract Book is IOptimisticRequester, IBookEvents {
     ) {
         registry = _registry;
         oracle = registry.latestOracle();
+        weth = registry.WETH();
         safeBlockThreshold = _safeBlockThreshold;
         emit SafeBlockThresholdSet(safeBlockThreshold);
 
@@ -120,10 +127,16 @@ contract Book is IOptimisticRequester, IBookEvents {
      * @param amountIn The amount of `tokenIn` to be sold.
      * @param minAmountOut The minimum amount of `tokenOut` to be bought. This should be set offchain based on `feeCombination.tradeRebatePct`, for example, if `feeCombination.tradeRebatePct` is 20%, then `minAmountOut` could be 90% of optimal at the time of request.
      * @param recipient The address to receive the tokens bought.
+     * @param receiveETH If true, the recipient will receive ETH instead of WETH.
      */
-    function requestTrade(address tokenIn, address tokenOut, uint256 amountIn, uint256 minAmountOut, address recipient)
-        external
-    {
+    function requestTrade(
+        address tokenIn,
+        address tokenOut,
+        uint256 amountIn,
+        uint256 minAmountOut,
+        address recipient,
+        bool receiveETH
+    ) external {
         // checks whether the tokens are whitelisted
         _isPairSupported(tokenIn, tokenOut);
         if (amountIn == 0 || minAmountOut == 0) {
@@ -132,10 +145,17 @@ contract Book is IOptimisticRequester, IBookEvents {
         if (recipient == address(0)) {
             revert Book__SentToBlackHole();
         }
+        if (receiveETH && tokenOut != address(weth)) {
+            revert Book__NotWeth();
+        }
 
         emit TradeRequested(tokenIn, tokenOut, amountIn, minAmountOut, recipient, numberOfTrades, msg.sender);
 
         bytes32 tradeId = _getTradeId(tokenIn, tokenOut, amountIn, minAmountOut, recipient, numberOfTrades, msg.sender);
+
+        if (receiveETH) {
+            unwrapOutput[tradeId] = true;
+        }
         status[tradeId] = TradeStatus.REQUESTED;
         numberOfTrades++;
 
@@ -212,8 +232,9 @@ contract Book is IOptimisticRequester, IBookEvents {
         status[tradeId] = TradeStatus.FILLED;
 
         emit TradeFilled(msg.sender, tradeIndex, amountToSend, trader);
+
         // Send the tokens to the recipient.
-        IERC20(tokenOut).safeTransferFrom(msg.sender, recipient, amountToSend);
+        _transferAndUnwrap(IERC20(tokenOut), msg.sender, recipient, amountToSend, unwrapOutput[tradeId]);
         // Send some of the tokens to the relayer.
         uint256 amountInToRelayer = (amountIn * relayerRefundPct) / 100;
 
@@ -261,7 +282,6 @@ contract Book is IOptimisticRequester, IBookEvents {
         emit TradeSettled(relayer, tradeIndex, filledHeight, trader);
 
         IERC20(tokenIn).safeTransfer(relayer, amountInToRelayer);
-
     }
 
     /**
@@ -306,23 +326,23 @@ contract Book is IOptimisticRequester, IBookEvents {
 
         // Pull the bond from the disputer
         IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), bondAmount);
-        // Now the book is going to sponsor the dispute. We approve 2 times 
+        // Now the book is going to sponsor the dispute. We approve 2 times
         IERC20(tokenIn).safeApprove(address(oracle), 2 * amountIn * disputeBondPct / 100);
 
-        bytes32 disputeId =
-            oracle.ask(relayer, msg.sender, tokenIn, bondAmount, abi.encode(amountIn, recipient, tradeIndex, trader));
+        bytes32 disputeId = oracle.ask(
+            relayer, msg.sender, tokenIn, bondAmount, abi.encode(amountIn, recipient, tradeIndex, trader, tradeId)
+        );
         emit TradeDisputed(relayer, tradeIndex, disputeId, filledHeight, trader);
 
         IERC20(tokenIn).safeApprove(address(oracle), 0);
-
     }
 
     function onPriceSettled(bytes32 id, Request calldata request) external {
         if (msg.sender != address(oracle)) {
             revert Book__MaliciousCaller(msg.sender);
         }
-        (uint256 amountIn, address recipient, uint256 tradeIndex, address trader) =
-            abi.decode(request.data, (uint256, address, uint256, address));
+        (uint256 amountIn, address recipient, uint256 tradeIndex, address trader, bytes32 tradeId) =
+            abi.decode(request.data, (uint256, address, uint256, address, bytes32));
         // If answer is true, it means the relayer was truthful, so he gets the tradeRebatePct of the trade as no rebate is necessary.
         uint256 rebate = (amountIn * tradeRebatePct) / 100;
         emit TradeDisputeSettled(request.proposer, tradeIndex, id, request.answer, trader);
@@ -330,9 +350,8 @@ contract Book is IOptimisticRequester, IBookEvents {
         if (request.answer) {
             request.currency.safeTransfer(request.proposer, rebate);
         } else {
-            request.currency.safeTransfer(recipient, rebate);
+            _transferAndUnwrap(request.currency, address(this), recipient, rebate, unwrapOutput[tradeId]);
         }
-
     }
 
     /**
@@ -340,6 +359,35 @@ contract Book is IOptimisticRequester, IBookEvents {
      *         INTERNAL FUNCTIONS         *
      *
      */
+
+    /**
+     * @notice Transfers `amount` of `token` from `sender` to `recipient`.
+     * @param token The token to transfer.
+     * @param sender The address to transfer the tokens from.
+     * @param recipient The address to transfer the tokens to.
+     * @param amount The amount of tokens to transfer.
+     * @param unwrap Whether to unwrap the tokens if they are WETH.
+     */
+    function _transferAndUnwrap(IERC20 token, address sender, address recipient, uint256 amount, bool unwrap)
+        internal
+    {
+        if (sender == address(this)) {
+            if (unwrap && address(token) == address(weth)) {
+                IWETH9(address(token)).withdraw(amount);
+                payable(recipient).transfer(amount);
+            } else {
+                IERC20(token).safeTransfer(recipient, amount);
+            }
+            return;
+        }
+        if (unwrap && address(token) == address(weth)) {
+            token.safeTransferFrom(sender, address(this), amount);
+            IWETH9(address(token)).withdraw(amount);
+            payable(recipient).transfer(amount);
+        } else {
+            IERC20(token).safeTransferFrom(sender, recipient, amount);
+        }
+    }
 
     /**
      * @notice Removes a trade with id `tradeId` from storage.
@@ -409,4 +457,7 @@ contract Book is IOptimisticRequester, IBookEvents {
         return keccak256(abi.encodePacked(tokenIn, tokenOut, amountIn, minAmountOut, recipient, tradeIndex, trader));
     }
 
+
+    receive() external payable {
+    }
 }

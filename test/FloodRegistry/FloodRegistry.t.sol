@@ -2,6 +2,7 @@
 pragma solidity ^0.8.17;
 
 import "forge-std/Test.sol";
+import {IWETH9} from "src/interfaces/IWETH9.sol";
 import {FloodRegistry, IFloodRegistryEvents} from "src/FloodRegistry.sol";
 import {AllKnowingOracle} from "src/AllKnowingOracle.sol";
 
@@ -9,9 +10,10 @@ contract FloodRegistryTest is Test, IFloodRegistryEvents {
     using stdStorage for StdStorage;
 
     FloodRegistry internal registry;
+    IWETH9 internal testWeth = IWETH9(address(1));
 
     function setUp() public {
-        registry = new FloodRegistry();
+        registry = new FloodRegistry(testWeth);
     }
 
     function testWhitelistToken(address token) public {
