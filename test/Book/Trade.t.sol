@@ -13,6 +13,7 @@ import {
     Book__TradeNotCancelable,
     Book__AmountOutTooLow,
     Book__NotWeth,
+    Book__InvalidValue,
     TradeStatus
 } from "src/Book.sol";
 import {TradeFixture} from "./Fixtures.sol";
@@ -51,8 +52,6 @@ contract TradeTest is TradeFixture {
         assertEq(numberOfTradesInStorage, tradeIndex + 1);
     }
 
-
-
     function testCannotTradeIfNoBalance() public {
         vm.expectRevert(bytes("ERC20: transfer amount exceeds balance"));
         vm.prank(alice);
@@ -90,23 +89,23 @@ contract TradeTest is TradeFixture {
         book.requestTrade(testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, blackHole, false);
     }
 
-        function testRequestTradeWithUnwrap() public {
-        testAmountIn = 1e6;
-        testTokenIn = USDC;
-        testTokenOut = WETH;
+    function testRequestTradeWithUnwrap() public {
+        uint amountIn= 1e6;
+        address tokenIn = USDC;
+        address tokenOut = WETH;
         uint256 tradeIndex = book.numberOfTrades();
         // Give alice some tokens to trade.
-        deal(testTokenIn, alice, testAmountIn);
+        deal(tokenIn, alice, amountIn);
         // Request a trade from Alice.
-        uint256 balanceBefore = IERC20(testTokenIn).balanceOf(alice);
+        uint256 balanceBefore = IERC20(tokenIn).balanceOf(alice);
 
         vm.expectEmit(true, true, true, true, address(book));
-        emit TradeRequested(testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, tradeIndex, alice);
+        emit TradeRequested(tokenIn, tokenOut, amountIn, testAmountOutMin, testRecipient, tradeIndex, alice);
         (, bytes32 id) =
-            _requestTrade(testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, alice, true);
+            _requestTrade(tokenIn, tokenOut, amountIn, testAmountOutMin, testRecipient, alice, true);
 
         // Check that the balance of Alice of `tokenIn` is reduced by `amount`.
-        assertEq(IERC20(testTokenIn).balanceOf(alice), balanceBefore - testAmountIn);
+        assertEq(IERC20(tokenIn).balanceOf(alice), balanceBefore - amountIn);
 
         // Check that the trade has been initialized
         uint256 statusInStorage = stdstore.target(address(book)).sig(book.status.selector).with_key(id).read_uint();
@@ -124,6 +123,45 @@ contract TradeTest is TradeFixture {
     function testCannotRequestUnwrapIfNotReceivingWETH() public {
         vm.expectRevert(Book__NotWeth.selector);
         book.requestTrade(WETH, USDC, testAmountIn, testAmountOutMin, testRecipient, true);
+    }
+
+      function testRequestTradeWithETH() public {
+        uint256 tradeIndex = book.numberOfTrades();
+        // Give alice some tokens to trade.
+        deal(alice, testAmountIn);
+        // Request a trade from Alice.
+        uint256 balanceBefore = alice.balance;
+
+        vm.expectEmit(true, true, true, true, address(book));
+        emit TradeRequested(testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, tradeIndex, alice);
+        bytes32 id = _getTradeId(testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, tradeIndex, alice);
+        vm.prank(alice);
+        book.requestTrade{value: testAmountIn}(testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, false);
+
+        // Check that the balance of Alice of `tokenIn` is reduced by `amount`.
+        assertEq(alice.balance, balanceBefore - testAmountIn);
+
+        // Check that the trade has been initialized
+        uint256 statusInStorage = stdstore.target(address(book)).sig(book.status.selector).with_key(id).read_uint();
+        assertEq(statusInStorage, uint256(TradeStatus.REQUESTED), "Trade not initialized");
+
+        // Check that the trade number has been increased
+        uint256 numberOfTradesInStorage = stdstore.target(address(book)).sig(book.numberOfTrades.selector).read_uint();
+        assertEq(numberOfTradesInStorage, tradeIndex + 1);
+    }
+
+    function testCannotRequestWithInvalidValue() public {
+        deal(alice, testAmountIn);
+        vm.expectRevert(Book__InvalidValue.selector);
+        vm.prank(alice);
+        book.requestTrade{value: testAmountIn - 1}(testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient,  false); 
+    }
+
+    function testCannotRequestETHIfTokenInIsNotWeth() public {
+        deal(alice, testAmountIn);
+        vm.expectRevert(Book__NotWeth.selector);
+        vm.prank(alice);
+        book.requestTrade{value: 1}(USDC, WETH, testAmountIn, testAmountOutMin, testRecipient,  false);
     }
 
     function testFillTrade(uint256 amountIn, uint256 amountOut) public {
@@ -291,7 +329,7 @@ contract TradeTest is TradeFixture {
         testTokenIn = USDC;
         testTokenOut = WETH;
         testAmountIn = 2e9;
-        uint amountOut = 1 ether; 
+        uint256 amountOut = 1 ether;
 
         deal(testTokenIn, alice, testAmountIn);
         (uint256 tradeIndex, bytes32 tradeId) =
@@ -322,11 +360,9 @@ contract TradeTest is TradeFixture {
             bobBalanceInBefore + bobExpectedTokens,
             "bob should have received some tokens"
         );
-        // Check the recipient received amountOut ethers 
+        // Check the recipient received amountOut ethers
         assertEq(
-            testRecipient.balance,  
-            recipientBalanceBefore + amountOut,
-            "recipient should have received amountOut tokens"
+            testRecipient.balance, recipientBalanceBefore + amountOut, "recipient should have received amountOut tokens"
         );
 
         uint256 filledAtInStorage =
@@ -335,6 +371,6 @@ contract TradeTest is TradeFixture {
 
         address filledByInStorage =
             stdstore.target(address(book)).sig(book.filledBy.selector).with_key(tradeId).read_address();
-        assertEq(filledByInStorage, bob); 
+        assertEq(filledByInStorage, bob);
     }
 }

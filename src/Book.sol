@@ -41,6 +41,7 @@ error Book__InvalidToken(address token);
 error Book__SameToken();
 error Book__ZeroAmount();
 error Book__NotWeth();
+error Book__InvalidValue();
 // the recipient of a transfer was the 0 address
 error Book__SentToBlackHole();
 error Book__InvalidParamsCombination();
@@ -91,6 +92,9 @@ contract Book is IOptimisticRequester, IBookEvents {
     // A mapping from a trade id to if the recipient wants to unwrap their output token.
     mapping(bytes32 => bool) public unwrapOutput;
 
+    // A mapping from a trade id to whether the trade was requested with ETH. 
+    mapping(bytes32 => bool) public isEthTrade; 
+
     constructor(
         FloodRegistry _registry,
         uint256 _safeBlockThreshold,
@@ -136,9 +140,16 @@ contract Book is IOptimisticRequester, IBookEvents {
         uint256 minAmountOut,
         address recipient,
         bool receiveETH
-    ) external {
+    ) external payable {
         // checks whether the tokens are whitelisted
         _isPairSupported(tokenIn, tokenOut);
+
+        if (tokenIn != address(weth) && msg.value > 0) {
+            revert Book__NotWeth();
+        }
+        if (tokenIn == address(weth) && msg.value > 0 && msg.value != amountIn) {
+            revert Book__InvalidValue();
+        }
         if (amountIn == 0 || minAmountOut == 0) {
             revert Book__ZeroAmount();
         }
@@ -159,7 +170,12 @@ contract Book is IOptimisticRequester, IBookEvents {
         status[tradeId] = TradeStatus.REQUESTED;
         numberOfTrades++;
 
-        IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
+        if (tokenIn == address(weth) && msg.value == amountIn) {
+            isEthTrade[tradeId] = true;
+            IWETH9(weth).deposit{value: amountIn}();
+        } else {
+            IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
+        }
     }
 
     /**
@@ -193,7 +209,7 @@ contract Book is IOptimisticRequester, IBookEvents {
 
         emit TradeCancelled(tradeIndex, tradeId, trader);
         // Refund the trader.
-        IERC20(tokenIn).safeTransfer(trader, amountIn);
+        _transferAndUnwrap(IERC20(tokenIn), address(this), trader, amountIn, isEthTrade[tradeId]);
     }
 
     /**
@@ -457,7 +473,5 @@ contract Book is IOptimisticRequester, IBookEvents {
         return keccak256(abi.encodePacked(tokenIn, tokenOut, amountIn, minAmountOut, recipient, tradeIndex, trader));
     }
 
-
-    receive() external payable {
-    }
+    receive() external payable {}
 }

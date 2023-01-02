@@ -8,7 +8,6 @@ import {Book} from "src/Book.sol";
 import {BaseBookFixture} from "./Fixtures.sol";
 
 contract BookWrapper is Book {
-
     constructor(
         FloodRegistry registry_,
         uint256 safeBlockThreashold_,
@@ -16,14 +15,8 @@ contract BookWrapper is Book {
         uint256 tradeRebatePct_,
         uint256 relayerRefundPct_,
         uint256 feePct_
-    ) Book(
-        registry_,
-        safeBlockThreashold_,
-        disputeBondPct_,
-        tradeRebatePct_,
-        relayerRefundPct_,
-        feePct_
-    ) {}
+    ) Book(registry_, safeBlockThreashold_, disputeBondPct_, tradeRebatePct_, relayerRefundPct_, feePct_) {}
+
     function transferAndUnwrap(IERC20 token, address sender, address recipient, uint256 amount, bool unwrap) external {
         _transferAndUnwrap(token, sender, recipient, amount, unwrap);
     }
@@ -31,8 +24,6 @@ contract BookWrapper is Book {
     function isPairSupported(address tokenA, address tokenB) external view {
         _isPairSupported(tokenA, tokenB);
     }
-
- 
 }
 
 contract BookInternalTest is BaseBookFixture {
@@ -57,8 +48,7 @@ contract BookInternalTest is BaseBookFixture {
         vm.stopPrank();
     }
 
-
-    function testTransfer(uint amount, bool unwrap) public {
+    function testTransfer(uint256 amount, bool unwrap) public {
         deal(USDC, alice, amount);
         wrapper.transferAndUnwrap(IERC20(USDC), alice, bob, amount, unwrap);
 
@@ -67,7 +57,7 @@ contract BookInternalTest is BaseBookFixture {
     }
 
     function testTransferAndUnwrap() public {
-        uint amount = 1 ether;
+        uint256 amount = 1 ether;
         bool unwrap = true;
         deal(WETH, alice, amount);
         wrapper.transferAndUnwrap(IERC20(WETH), alice, bob, amount, unwrap);
@@ -80,8 +70,5 @@ contract BookInternalTest is BaseBookFixture {
             assertEq(IERC20(WETH).balanceOf(bob), amount);
             assertEq(bob.balance, 0);
         }
-        
     }
-
-   
 }

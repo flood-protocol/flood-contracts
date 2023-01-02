@@ -36,7 +36,7 @@ contract MockWeth is MockToken, IWETH9, Test {
 
 contract TokenFixture is Test {
     address internal USDC = deployERC20IfNotEmpty(MAINNET_USDC, "USDC", "USDC", 6);
-    address internal WETH = deployWethIfNotEmpty(MAINNET_WETH); 
+    address internal WETH = deployWethIfNotEmpty(MAINNET_WETH);
 
     // Deploys a contract to `target` if the address has no existing code.
     // This is used to deploy contracts in tests ONLY if you're not forking.
@@ -51,7 +51,6 @@ contract TokenFixture is Test {
         ERC20 deployed = new MockToken(name, symbol, decimals);
         return address(deployed);
     }
-
 
     // Deploys a contract to `target` if the address has no existing code.
     // This is used to deploy contracts in tests ONLY if you're not forking.
