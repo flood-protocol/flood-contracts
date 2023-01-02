@@ -95,9 +95,12 @@ contract TradeFixture is BaseBookFixture {
         address _recipient,
         uint256 _tradeIndex,
         address _trader,
-        uint256 _amountToSend
+        uint256 _amountToSend,
+        bytes memory _data
     ) internal {
-        book.fillTrade(_tokenIn, _tokenOut, _amountIn, _amountOutMin, _recipient, _tradeIndex, _trader, _amountToSend);
+        book.fillTrade(
+            _tokenIn, _tokenOut, _amountIn, _amountOutMin, _recipient, _tradeIndex, _trader, _amountToSend, _data
+        );
     }
 
     function _checkFill(bytes32 _tradeId, address _filledBy, int256 _filledAtBlock) internal {
@@ -136,7 +139,8 @@ contract DisputeFixture is TradeFixture {
             testRecipient,
             tradeIndex,
             alice,
-            testAmountToSend
+            testAmountToSend,
+            bytes("")
         );
         _checkFill(tradeId, relayer, int256(block.number));
 

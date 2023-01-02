@@ -3,9 +3,10 @@ pragma solidity ^0.8.17;
 
 import {IERC20} from "@openzeppelin/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/token/ERC20/utils/SafeERC20.sol";
+import {IWETH9} from "./interfaces/IWETH9.sol";
+import {IFloodFillCallback} from "./interfaces/IFloodFillCallback.sol";
 import {AllKnowingOracle, Request, IOptimisticRequester} from "./AllKnowingOracle.sol";
 import {FloodRegistry} from "./FloodRegistry.sol";
-import {IWETH9} from "./interfaces/IWETH9.sol";
 
 interface IBookEvents {
     event SafeBlockThresholdSet(uint256 newSafeBlockThreshold);
@@ -92,8 +93,8 @@ contract Book is IOptimisticRequester, IBookEvents {
     // A mapping from a trade id to if the recipient wants to unwrap their output token.
     mapping(bytes32 => bool) public unwrapOutput;
 
-    // A mapping from a trade id to whether the trade was requested with ETH. 
-    mapping(bytes32 => bool) public isEthTrade; 
+    // A mapping from a trade id to whether the trade was requested with ETH.
+    mapping(bytes32 => bool) public isEthTrade;
 
     constructor(
         FloodRegistry _registry,
@@ -234,7 +235,8 @@ contract Book is IOptimisticRequester, IBookEvents {
         address recipient,
         uint256 tradeIndex,
         address trader,
-        uint256 amountToSend
+        uint256 amountToSend,
+        bytes calldata data
     ) external {
         bytes32 tradeId = _getTradeId(tokenIn, tokenOut, amountIn, minAmountOut, recipient, tradeIndex, trader);
         if (status[tradeId] != TradeStatus.REQUESTED) {
@@ -246,15 +248,18 @@ contract Book is IOptimisticRequester, IBookEvents {
         filledAtBlock[tradeId] = block.number;
         filledBy[tradeId] = msg.sender;
         status[tradeId] = TradeStatus.FILLED;
-
         emit TradeFilled(msg.sender, tradeIndex, amountToSend, trader);
+
+        uint256 amountInToRelayer = (amountIn * relayerRefundPct) / 100;
+        // Send some of the tokens to the relayer.
+        IERC20(tokenIn).safeTransfer(msg.sender, amountInToRelayer);
+        // Relayers can use the tokens they receive to pay for the swaps
+        if (data.length > 0) {
+            IFloodFillCallback(msg.sender).onFloodFill(data);
+        }
 
         // Send the tokens to the recipient.
         _transferAndUnwrap(IERC20(tokenOut), msg.sender, recipient, amountToSend, unwrapOutput[tradeId]);
-        // Send some of the tokens to the relayer.
-        uint256 amountInToRelayer = (amountIn * relayerRefundPct) / 100;
-
-        IERC20(tokenIn).safeTransfer(msg.sender, amountInToRelayer);
     }
 
     /**

@@ -18,7 +18,7 @@ import {
 } from "src/Book.sol";
 import {TradeFixture} from "./Fixtures.sol";
 
-contract TradeTest is TradeFixture {
+contract RequestTest is TradeFixture {
     using stdStorage for StdStorage;
 
     function setUp() public override {
@@ -90,7 +90,7 @@ contract TradeTest is TradeFixture {
     }
 
     function testRequestTradeWithUnwrap() public {
-        uint amountIn= 1e6;
+        uint256 amountIn = 1e6;
         address tokenIn = USDC;
         address tokenOut = WETH;
         uint256 tradeIndex = book.numberOfTrades();
@@ -101,8 +101,7 @@ contract TradeTest is TradeFixture {
 
         vm.expectEmit(true, true, true, true, address(book));
         emit TradeRequested(tokenIn, tokenOut, amountIn, testAmountOutMin, testRecipient, tradeIndex, alice);
-        (, bytes32 id) =
-            _requestTrade(tokenIn, tokenOut, amountIn, testAmountOutMin, testRecipient, alice, true);
+        (, bytes32 id) = _requestTrade(tokenIn, tokenOut, amountIn, testAmountOutMin, testRecipient, alice, true);
 
         // Check that the balance of Alice of `tokenIn` is reduced by `amount`.
         assertEq(IERC20(tokenIn).balanceOf(alice), balanceBefore - amountIn);
@@ -125,7 +124,7 @@ contract TradeTest is TradeFixture {
         book.requestTrade(WETH, USDC, testAmountIn, testAmountOutMin, testRecipient, true);
     }
 
-      function testRequestTradeWithETH() public {
+    function testRequestTradeWithETH() public {
         uint256 tradeIndex = book.numberOfTrades();
         // Give alice some tokens to trade.
         deal(alice, testAmountIn);
@@ -134,9 +133,12 @@ contract TradeTest is TradeFixture {
 
         vm.expectEmit(true, true, true, true, address(book));
         emit TradeRequested(testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, tradeIndex, alice);
-        bytes32 id = _getTradeId(testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, tradeIndex, alice);
+        bytes32 id =
+            _getTradeId(testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, tradeIndex, alice);
         vm.prank(alice);
-        book.requestTrade{value: testAmountIn}(testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, false);
+        book.requestTrade{value: testAmountIn}(
+            testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, false
+        );
 
         // Check that the balance of Alice of `tokenIn` is reduced by `amount`.
         assertEq(alice.balance, balanceBefore - testAmountIn);
@@ -154,123 +156,19 @@ contract TradeTest is TradeFixture {
         deal(alice, testAmountIn);
         vm.expectRevert(Book__InvalidValue.selector);
         vm.prank(alice);
-        book.requestTrade{value: testAmountIn - 1}(testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient,  false); 
+        book.requestTrade{value: testAmountIn - 1}(
+            testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, false
+        );
     }
 
     function testCannotRequestETHIfTokenInIsNotWeth() public {
         deal(alice, testAmountIn);
         vm.expectRevert(Book__NotWeth.selector);
         vm.prank(alice);
-        book.requestTrade{value: 1}(USDC, WETH, testAmountIn, testAmountOutMin, testRecipient,  false);
+        book.requestTrade{value: 1}(USDC, WETH, testAmountIn, testAmountOutMin, testRecipient, false);
     }
 
-    function testFillTrade(uint256 amountIn, uint256 amountOut) public {
-        vm.assume(amountIn > 0);
-        vm.assume(amountOut > testAmountOutMin);
-        vm.assume(amountIn < type(uint256).max / testRelayerRefundPct - 1);
-
-        deal(testTokenIn, alice, amountIn);
-        (uint256 tradeIndex, bytes32 tradeId) =
-            _requestTrade(testTokenIn, testTokenOut, amountIn, testAmountOutMin, testRecipient, alice, false);
-
-        deal(testTokenOut, bob, amountOut);
-        uint256 bobBalanceOutBefore = IERC20(testTokenOut).balanceOf(bob);
-        uint256 bobBalanceInBefore = IERC20(testTokenIn).balanceOf(bob);
-        uint256 recipientBalanceBefore = IERC20(testTokenOut).balanceOf(testRecipient);
-
-        vm.prank(bob);
-        vm.expectEmit(true, true, true, true, address(book));
-        emit TradeFilled(bob, tradeIndex, amountOut, alice);
-        book.fillTrade(
-            testTokenIn, testTokenOut, amountIn, testAmountOutMin, testRecipient, tradeIndex, alice, amountOut
-        );
-        // Check bob submitted amountOut tokens
-        assertEq(
-            IERC20(testTokenOut).balanceOf(bob) + amountOut,
-            bobBalanceOutBefore,
-            "bob should have sent amountOut tokens"
-        );
-        // Check bob got relayerRefundPct * amountIn tokens
-        uint256 bobExpectedTokens = (amountIn * testRelayerRefundPct) / 100;
-
-        assertEq(
-            IERC20(testTokenIn).balanceOf(bob),
-            bobBalanceInBefore + bobExpectedTokens,
-            "bob should have received some tokens"
-        );
-        // Check the recipient received amountOut tokens
-        assertEq(
-            IERC20(testTokenOut).balanceOf(testRecipient),
-            recipientBalanceBefore + amountOut,
-            "recipient should have received amountOut tokens"
-        );
-
-        uint256 filledAtInStorage =
-            stdstore.target(address(book)).sig(book.filledAtBlock.selector).with_key(tradeId).read_uint();
-        assertEq(filledAtInStorage, block.number);
-
-        address filledByInStorage =
-            stdstore.target(address(book)).sig(book.filledBy.selector).with_key(tradeId).read_address();
-        assertEq(filledByInStorage, bob);
-    }
-
-    function testCannotFillUninitialized() public {
-        bytes32 tradeId =
-            _getTradeId(testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, 1, testTrader);
-        // This should fail as the trade has not been requested.
-        vm.expectRevert(abi.encodeWithSelector(Book__TradeNotInFillableState.selector, tradeId));
-        book.fillTrade(testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, 1, testTrader, 1);
-    }
-
-    function testCannotFillIfAlreadyFilled() public {
-        // Simulate a trade request. We assume that the request is valid and executed correctly.
-        uint256 tradeIndex = book.numberOfTrades() + 1;
-        bytes32 tradeId = _getTradeId(
-            testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, tradeIndex, testTrader
-        );
-
-        // Artificially fill&dispute the trade at the past block.
-        stdstore.target(address(book)).sig(book.filledAtBlock.selector).with_key(tradeId).checked_write(block.number);
-        vm.expectRevert(abi.encodeWithSelector(Book__TradeNotInFillableState.selector, tradeId));
-        book.fillTrade(
-            testTokenIn,
-            testTokenOut,
-            testAmountIn,
-            testAmountOutMin,
-            testRecipient,
-            tradeIndex,
-            testTrader,
-            testAmountOutMin + 1
-        );
-    }
-
-    function testCannotFillIfNoTokens(uint256 amountOut) public {
-        vm.assume(amountOut > 0);
-        bytes32 tradeId = _getTradeId(testTokenIn, testTokenOut, testAmountIn, 0, testRecipient, 1, testTrader);
-        // simulate a request
-        stdstore.target(address(book)).sig(book.status.selector).with_key(tradeId).checked_write(
-            uint256(TradeStatus.REQUESTED)
-        );
-        vm.prank(bob);
-        vm.expectRevert(bytes("ERC20: transfer amount exceeds balance"));
-        book.fillTrade(testTokenIn, testTokenOut, testAmountIn, 0, testRecipient, 1, testTrader, amountOut);
-    }
-
-    function testCannotFillIfAmountOutIsLessThanMin(uint256 minAmountOut) public {
-        vm.assume(minAmountOut > 1);
-        bytes32 tradeId =
-            _getTradeId(testTokenIn, testTokenOut, testAmountIn, minAmountOut, testRecipient, 1, testTrader);
-        // simulate a request
-        stdstore.target(address(book)).sig(book.status.selector).with_key(tradeId).checked_write(
-            uint256(TradeStatus.REQUESTED)
-        );
-        uint256 amountOut = minAmountOut - 1;
-        vm.prank(bob);
-        vm.expectRevert(Book__AmountOutTooLow.selector);
-        book.fillTrade(testTokenIn, testTokenOut, testAmountIn, minAmountOut, testRecipient, 1, testTrader, amountOut);
-    }
-
-    function testCancelTrade() public {
+        function testCancelTrade() public {
         deal(testTokenIn, testTrader, testAmountIn);
         uint256 balanceBefore = IERC20(testTokenIn).balanceOf(testTrader);
         uint256 bookBalanceBefore = IERC20(testTokenIn).balanceOf(address(book));
@@ -323,54 +221,5 @@ contract TradeTest is TradeFixture {
         vm.expectRevert(Book__NotTrader.selector);
         vm.prank(bob);
         book.cancelTrade(testTokenIn, testTokenOut, testAmountIn, 1, testRecipient, tradeIndex, testTrader);
-    }
-
-    function testFillWithUnwrap() public {
-        testTokenIn = USDC;
-        testTokenOut = WETH;
-        testAmountIn = 2e9;
-        uint256 amountOut = 1 ether;
-
-        deal(testTokenIn, alice, testAmountIn);
-        (uint256 tradeIndex, bytes32 tradeId) =
-            _requestTrade(testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, alice, true);
-
-        deal(testTokenOut, bob, amountOut);
-        uint256 bobBalanceOutBefore = IERC20(testTokenOut).balanceOf(bob);
-        uint256 bobBalanceInBefore = IERC20(testTokenIn).balanceOf(bob);
-        uint256 recipientBalanceBefore = IERC20(testTokenOut).balanceOf(testRecipient);
-
-        vm.prank(bob);
-        vm.expectEmit(true, true, true, true, address(book));
-        emit TradeFilled(bob, tradeIndex, amountOut, alice);
-        book.fillTrade(
-            testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, tradeIndex, alice, amountOut
-        );
-        // Check bob submitted amountOut tokens
-        assertEq(
-            IERC20(testTokenOut).balanceOf(bob) + amountOut,
-            bobBalanceOutBefore,
-            "bob should have sent amountOut tokens"
-        );
-        // Check bob got relayerRefundPct * amountIn tokens
-        uint256 bobExpectedTokens = (testAmountIn * testRelayerRefundPct) / 100;
-
-        assertEq(
-            IERC20(testTokenIn).balanceOf(bob),
-            bobBalanceInBefore + bobExpectedTokens,
-            "bob should have received some tokens"
-        );
-        // Check the recipient received amountOut ethers
-        assertEq(
-            testRecipient.balance, recipientBalanceBefore + amountOut, "recipient should have received amountOut tokens"
-        );
-
-        uint256 filledAtInStorage =
-            stdstore.target(address(book)).sig(book.filledAtBlock.selector).with_key(tradeId).read_uint();
-        assertEq(filledAtInStorage, block.number);
-
-        address filledByInStorage =
-            stdstore.target(address(book)).sig(book.filledBy.selector).with_key(tradeId).read_address();
-        assertEq(filledByInStorage, bob);
     }
 }
