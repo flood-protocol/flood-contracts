@@ -91,7 +91,7 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Ownable2Step {
     /**
      * @notice Compute the ID for a request.
      * @dev The bond is transferred from `msg.sender` rather than from `proposer` to allow contracts to sponsor proposals.
-     * For example, in `BookSingleChain`, the relayer has already sent funds to the contract, so they are pulled from the contract directly and the relayer is set as proposer.
+     * For example, in `Book`, the relayer has already sent funds to the contract, so they are pulled from the contract directly and the relayer is set as proposer.
      * @param sender value of `msg.sender` when the request is created
      * @param proposer Address of the proposer
      * @param disputer Address of the disputer
@@ -111,7 +111,7 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Ownable2Step {
     /**
      * @notice Requests and proposes a price to the oracle. Disputers should set their allowance at each dispute to safely pay the bond.
      * @dev The bond proposer bond is transferred from `msg.sender` rather than from `proposer` to allow contracts to sponsor proposals.
-     * For example, in `BookSingleChain`, relayer and disputer have already sent funds to the contract, so they are pulled from the contract directly and the relayer is set as proposer.
+     * For example, in `Book`, relayer and disputer have already sent funds to the contract, so they are pulled from the contract directly and the relayer is set as proposer.
      * @param proposer Address of the proposer
      * @param disputer Address of the disputer
      * @param currency Token to use for the bond
@@ -165,7 +165,7 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Ownable2Step {
             request.currency.safeTransfer(request.disputer, payout);
         }
 
-        // Callback into the proposer if its a contract
+        // Callback into the requester if its a contract
         if (request.requester.code.length != 0) {
             IOptimisticRequester(request.requester).onPriceSettled(id, request);
         }
