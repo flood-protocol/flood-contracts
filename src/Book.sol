@@ -354,8 +354,6 @@ contract Book is IOptimisticRequester, IBookEvents {
             relayer, msg.sender, tokenIn, bondAmount, abi.encode(amountIn, recipient, tradeIndex, trader, tradeId)
         );
         emit TradeDisputed(relayer, tradeIndex, disputeId, filledHeight, trader);
-
-        IERC20(tokenIn).safeApprove(address(oracle), 0);
     }
 
     function onPriceSettled(bytes32 id, Request calldata request) external {
