@@ -171,7 +171,7 @@ contract Book is IOptimisticRequester, IBookEvents {
         status[tradeId] = TradeStatus.REQUESTED;
         numberOfTrades++;
 
-        if (tokenIn == address(weth) && msg.value == amountIn) {
+        if (msg.value > 0) {
             isEthTrade[tradeId] = true;
             weth.deposit{value: amountIn}();
         } else {
