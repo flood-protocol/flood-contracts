@@ -8,7 +8,6 @@ import {
     IAllKnowingOracleEvents,
     Request,
     RequestState,
-    AllKnowingOracle__RequestAlreadyExists,
     AllKnowingOracle__NonSettler,
     AllKnowingOracle__AlreadySettled
 } from "src/AllKnowingOracle.sol";
@@ -32,9 +31,9 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
         super.setUp();
     }
 
-    function testGetId(address sender, address proposer, address disputer, address currency, uint256 bond) public {
-        bytes32 id = keccak256(abi.encodePacked(sender, proposer, disputer, currency, bond));
-        assertEq(oracle.getRequestId(sender, proposer, disputer, currency, bond), id);
+    function testGetId(address sender, address proposer, address disputer, address currency, uint256 bond, uint reqIndex) public {
+        bytes32 id = keccak256(abi.encodePacked(sender, proposer, disputer, currency, bond, reqIndex));
+        assertEq(oracle.getRequestId(sender, proposer, disputer, currency, bond, reqIndex), id);
     }
 
     function testAsk(uint256 bond) public {
@@ -42,11 +41,11 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
         // As Charlie is the requester, he will pay the bond for Alice and Bob.
         deal(USDC, charlie, 2 * bond);
         uint256 charlieBalanceBefore = IERC20(USDC).balanceOf(charlie);
-
-        bytes32 id = oracle.getRequestId(charlie, alice, bob, USDC, bond);
+        uint reqIndex = oracle.requestCount();
+        bytes32 id = oracle.getRequestId(charlie, alice, bob, USDC, bond, reqIndex);
         vm.prank(charlie);
         vm.expectEmit(true, true, true, true, address(oracle));
-        emit NewRequest(id, alice, bob, USDC, bond);
+        emit NewRequest(id, alice, bob, USDC, bond, reqIndex);
         oracle.ask(alice, bob, USDC, bond, abi.encode(charlie));
 
         assertEq(IERC20(USDC).balanceOf(charlie), charlieBalanceBefore - 2 * bond);
@@ -71,26 +70,6 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
         assertEq(uint256(storageState), uint256(RequestState.Pending));
         assertEq(storageAnswer, false);
         assertEq(storageData, abi.encode(charlie));
-    }
-
-    function testCannotAskIfAlreadyExists(uint256 bond) public {
-        vm.assume(bond < type(uint256).max / 4);
-        deal(USDC, charlie, type(uint256).max);
-        deal(USDC, bob, type(uint256).max);
-        deal(USDC, address(this), type(uint256).max);
-        vm.prank(charlie);
-        oracle.ask(alice, bob, USDC, bond, abi.encode(charlie));
-        // Asking again from a different requester (in the next call msg.sender is the address of this contract) is ok
-        oracle.ask(alice, bob, USDC, bond, abi.encode(charlie));
-
-        bytes32 id = oracle.getRequestId(charlie, alice, bob, USDC, bond);
-        vm.prank(charlie);
-        vm.expectRevert(abi.encodeWithSelector(AllKnowingOracle__RequestAlreadyExists.selector, id));
-        oracle.ask(alice, bob, USDC, bond, abi.encode(charlie));
-        // Even the same question with no callback should fail
-        vm.prank(charlie);
-        vm.expectRevert(abi.encodeWithSelector(AllKnowingOracle__RequestAlreadyExists.selector, id));
-        oracle.ask(alice, bob, USDC, bond, "");
     }
 
     function testCannotAskWithInsufficientBalanceForBond() public {
@@ -119,7 +98,8 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
         vm.prank(requesterAddress);
         oracle.ask(alice, bob, USDC, bond, abi.encode(int256(-42)));
 
-        bytes32 id = oracle.getRequestId(requesterAddress, alice, bob, USDC, bond);
+        uint256 reqIndex = oracle.requestCount() - 1;
+        bytes32 id = oracle.getRequestId(requesterAddress, alice, bob, USDC, bond, reqIndex);
         (
             address storageRequester,
             address storageProposer,
@@ -159,8 +139,8 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
         deal(USDC, charlie, 2 * bond);
         vm.prank(charlie);
         oracle.ask(alice, bob, USDC, bond, "");
-
-        bytes32 id = oracle.getRequestId(charlie, alice, bob, USDC, bond);
+        uint reqIndex = oracle.requestCount() - 1;
+        bytes32 id = oracle.getRequestId(charlie, alice, bob, USDC, bond, reqIndex);
 
         vm.prank(charlie);
         vm.expectEmit(true, true, true, true, address(oracle));

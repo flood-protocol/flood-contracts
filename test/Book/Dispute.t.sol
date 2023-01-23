@@ -24,7 +24,8 @@ contract DisputeTest is DisputeFixture {
             stdstore.target(address(book)).sig(book.filledAtBlock.selector).with_key(tradeId).read_int();
 
         // check that the request was received by the oracle
-        bytes32 reqId = keccak256(abi.encodePacked(address(book), relayer, disputer, testTokenIn, bond));
+        uint reqIndex = oracle.requestCount();
+        bytes32 reqId = keccak256(abi.encodePacked(address(book), relayer, disputer, testTokenIn, bond, reqIndex));
 
         vm.expectEmit(true, true, true, true, address(book));
         emit TradeDisputed(relayer, tradeIndex, reqId, uint256(filledAtBeforeDispute), testTrader);
@@ -91,8 +92,8 @@ contract DisputeTest is DisputeFixture {
         uint256 disputerBalanceBeforeDispute = IERC20(testTokenIn).balanceOf(disputer);
         uint256 relayerBalanceBeforeDispute = IERC20(testTokenIn).balanceOf(relayer);
         uint256 recipientBalanceBeforeDispute = IERC20(testTokenIn).balanceOf(testRecipient);
-
-        bytes32 reqId = keccak256(abi.encodePacked(address(book), relayer, disputer, testTokenIn, bond));
+        uint reqIndex = oracle.requestCount();
+        bytes32 reqId = keccak256(abi.encodePacked(address(book), relayer, disputer, testTokenIn, bond, reqIndex));
 
         _disputeTrade(testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, tradeIndex, testTrader);
 

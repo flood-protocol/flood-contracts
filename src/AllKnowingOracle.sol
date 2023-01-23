@@ -8,7 +8,6 @@ import {Ownable2Step} from "@openzeppelin/access/Ownable2Step.sol";
 
 error AllKnowingOracle__AlreadySettled(bytes32 id);
 error AllKnowingOracle__NonSettler();
-error AllKnowingOracle__RequestAlreadyExists(bytes32 id);
 error AllKnowingOracle__BondTooSmall();
 
 enum RequestState {
@@ -42,7 +41,7 @@ interface IAllKnowingOracleEvents {
     event SettlerWhitelisted(address indexed settler, bool enabled);
     event RequesterWhitelisted(address indexed requester, bool enabled);
     event NewRequest(
-        bytes32 indexed id, address indexed proposer, address indexed disputer, address currency, uint256 bond
+        bytes32 indexed id, address indexed proposer, address indexed disputer, address currency, uint256 bond, uint requestIndex
     );
     event RequestSettled(bytes32 indexed id, bool answer);
 }
@@ -59,6 +58,7 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Ownable2Step {
     mapping(bytes32 => Request) public requests;
     mapping(address => bool) public settlers;
     FloodRegistry public immutable registry;
+    uint public requestCount = 0;
 
     modifier onlySettler() {
         if (!settlers[msg.sender]) {
@@ -97,14 +97,15 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Ownable2Step {
      * @param disputer Address of the disputer
      * @param currency Token to use for the bond
      * @param bond Value of the bond
+     * @param requestIndex Index of the request
      * @return ID of the request
      */
-    function getRequestId(address sender, address proposer, address disputer, address currency, uint256 bond)
+    function getRequestId(address sender, address proposer, address disputer, address currency, uint256 bond, uint requestIndex)
         external
         pure
         returns (bytes32)
     {
-        return _getRequestId(sender, proposer, disputer, currency, bond);
+        return _getRequestId(sender, proposer, disputer, currency, bond, requestIndex);
     }
 
     /**
@@ -120,10 +121,8 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Ownable2Step {
         external
         returns (bytes32 id)
     {
-        id = _getRequestId(msg.sender, proposer, disputer, currency, bond);
-        if (requests[id].state != RequestState.Uninitialized) {
-            revert AllKnowingOracle__RequestAlreadyExists(id);
-        }
+        id = _getRequestId(msg.sender, proposer, disputer, currency, bond, requestCount);
+        requestCount++;
         Request memory request = Request({
             requester: msg.sender,
             proposer: proposer,
@@ -137,7 +136,7 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Ownable2Step {
 
         requests[id] = request;
 
-        emit NewRequest(id, proposer, disputer, currency, bond);
+        emit NewRequest(id, proposer, disputer, currency, bond, requestCount - 1);
 
         IERC20(currency).safeTransferFrom(msg.sender, address(this), 2 * bond);
     }
@@ -178,11 +177,11 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Ownable2Step {
      *
      */
 
-    function _getRequestId(address requester, address proposer, address disputer, address currency, uint256 bond)
+    function _getRequestId(address requester, address proposer, address disputer, address currency, uint256 bond, uint requestIndex)
         internal
         pure
         returns (bytes32)
     {
-        return keccak256(abi.encodePacked(requester, proposer, disputer, currency, bond));
+        return keccak256(abi.encodePacked(requester, proposer, disputer, currency, bond, requestIndex));
     }
 }
