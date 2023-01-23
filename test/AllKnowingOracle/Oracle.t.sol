@@ -10,7 +10,7 @@ import {
     RequestState,
     AllKnowingOracle__RequestAlreadyExists,
     AllKnowingOracle__NonSettler,
-    AllKnowingOracle__AlreadySettled
+    AllKnowingOracle__NotSettleable
 } from "src/AllKnowingOracle.sol";
 import {OracleFixture} from "./Fixtures.sol";
 
@@ -153,9 +153,9 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
         oracle.settle(bytes32(0), true);
     }
 
-    function testCannotSettleIfAlreadySettled(bool answer) public {
+    function testCannotSettleIfAlreadySettled() public {
         uint256 bond = 100;
-
+        bool answer = true;
         deal(USDC, charlie, 2 * bond);
         vm.prank(charlie);
         oracle.ask(alice, bob, USDC, bond, "");
@@ -168,7 +168,13 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
         oracle.settle(id, answer);
 
         vm.prank(charlie);
-        vm.expectRevert(abi.encodeWithSelector(AllKnowingOracle__AlreadySettled.selector, id));
+        vm.expectRevert(abi.encodeWithSelector(AllKnowingOracle__NotSettleable.selector, id));
         oracle.settle(id, answer);
+    }
+    
+    function testCannotSettleIfUninitialized() public {
+        vm.prank(charlie);
+        vm.expectRevert(abi.encodeWithSelector(AllKnowingOracle__NotSettleable.selector, bytes32(0)));
+        oracle.settle(bytes32(0), true);
     }
 }

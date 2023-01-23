@@ -6,7 +6,7 @@ import {IERC20} from "@openzeppelin/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/token/ERC20/utils/SafeERC20.sol";
 import {Ownable2Step} from "@openzeppelin/access/Ownable2Step.sol";
 
-error AllKnowingOracle__AlreadySettled(bytes32 id);
+error AllKnowingOracle__NotSettleable(bytes32 id);
 error AllKnowingOracle__NonSettler();
 error AllKnowingOracle__RequestAlreadyExists(bytes32 id);
 error AllKnowingOracle__BondTooSmall();
@@ -149,9 +149,9 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Ownable2Step {
      */
     function settle(bytes32 id, bool answer) external onlySettler {
         Request storage request = requests[id];
-        // revert if the request is already settled
-        if (request.state == RequestState.Settled) {
-            revert AllKnowingOracle__AlreadySettled(id);
+        // revert if the request is not pending
+        if (request.state != RequestState.Pending) {
+            revert AllKnowingOracle__NotSettleable(id);
         }
         // Whoever wins gets the bond back plus the other party bond.
         uint256 payout = 2 * request.bond;
