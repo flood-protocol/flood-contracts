@@ -11,6 +11,7 @@ interface IFloodRegistryEvents {
     event OracleChanged(AllKnowingOracle indexed oracle);
 }
 
+error FloodRegistry__InvalidToken();
 error FloodRegistry__TokenAlreadyWhitelisted();
 error FloodRegistry__TokenNotWhitelisted();
 error FloodRegistry__InvalidInputLength();
@@ -39,6 +40,9 @@ contract FloodRegistry is IFloodRegistryEvents, Ownable2Step {
      * @param enabled Whether the token should be whitelisted or not.
      */
     function whitelistToken(address token, bool enabled) external onlyOwner {
+        if(token.code.length == 0) {
+            revert FloodRegistry__InvalidToken();
+        }
         _whitelistToken(token, enabled);
     }
 
@@ -53,6 +57,9 @@ contract FloodRegistry is IFloodRegistryEvents, Ownable2Step {
         }
 
         for (uint256 i = 0; i < tokens.length; i++) {
+            if(tokens[i].code.length == 0) {
+                revert FloodRegistry__InvalidToken();
+            }
             _whitelistToken(tokens[i], enabled[i]);
         }
     }

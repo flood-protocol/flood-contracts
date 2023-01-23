@@ -11,8 +11,9 @@ import {IWETH9} from "src/interfaces/IWETH9.sol";
 import {AllKnowingOracle} from "src/AllKnowingOracle.sol";
 import {Book} from "src/Book.sol";
 import {DeployScript} from "script/Deploy.s.sol";
+import {TokenFixture} from "../utils/TokenFixture.sol";
 
-contract DeployScriptTest is DeployScript {
+contract DeployScriptTest is DeployScript, TokenFixture {
     AllKnowingOracle internal testOracle = AllKnowingOracle(address(0));
     FloodRegistry internal testRegistry = FloodRegistry(address(1));
     IWETH9 internal testWeth = IWETH9(address(2));
@@ -86,7 +87,8 @@ contract DeployScriptTest is DeployScript {
         _deployBook(testRegistry, testSafeBlockThreshold, testDisputeBondPct, testTradeRebatePct, 0, testFeePct);
     }
 
-    function testWhitelistToken(address _token, bool _enable) public {
+    function testWhitelistToken(bool _enable) public {
+        address _token = USDC;
         FloodRegistry _registry = _deployRegistry(IWETH9(testWeth));
 
         if (_enable && _registry.isTokenWhitelisted(_token)) {
