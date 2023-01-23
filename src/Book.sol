@@ -395,7 +395,8 @@ contract Book is IOptimisticRequester, IBookEvents {
         if (sender == address(this)) {
             if (unwrap && address(token) == address(weth)) {
                 IWETH9(address(token)).withdraw(amount);
-                payable(recipient).transfer(amount);
+                (bool success,) = payable(recipient).call{value: amount}("");
+                require(success, "Book: ETH transfer failed");
             } else {
                 IERC20(token).safeTransfer(recipient, amount);
             }
