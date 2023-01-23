@@ -5,8 +5,9 @@ import "forge-std/Test.sol";
 import {IWETH9} from "src/interfaces/IWETH9.sol";
 import {FloodRegistry, IFloodRegistryEvents} from "src/FloodRegistry.sol";
 import {AllKnowingOracle} from "src/AllKnowingOracle.sol";
+import {TokenFixture} from "../utils/TokenFixture.sol";
 
-contract FloodRegistryTest is Test, IFloodRegistryEvents {
+contract FloodRegistryTest is TokenFixture, IFloodRegistryEvents {
     using stdStorage for StdStorage;
 
     FloodRegistry internal registry;
@@ -16,7 +17,8 @@ contract FloodRegistryTest is Test, IFloodRegistryEvents {
         registry = new FloodRegistry(testWeth);
     }
 
-    function testWhitelistToken(address token) public {
+    function testWhitelistToken() public {
+        address token = USDC;
         vm.expectEmit(true, false, false, true, address(registry));
         emit TokenWhitelisted(token, true);
         registry.whitelistToken(token, true);
@@ -32,9 +34,9 @@ contract FloodRegistryTest is Test, IFloodRegistryEvents {
 
     function testBatchWhitelistTokens() public {
         address[] memory tokens = new address[](3);
-        tokens[0] = address(1);
-        tokens[1] = address(2);
-        tokens[2] = address(3);
+        tokens[0] = USDC;
+        tokens[1] = WETH;
+        tokens[2] = DAI;
 
         bool[] memory enabled = new bool[](3);
         enabled[0] = true;
