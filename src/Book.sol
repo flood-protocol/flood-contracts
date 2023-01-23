@@ -57,8 +57,8 @@ error Book__DisputePeriodOver();
 error Book__MaliciousCaller(address caller);
 error Book__NotTrader();
 
-enum TradeStatus
 // The trade is not initialized, meaning it does not exist or was already settled/disputed
+enum TradeStatus
 {
     UNINITIALIZED,
     // The trade is initialized and can be filled
@@ -130,7 +130,7 @@ contract Book is IOptimisticRequester, IBookEvents {
      * @param tokenIn The token to be sold.
      * @param tokenOut The token to be bought.
      * @param amountIn The amount of `tokenIn` to be sold.
-     * @param minAmountOut The minimum amount of `tokenOut` to be bought. This should be set offchain based on `feeCombination.tradeRebatePct`, for example, if `feeCombination.tradeRebatePct` is 20%, then `minAmountOut` could be 90% of optimal at the time of request.
+     * @param minAmountOut The minimum amount of `tokenOut` to be bought. This should be set offchain based on `tradeRebatePct`, for example, if `tradeRebatePct` is 20%, then `minAmountOut` could be 90% of optimal at the time of request.
      * @param recipient The address to receive the tokens bought.
      * @param receiveETH If true, the recipient will receive ETH instead of WETH.
      */
@@ -180,7 +180,7 @@ contract Book is IOptimisticRequester, IBookEvents {
     }
 
     /**
-     * @notice Fills a trade with the optimal quote at the time of execution.
+     * @notice Cancel a previously requested trade.
      * @param tokenIn The token to be sold.
      * @param tokenOut The token to be bought.
      * @param amountIn The amount of `tokenIn` to be sold.
@@ -209,7 +209,7 @@ contract Book is IOptimisticRequester, IBookEvents {
     }
 
     /**
-     * @notice called internally for filling a trade.
+     * @notice called by relayers for filling a trade.
      * All trade are accepted at face value, so no checks are performed. However, invalid trades can be disputed.
      * @dev Relayers are expected to correctly compute the Optimal Execution Price - feePct off-chain.
      * Failing to do so will result in a dispute and the relayer losing tokens.
