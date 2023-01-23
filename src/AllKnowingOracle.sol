@@ -8,6 +8,7 @@ import {Ownable2Step} from "@openzeppelin/access/Ownable2Step.sol";
 
 error AllKnowingOracle__NotSettleable(bytes32 id);
 error AllKnowingOracle__NonSettler();
+error AllKnowingOracle__SettlerIsDisputerOrProposer(bytes32 id);
 error AllKnowingOracle__BondTooSmall();
 
 enum RequestState {
@@ -158,6 +159,10 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Ownable2Step {
         // revert if the request is not pending
         if (request.state != RequestState.Pending) {
             revert AllKnowingOracle__NotSettleable(id);
+        }
+        // revert if the settler is either the disputer or proposer
+        if (msg.sender == request.disputer || msg.sender == request.proposer) {
+            revert AllKnowingOracle__SettlerIsDisputerOrProposer(id);
         }
         // Whoever wins gets the bond back plus the other party bond.
         uint256 payout = 2 * request.bond;

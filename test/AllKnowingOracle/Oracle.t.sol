@@ -9,7 +9,8 @@ import {
     Request,
     RequestState,
     AllKnowingOracle__NonSettler,
-    AllKnowingOracle__NotSettleable
+    AllKnowingOracle__NotSettleable,
+    AllKnowingOracle__SettlerIsDisputerOrProposer
 } from "src/AllKnowingOracle.sol";
 import {OracleFixture} from "./Fixtures.sol";
 
@@ -127,10 +128,31 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
         assertEq(requester.id(), id);
     }
 
-    function testCannotSettleAsIfNotSettler() public {
+    function testCannotSettleIfNotSettler() public {
         vm.expectRevert(AllKnowingOracle__NonSettler.selector);
         vm.prank(alice);
         oracle.settle(bytes32(0), true);
+    }
+
+
+    function testCannotSettleIfProposerOrDisputer() public {
+        uint bond = 100;
+        // As Charlie is the requester, he will pay the bond for Alice and Bob.
+        deal(USDC, charlie, 2 * bond);
+        uint reqIndex = oracle.requestCount();
+        bytes32 id = oracle.getRequestId(charlie, alice, bob, USDC, bond, reqIndex);
+        vm.prank(charlie);
+        oracle.ask(alice, bob, USDC, bond, abi.encode(charlie));
+
+        oracle.whitelistSettler(alice, true);
+        vm.prank(alice);
+        vm.expectRevert(abi.encodeWithSelector(AllKnowingOracle__SettlerIsDisputerOrProposer.selector, id));
+        oracle.settle(id, true);
+
+        oracle.whitelistSettler(bob, true);
+        vm.prank(bob);
+        vm.expectRevert(abi.encodeWithSelector(AllKnowingOracle__SettlerIsDisputerOrProposer.selector, id));
+        oracle.settle(id, true);
     }
 
     function testCannotSettleIfAlreadySettled() public {
