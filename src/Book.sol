@@ -187,7 +187,6 @@ contract Book is IOptimisticRequester, IBookEvents {
      * @param minAmountOut The minimum amount of `tokenOut` to be bought. This should be set offchain based on `feeCombination.tradeRebatePct`, for example, if `feeCombination.tradeRebatePct` is 20%, then `minAmountOut` could be 90% of optimal at the time of request.
      * @param recipient The address to receive the tokens bought.
      * @param tradeIndex The index of the trade.
-     * @param trader The address of the trader who originally requested the trade. Must equal msg.sender.
      */
     function cancelTrade(
         address tokenIn,
@@ -195,22 +194,18 @@ contract Book is IOptimisticRequester, IBookEvents {
         uint256 amountIn,
         uint256 minAmountOut,
         address recipient,
-        uint256 tradeIndex,
-        address trader
+        uint256 tradeIndex
     ) external {
-        if (msg.sender != trader) {
-            revert Book__NotTrader();
-        }
-        bytes32 tradeId = _getTradeId(tokenIn, tokenOut, amountIn, minAmountOut, recipient, tradeIndex, trader);
+        bytes32 tradeId = _getTradeId(tokenIn, tokenOut, amountIn, minAmountOut, recipient, tradeIndex, msg.sender);
         if (status[tradeId] != TradeStatus.REQUESTED) {
             revert Book__TradeNotCancelable(tradeId);
         }
 
         _deleteTrade(tradeId);
 
-        emit TradeCancelled(tradeIndex, tradeId, trader);
+        emit TradeCancelled(tradeIndex, tradeId, msg.sender);
         // Refund the trader.
-        _transferAndUnwrap(IERC20(tokenIn), address(this), trader, amountIn, isEthTrade[tradeId]);
+        _transferAndUnwrap(IERC20(tokenIn), address(this), msg.sender, amountIn, isEthTrade[tradeId]);
     }
 
     /**

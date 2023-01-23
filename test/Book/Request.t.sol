@@ -179,7 +179,7 @@ contract RequestTest is TradeFixture {
         vm.prank(testTrader);
         vm.expectEmit(true, true, true, true, address(book));
         emit TradeCancelled(tradeIndex, tradeId, testTrader);
-        book.cancelTrade(testTokenIn, testTokenOut, testAmountIn, 1, testRecipient, tradeIndex, testTrader);
+        book.cancelTrade(testTokenIn, testTokenOut, testAmountIn, 1, testRecipient, tradeIndex);
 
         uint256 statusAfter = stdstore.target(address(book)).sig(book.status.selector).with_key(tradeId).read_uint();
 
@@ -201,7 +201,7 @@ contract RequestTest is TradeFixture {
         );
         vm.expectRevert(abi.encodeWithSelector(Book__TradeNotCancelable.selector, tradeId));
         vm.prank(testTrader);
-        book.cancelTrade(testTokenIn, testTokenOut, testAmountIn, 1, testRecipient, tradeIndex, testTrader);
+        book.cancelTrade(testTokenIn, testTokenOut, testAmountIn, 1, testRecipient, tradeIndex);
     }
 
     function testCannotCancelIfUninitialized() public {
@@ -210,16 +210,6 @@ contract RequestTest is TradeFixture {
         bytes32 tradeId = _getTradeId(testTokenIn, testTokenOut, testAmountIn, 1, testRecipient, 1, testTrader);
         vm.expectRevert(abi.encodeWithSelector(Book__TradeNotCancelable.selector, tradeId));
         vm.prank(testTrader);
-        book.cancelTrade(testTokenIn, testTokenOut, testAmountIn, 1, testRecipient, 1, testTrader);
-    }
-
-    function testCannotCancelIfNotTrader() public {
-        deal(testTokenIn, testTrader, testAmountIn);
-        // simulate a request
-        (uint256 tradeIndex,) =
-            _requestTrade(testTokenIn, testTokenOut, testAmountIn, 1, testRecipient, testTrader, false);
-        vm.expectRevert(Book__NotTrader.selector);
-        vm.prank(bob);
-        book.cancelTrade(testTokenIn, testTokenOut, testAmountIn, 1, testRecipient, tradeIndex, testTrader);
+        book.cancelTrade(testTokenIn, testTokenOut, testAmountIn, 1, testRecipient, 1);
     }
 }
