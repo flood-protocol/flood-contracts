@@ -173,7 +173,7 @@ contract Book is IOptimisticRequester, IBookEvents {
 
         if (tokenIn == address(weth) && msg.value == amountIn) {
             isEthTrade[tradeId] = true;
-            IWETH9(weth).deposit{value: amountIn}();
+            weth.deposit{value: amountIn}();
         } else {
             IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
         }
