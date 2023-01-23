@@ -38,6 +38,8 @@ interface IBookEvents {
     );
 }
 
+error Book__ZeroRegistry();
+error Book__ZeroSafeBlockThreshold();
 error Book__InvalidToken(address token);
 error Book__SameToken();
 error Book__ZeroAmount();
@@ -104,6 +106,12 @@ contract Book is IOptimisticRequester, IBookEvents {
         uint256 _relayerRefundPct,
         uint256 _feePct
     ) {
+        if (address(_registry) == address(0)) {
+            revert Book__ZeroRegistry(); 
+        }
+        if (_safeBlockThreshold == 0) {
+            revert Book__ZeroSafeBlockThreshold();
+        }
         registry = _registry;
         oracle = registry.latestOracle();
         weth = registry.WETH();
