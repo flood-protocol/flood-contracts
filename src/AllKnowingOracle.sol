@@ -77,6 +77,12 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Ownable2Step {
      *          ADMIN FUNCTIONS           *
      *
      */
+
+    /**
+    @notice Whitelists a settler, that is, an account authorized to settle requests. Only the owner can call this function.
+    @param settler Address of the settler
+    @param enabled Whether the settler is enabled
+    */
     function whitelistSettler(address settler, bool enabled) external onlyOwner {
         settlers[settler] = enabled;
         emit SettlerWhitelisted(settler, enabled);
@@ -116,6 +122,7 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Ownable2Step {
      * @param disputer Address of the disputer
      * @param currency Token to use for the bond
      * @param bond Bond value which must be posted to dispute
+     * @param data additional data associated with the request
      */
     function ask(address proposer, address disputer, address currency, uint256 bond, bytes calldata data)
         external

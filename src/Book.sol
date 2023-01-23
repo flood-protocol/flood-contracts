@@ -221,6 +221,7 @@ contract Book is IOptimisticRequester, IBookEvents {
      * @param tradeIndex The index of the trade.
      * @param trader The address of the trader who initiated the trade.
      * @param amountToSend The amount of `tokenOut` given by the relayer to the trader.
+     * @param data The data to be passed to the calling contract in the `onFloodFill` callback. 
      */
     function fillTrade(
         address tokenIn,
@@ -457,6 +458,7 @@ contract Book is IOptimisticRequester, IBookEvents {
      * @param minAmountOut The minimum amount of `tokenOut` to be bought.
      * @param recipient The address to receive the tokens bought.
      * @param tradeIndex The number of trades preceding this one.
+     * @param trader The address of the trader who initiated the trade.
      * @return The trade ID.
      */
 
@@ -472,5 +474,8 @@ contract Book is IOptimisticRequester, IBookEvents {
         return keccak256(abi.encodePacked(tokenIn, tokenOut, amountIn, minAmountOut, recipient, tradeIndex, trader));
     }
 
+    /**
+    @notice Standard function to receive ETH. 
+     */
     receive() external payable {}
 }
