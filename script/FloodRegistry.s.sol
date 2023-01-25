@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Unlicense
-pragma solidity ^0.8.17;
+pragma solidity 0.8.17;
 
 import "forge-std/Script.sol";
 import {IWETH9} from "src/interfaces/IWETH9.sol";
