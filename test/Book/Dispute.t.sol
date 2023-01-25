@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import "forge-std/Test.sol";
 import {IERC20} from "@openzeppelin/interfaces/IERC20.sol";
 import {RequestState, Request} from "src/AllKnowingOracle.sol";
-import {TradeStatus, Book__MaliciousCaller, Book__DisputePeriodOver, Book__TradeNotFilled} from "src/Book.sol";
+import {TradeStatus, Book__MaliciousCaller, Book__TradeNotDisputable, Book__TradeNotFilled} from "src/Book.sol";
 import {DisputeFixture} from "./Fixtures.sol";
 
 contract DisputeTest is DisputeFixture {
@@ -33,11 +33,10 @@ contract DisputeTest is DisputeFixture {
 
         // check that trade variables have been reset
         {
-            (uint filledAtAfterDispute, address filledByAfterDispute, TradeStatus statusAfterDispute, ,) =
+            (, , TradeStatus statusAfterDispute, ,,uint amountPaid) =
             book.tradesData(tradeId);
-            assertEq(filledByAfterDispute, address(0));
-            assertEq(filledAtAfterDispute, 0);
-            assertEq(uint8(statusAfterDispute),uint8(TradeStatus.UNINITIALIZED));
+            assertEq(uint8(statusAfterDispute),uint8(TradeStatus.DISPUTED));
+            assertEq(amountPaid, testAmountIn * (testRelayerRefundPct + testDisputeBondPct) / 100);
         }
 
         (
@@ -162,8 +161,9 @@ contract DisputeTest is DisputeFixture {
         address nextDisputer = generateUser("nextDisputer");
         deal(testTokenIn, nextDisputer, bond);
         vm.prank(nextDisputer);
-        IERC20(testTokenIn).approve(address(oracle), type(uint256).max);
-        vm.expectRevert(abi.encodeWithSelector(Book__TradeNotFilled.selector, tradeId));
+        IERC20(testTokenIn).approve(address(book), type(uint256).max);
+        vm.prank(nextDisputer);
+        vm.expectRevert(Book__TradeNotDisputable.selector);
         book.disputeTrade(
             testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, tradeIndex, testTrader
         );
@@ -171,18 +171,12 @@ contract DisputeTest is DisputeFixture {
 
     function testCannotDisputeIfPeriodIsOver() public {
         skipBlocks(testSafeBlockThreashold + 1);
-        vm.expectRevert(Book__DisputePeriodOver.selector);
+        vm.expectRevert(Book__TradeNotDisputable.selector);
         _disputeTrade(testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, tradeIndex, testTrader);
     }
 
     function testCannotDisputeIfNotFilled() public {
-        bytes32 nonExistentTradeId = keccak256(
-            abi.encodePacked(
-                testTokenIn, testTokenOut, testAmountIn + 1, testAmountOutMin, testRecipient, tradeIndex, testTrader
-            )
-        );
-
-        vm.expectRevert(abi.encodeWithSelector(Book__TradeNotFilled.selector, nonExistentTradeId));
+        vm.expectRevert(Book__TradeNotDisputable.selector);
         // dispute a trade which was not filled
         book.disputeTrade(
             testTokenIn, testTokenOut, testAmountIn + 1, testAmountOutMin, testRecipient, tradeIndex, testTrader

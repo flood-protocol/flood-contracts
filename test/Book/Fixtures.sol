@@ -104,7 +104,7 @@ contract TradeFixture is BaseBookFixture {
     }
 
     function _checkFill(bytes32 _tradeId, address _filledBy, uint256 _filledAtBlock) internal {
-        (uint filledAtBlock, address filledBy, , ,) = book.tradesData(_tradeId);
+        (uint filledAtBlock, address filledBy, , ,,) = book.tradesData(_tradeId);
         assertEq(filledBy, _filledBy);
         assertEq(filledAtBlock, _filledAtBlock);
     }
