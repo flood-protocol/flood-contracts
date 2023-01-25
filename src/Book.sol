@@ -69,6 +69,22 @@ enum TradeStatus
     FILLED
 }
 
+/**
+    @notice A struct representing data associated with a trade. It is used to store the data of a trade in a mapping.
+    @param filledAtBlock The block the trade was filled at. A value of 0 means it has not been filled yet.
+    @param filledBy The relayer that filled the trade.
+    @param status The status of the trade.
+    @param unwrapOutput Whether the recipient wants to unwrap their output token.
+    @param isEthTrade Whether the trade was requested with ETH.
+ */
+struct TradeData {
+    uint filledAtBlock;
+    address filledBy;
+    TradeStatus status;
+    bool unwrapOutput;
+    bool isEthTrade;
+}
+
 contract Book is IOptimisticRequester, IBookEvents {
     using SafeERC20 for IERC20;
 
@@ -85,20 +101,10 @@ contract Book is IOptimisticRequester, IBookEvents {
     IWETH9 private immutable weth;
 
     uint256 public numberOfTrades = 0;
-    // Maps each trade id to the block it was filled at. A value of 0 means it was not filled yet.
-    mapping(bytes32 => uint256) public filledAtBlock;
-    // A mapping from a trade id to the relayer filling it.
-    mapping(bytes32 => address) public filledBy;
-    // A mapping from trade id to an enum representing the state of the trade.
-    mapping(bytes32 => TradeStatus) public status;
+    // A mapping from trade ids to trade data.
+    mapping(bytes32 => TradeData) public tradesData;
 
-    // A mapping from a trade id to if the recipient wants to unwrap their output token.
-    mapping(bytes32 => bool) public unwrapOutput;
-
-    // A mapping from a trade id to whether the trade was requested with ETH.
-    mapping(bytes32 => bool) public isEthTrade;
-
-    constructor(
+       constructor(
         FloodRegistry _registry,
         uint256 _safeBlockThreshold,
         uint256 _disputeBondPct,
@@ -172,15 +178,9 @@ contract Book is IOptimisticRequester, IBookEvents {
         emit TradeRequested(tokenIn, tokenOut, amountIn, minAmountOut, recipient, numberOfTrades, msg.sender);
 
         bytes32 tradeId = _getTradeId(tokenIn, tokenOut, amountIn, minAmountOut, recipient, numberOfTrades, msg.sender);
-
-        if (receiveETH) {
-            unwrapOutput[tradeId] = true;
-        }
-        status[tradeId] = TradeStatus.REQUESTED;
+        tradesData[tradeId] = TradeData(0, address(0), TradeStatus.REQUESTED, receiveETH, msg.value > 0);
         numberOfTrades++;
-
         if (msg.value > 0) {
-            isEthTrade[tradeId] = true;
             weth.deposit{value: amountIn}();
         } else {
             IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
@@ -205,7 +205,8 @@ contract Book is IOptimisticRequester, IBookEvents {
         uint256 tradeIndex
     ) external {
         bytes32 tradeId = _getTradeId(tokenIn, tokenOut, amountIn, minAmountOut, recipient, tradeIndex, msg.sender);
-        if (status[tradeId] != TradeStatus.REQUESTED) {
+        TradeData memory tradeData = tradesData[tradeId];
+        if (tradeData.status != TradeStatus.REQUESTED) {
             revert Book__TradeNotCancelable(tradeId);
         }
 
@@ -213,7 +214,7 @@ contract Book is IOptimisticRequester, IBookEvents {
 
         emit TradeCancelled(tradeIndex, tradeId, msg.sender);
         // Refund the trader.
-        _transferAndUnwrap(IERC20(tokenIn), address(this), msg.sender, amountIn, isEthTrade[tradeId]);
+        _transferAndUnwrap(IERC20(tokenIn), address(this), msg.sender, amountIn, tradeData.isEthTrade);
     }
 
     /**
@@ -243,15 +244,18 @@ contract Book is IOptimisticRequester, IBookEvents {
         bytes calldata data
     ) external {
         bytes32 tradeId = _getTradeId(tokenIn, tokenOut, amountIn, minAmountOut, recipient, tradeIndex, trader);
-        if (status[tradeId] != TradeStatus.REQUESTED) {
+        TradeData memory tradeData = tradesData[tradeId];
+        if (tradeData.status != TradeStatus.REQUESTED) {
             revert Book__TradeNotInFillableState(tradeId);
         }
         if (amountToSend < minAmountOut) {
             revert Book__AmountOutTooLow();
         }
-        filledAtBlock[tradeId] = block.number;
-        filledBy[tradeId] = msg.sender;
-        status[tradeId] = TradeStatus.FILLED;
+        tradeData.filledAtBlock = block.number;
+        tradeData.filledBy = msg.sender;
+        tradeData.status = TradeStatus.FILLED;
+        // Set the modified trade data in storage.
+        tradesData[tradeId] = tradeData;
         emit TradeFilled(msg.sender, tradeIndex, amountToSend, trader);
 
         uint256 amountInToRelayer = (amountIn * relayerRefundPct) / 100;
@@ -263,7 +267,7 @@ contract Book is IOptimisticRequester, IBookEvents {
         }
 
         // Send the tokens to the recipient.
-        _transferAndUnwrap(IERC20(tokenOut), msg.sender, recipient, amountToSend, unwrapOutput[tradeId]);
+        _transferAndUnwrap(IERC20(tokenOut), msg.sender, recipient, amountToSend, tradeData.unwrapOutput);
     }
 
     /**
@@ -286,7 +290,8 @@ contract Book is IOptimisticRequester, IBookEvents {
         address trader
     ) external {
         bytes32 tradeId = _getTradeId(tokenIn, tokenOut, amountIn, minAmountOut, recipient, tradeIndex, trader);
-        uint256 filledHeight = filledAtBlock[tradeId];
+        TradeData memory tradeData = tradesData[tradeId];
+        uint256 filledHeight = tradeData.filledAtBlock;
         // Check if the trade has already been settled, is not filled or does not exist. We do not use the status as we need to read the filledHeight anyway.
         if (filledHeight == 0) {
             revert Book__TradeNotFilled(tradeId);
@@ -294,11 +299,11 @@ contract Book is IOptimisticRequester, IBookEvents {
         // safe cast as for the check above we know that filledAtBlock[tradeId] > 0.
         if (_isDisputable(filledHeight)) {
             // Always > 0 for the check above
-            uint256 blocksLeft = safeBlockThreshold - (block.number - filledAtBlock[tradeId]);
+            uint256 blocksLeft = safeBlockThreshold - (block.number - filledHeight);
             revert Book__DisputePeriodNotOver(blocksLeft);
         }
 
-        address relayer = filledBy[tradeId];
+        address relayer = tradeData.filledBy;
 
         _deleteTrade(tradeId);
 
@@ -332,8 +337,8 @@ contract Book is IOptimisticRequester, IBookEvents {
         address trader
     ) external {
         bytes32 tradeId = _getTradeId(tokenIn, tokenOut, amountIn, minAmountOut, recipient, tradeIndex, trader);
-
-        uint256 filledHeight = filledAtBlock[tradeId];
+       
+        uint256 filledHeight =  tradesData[tradeId].filledAtBlock;
 
         // Check that the trade exist and has not been disputed already. We do not use the status as we need to read the filledHeight anyway and thus save a read.
         if (filledHeight == 0) {
@@ -344,7 +349,7 @@ contract Book is IOptimisticRequester, IBookEvents {
             revert Book__DisputePeriodOver();
         }
 
-        address relayer = filledBy[tradeId];
+        address relayer = tradesData[tradeId].filledBy; 
         uint256 bondAmount = amountIn * disputeBondPct / 100;
 
         _deleteTrade(tradeId);
@@ -373,7 +378,7 @@ contract Book is IOptimisticRequester, IBookEvents {
         if (request.answer) {
             request.currency.safeTransfer(request.proposer, rebate);
         } else {
-            _transferAndUnwrap(request.currency, address(this), recipient, rebate, unwrapOutput[tradeId]);
+            _transferAndUnwrap(request.currency, address(this), recipient, rebate, tradesData[tradeId].unwrapOutput);
         }
     }
 
@@ -418,9 +423,7 @@ contract Book is IOptimisticRequester, IBookEvents {
      * @param tradeId The token that was sold.
      */
     function _deleteTrade(bytes32 tradeId) internal {
-        delete filledAtBlock[tradeId];
-        delete filledBy[tradeId];
-        delete status[tradeId];
+        delete tradesData[tradeId];
     }
 
     function _isDisputable(uint256 filledHeight) internal view returns (bool) {

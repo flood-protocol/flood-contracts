@@ -44,8 +44,8 @@ contract RequestTest is TradeFixture {
         assertEq(IERC20(testTokenIn).balanceOf(alice), balanceBefore - amountIn);
 
         // Check that the trade has been initialized
-        uint256 statusInStorage = stdstore.target(address(book)).sig(book.status.selector).with_key(id).read_uint();
-        assertEq(statusInStorage, uint256(TradeStatus.REQUESTED), "Trade not initialized");
+        (,,TradeStatus statusInStorage,,) = book.tradesData(id);
+        assertEq(uint(statusInStorage), uint256(TradeStatus.REQUESTED), "Trade not initialized");
 
         // Check that the trade number has been increased
         uint256 numberOfTradesInStorage = stdstore.target(address(book)).sig(book.numberOfTrades.selector).read_uint();
@@ -106,17 +106,16 @@ contract RequestTest is TradeFixture {
         // Check that the balance of Alice of `tokenIn` is reduced by `amount`.
         assertEq(IERC20(tokenIn).balanceOf(alice), balanceBefore - amountIn);
 
+        (,,TradeStatus statusInStorage,bool unwrapInStorage,) = book.tradesData(id); 
         // Check that the trade has been initialized
-        uint256 statusInStorage = stdstore.target(address(book)).sig(book.status.selector).with_key(id).read_uint();
-        assertEq(statusInStorage, uint256(TradeStatus.REQUESTED), "Trade not initialized");
-
+        assertEq(uint(statusInStorage), uint256(TradeStatus.REQUESTED), "Trade not initialized");
+        // Check that the unwrap preference is set to true
+        assertTrue(unwrapInStorage, "Unwrap preference not set to true");
         // Check that the trade number has been increased
         uint256 numberOfTradesInStorage = stdstore.target(address(book)).sig(book.numberOfTrades.selector).read_uint();
         assertEq(numberOfTradesInStorage, tradeIndex + 1);
 
-        // Check that the unwrap preference is set to true
-        bool unwrapInStorage = stdstore.target(address(book)).sig(book.unwrapOutput.selector).with_key(id).read_bool();
-        assertTrue(unwrapInStorage, "Unwrap preference not set to true");
+       
     }
 
     function testCannotRequestUnwrapIfNotReceivingWETH() public {
@@ -143,9 +142,10 @@ contract RequestTest is TradeFixture {
         // Check that the balance of Alice of `tokenIn` is reduced by `amount`.
         assertEq(alice.balance, balanceBefore - testAmountIn);
 
-        // Check that the trade has been initialized
-        uint256 statusInStorage = stdstore.target(address(book)).sig(book.status.selector).with_key(id).read_uint();
-        assertEq(statusInStorage, uint256(TradeStatus.REQUESTED), "Trade not initialized");
+        (,,TradeStatus statusInStorage,,bool isEthTradeInStorage) = book.tradesData(id);
+         // Check that the trade has been initialized
+        assertEq(uint(statusInStorage), uint256(TradeStatus.REQUESTED), "Trade not initialized");
+        assertTrue(isEthTradeInStorage, "isEthTrade not set to true");
 
         // Check that the trade number has been increased
         uint256 numberOfTradesInStorage = stdstore.target(address(book)).sig(book.numberOfTrades.selector).read_uint();
@@ -181,24 +181,29 @@ contract RequestTest is TradeFixture {
         emit TradeCancelled(tradeIndex, tradeId, testTrader);
         book.cancelTrade(testTokenIn, testTokenOut, testAmountIn, 1, testRecipient, tradeIndex);
 
-        uint256 statusAfter = stdstore.target(address(book)).sig(book.status.selector).with_key(tradeId).read_uint();
-
         uint256 balanceAfter = IERC20(testTokenIn).balanceOf(testTrader);
         uint256 bookBalanceAfter = IERC20(testTokenIn).balanceOf(address(book));
         assertEq(balanceAfter, balanceBefore, "trader balance should be unchanged");
         assertEq(bookBalanceAfter, bookBalanceBefore, "book balance should be unchanged");
-        assertEq(statusAfter, uint256(TradeStatus.UNINITIALIZED));
+
+        (uint filledAtAfter, address filledByAfter,TradeStatus statusAfter,bool unwrapTradeAfter, bool isEthTradeAfter) = book.tradesData(tradeId);
+        assertEq(filledAtAfter, 0, "filledAt should be 0");
+        assertEq(filledByAfter, address(0), "filledBy should be 0x0");
+        assertEq(uint(statusAfter), uint256(TradeStatus.UNINITIALIZED), "trade status should be uninitialized");
+        assertFalse(unwrapTradeAfter, "unwrap preference should be false");
+        assertFalse(isEthTradeAfter, "isEthTrade should be false");
+
     }
 
     function testCannotCancelTradeIfFilled() public {
         deal(testTokenIn, testTrader, testAmountIn);
-        // simulate a request
+        // make a request
         (uint256 tradeIndex, bytes32 tradeId) =
             _requestTrade(testTokenIn, testTokenOut, testAmountIn, 1, testRecipient, testTrader, false);
-        // simulate a fill
-        stdstore.target(address(book)).sig(book.status.selector).with_key(tradeId).checked_write(
-            uint256(TradeStatus.FILLED)
-        );
+        // fill the trade
+        deal(testTokenOut, address(this), 100);
+        IERC20(testTokenOut).approve(address(book), 100);
+        _fillTrade(testTokenIn, testTokenOut, testAmountIn, 1, testRecipient, tradeIndex, testTrader, 100, bytes(""));
         vm.expectRevert(abi.encodeWithSelector(Book__TradeNotCancelable.selector, tradeId));
         vm.prank(testTrader);
         book.cancelTrade(testTokenIn, testTokenOut, testAmountIn, 1, testRecipient, tradeIndex);

@@ -103,14 +103,10 @@ contract TradeFixture is BaseBookFixture {
         );
     }
 
-    function _checkFill(bytes32 _tradeId, address _filledBy, int256 _filledAtBlock) internal {
-        assertEq(
-            _filledBy, stdstore.target(address(book)).sig(book.filledBy.selector).with_key(_tradeId).read_address()
-        );
-        assertEq(
-            _filledAtBlock,
-            stdstore.target(address(book)).sig(book.filledAtBlock.selector).with_key(_tradeId).read_int()
-        );
+    function _checkFill(bytes32 _tradeId, address _filledBy, uint256 _filledAtBlock) internal {
+        (uint filledAtBlock, address filledBy, , ,) = book.tradesData(_tradeId);
+        assertEq(filledBy, _filledBy);
+        assertEq(filledAtBlock, _filledAtBlock);
     }
 }
 
@@ -142,7 +138,7 @@ contract DisputeFixture is TradeFixture {
             testAmountToSend,
             bytes("")
         );
-        _checkFill(tradeId, relayer, int256(block.number));
+        _checkFill(tradeId, relayer, block.number);
 
         vm.prank(disputer);
         IERC20(testTokenIn).approve(address(oracle), type(uint256).max);
