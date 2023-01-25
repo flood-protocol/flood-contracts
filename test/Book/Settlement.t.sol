@@ -20,7 +20,7 @@ contract SettlementTest is DisputeFixture {
         bytes32 id = _getTradeId(
             testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, tradeIndex, testTrader
         );
-        uint256 filledAtBlock = book.filledAtBlock(id);
+        (uint256 filledAtBlock ,,,,)= book.tradesData(id);
         vm.expectEmit(true, true, true, true, address(book));
         emit TradeSettled(relayer, tradeIndex, filledAtBlock, testTrader);
         book.settleTrade(
@@ -28,13 +28,8 @@ contract SettlementTest is DisputeFixture {
         );
 
         // check that the storage variables have been reset
-        address filledByInStorageAfter =
-            stdstore.target(address(book)).sig(book.filledBy.selector).with_key(tradeId).read_address();
-
+        (uint256 filledAtBlockInStorageAfter,address filledByInStorageAfter,,,) = book.tradesData(id);
         assertEq(filledByInStorageAfter, address(0), "Filled by should be equal to 0");
-        uint256 filledAtBlockInStorageAfter =
-            stdstore.target(address(book)).sig(book.filledAtBlock.selector).with_key(tradeId).read_uint();
-
         assertEq(filledAtBlockInStorageAfter, 0, "Filled at block should be equal to 0");
 
         // check that the trade was settled correctly

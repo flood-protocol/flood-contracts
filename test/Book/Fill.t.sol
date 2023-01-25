@@ -80,12 +80,8 @@ contract FillTest is TradeFixture, MockFloodFillCallee {
             "recipient should have received amountOut tokens"
         );
 
-        uint256 filledAtInStorage =
-            stdstore.target(address(book)).sig(book.filledAtBlock.selector).with_key(tradeId).read_uint();
+        (uint filledAtInStorage, address filledByInStorage, , ,) = book.tradesData(tradeId);
         assertEq(filledAtInStorage, block.number);
-
-        address filledByInStorage =
-            stdstore.target(address(book)).sig(book.filledBy.selector).with_key(tradeId).read_address();
         assertEq(filledByInStorage, bob);
     }
 
@@ -107,7 +103,7 @@ contract FillTest is TradeFixture, MockFloodFillCallee {
         );
 
         // Artificially fill&dispute the trade at the past block.
-        stdstore.target(address(book)).sig(book.filledAtBlock.selector).with_key(tradeId).checked_write(block.number);
+        stdstore.target(address(book)).sig(book.tradesData.selector).with_key(tradeId).depth(0).checked_write(block.number);
         vm.expectRevert(abi.encodeWithSelector(Book__TradeNotInFillableState.selector, tradeId));
         book.fillTrade(
             testTokenIn,
@@ -123,30 +119,28 @@ contract FillTest is TradeFixture, MockFloodFillCallee {
     }
 
     function testCannotFillIfNoTokens(uint256 amountOut) public {
-        vm.assume(amountOut > 0);
-        bytes32 tradeId = _getTradeId(testTokenIn, testTokenOut, testAmountIn, 0, testRecipient, 1, testTrader);
-        // simulate a request
-        stdstore.target(address(book)).sig(book.status.selector).with_key(tradeId).checked_write(
-            uint256(TradeStatus.REQUESTED)
-        );
+        vm.assume(amountOut > 1);
+        // make a request
+        deal(testTokenIn, testTrader, testAmountIn);
+        IERC20(testTokenIn).approve(address(book), testAmountIn);
+        (uint tradeIndex, ) = _requestTrade(testTokenIn, testTokenOut, testAmountIn, amountOut - 1, testRecipient, testTrader, false);
         vm.prank(bob);
         vm.expectRevert(bytes("ERC20: transfer amount exceeds balance"));
-        book.fillTrade(testTokenIn, testTokenOut, testAmountIn, 0, testRecipient, 1, testTrader, amountOut, bytes(""));
+        book.fillTrade(testTokenIn, testTokenOut, testAmountIn, amountOut - 1, testRecipient, tradeIndex, testTrader, amountOut, bytes(""));
     }
 
     function testCannotFillIfAmountOutIsLessThanMin(uint256 minAmountOut) public {
         vm.assume(minAmountOut > 1);
-        bytes32 tradeId =
-            _getTradeId(testTokenIn, testTokenOut, testAmountIn, minAmountOut, testRecipient, 1, testTrader);
-        // simulate a request
-        stdstore.target(address(book)).sig(book.status.selector).with_key(tradeId).checked_write(
-            uint256(TradeStatus.REQUESTED)
-        );
+      
+        // make a request
+        deal(testTokenIn, testTrader, testAmountIn);
+        IERC20(testTokenIn).approve(address(book), testAmountIn);
+        (uint tradeIndex, ) = _requestTrade(testTokenIn, testTokenOut, testAmountIn, minAmountOut, testRecipient, testTrader, false); 
         uint256 amountOut = minAmountOut - 1;
         vm.prank(bob);
         vm.expectRevert(Book__AmountOutTooLow.selector);
         book.fillTrade(
-            testTokenIn, testTokenOut, testAmountIn, minAmountOut, testRecipient, 1, testTrader, amountOut, bytes("")
+            testTokenIn, testTokenOut, testAmountIn, minAmountOut, testRecipient, tradeIndex, testTrader, amountOut, bytes("")
         );
     }
 
@@ -200,25 +194,17 @@ contract FillTest is TradeFixture, MockFloodFillCallee {
             testRecipient.balance, recipientBalanceBefore + amountOut, "recipient should have received amountOut tokens"
         );
 
-        uint256 filledAtInStorage =
-            stdstore.target(address(book)).sig(book.filledAtBlock.selector).with_key(tradeId).read_uint();
+        (uint filledAtInStorage, address filledByInStorage, , ,) = book.tradesData(tradeId);
         assertEq(filledAtInStorage, block.number);
-
-        address filledByInStorage =
-            stdstore.target(address(book)).sig(book.filledBy.selector).with_key(tradeId).read_address();
         assertEq(filledByInStorage, bob);
     }
 
     function testFillWithCallback() public {
-        // Simulate a trade request. We assume that the request is valid and executed correctly.
-        uint256 tradeIndex = book.numberOfTrades() + 1;
-        bytes32 tradeId = _getTradeId(
-            testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, tradeIndex, testTrader
-        );
-        // simulate the request
-        stdstore.target(address(book)).sig(book.status.selector).with_key(tradeId).checked_write(
-            uint256(TradeStatus.REQUESTED)
-        );
+        // make a request
+        deal(testTokenIn, testTrader, testAmountIn);
+        IERC20(testTokenIn).approve(address(book), testAmountIn);
+        (uint tradeIndex, ) = _requestTrade(testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, testTrader, false);
+       
         // give the book the tokens in of the trade
         deal(testTokenIn, address(book), testAmountIn);
         // give this contract the tokens out of the trade

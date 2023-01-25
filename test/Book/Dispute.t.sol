@@ -21,7 +21,7 @@ contract DisputeTest is DisputeFixture {
         uint256 bookBalanceBefore = IERC20(testTokenIn).balanceOf(address(book));
         uint256 disputerBalanceBefore = IERC20(testTokenIn).balanceOf(disputer);
         int256 filledAtBeforeDispute =
-            stdstore.target(address(book)).sig(book.filledAtBlock.selector).with_key(tradeId).read_int();
+            stdstore.target(address(book)).sig(book.tradesData.selector).with_key(tradeId).depth(0).read_int();
 
         // check that the request was received by the oracle
         uint reqIndex = oracle.requestCount();
@@ -33,18 +33,11 @@ contract DisputeTest is DisputeFixture {
 
         // check that trade variables have been reset
         {
-            int256 filledAtAfterDispute =
-                stdstore.target(address(book)).sig(book.filledAtBlock.selector).with_key(tradeId).read_int();
-
-            address filledByAfterDispute =
-                stdstore.target(address(book)).sig(book.filledBy.selector).with_key(tradeId).read_address();
-
-            uint256 statusAfterDispute =
-                stdstore.target(address(book)).sig(book.status.selector).with_key(tradeId).read_uint();
-
+            (uint filledAtAfterDispute, address filledByAfterDispute, TradeStatus statusAfterDispute, ,) =
+            book.tradesData(tradeId);
             assertEq(filledByAfterDispute, address(0));
             assertEq(filledAtAfterDispute, 0);
-            assertEq(statusAfterDispute, uint256(TradeStatus.UNINITIALIZED));
+            assertEq(uint8(statusAfterDispute),uint8(TradeStatus.UNINITIALIZED));
         }
 
         (
