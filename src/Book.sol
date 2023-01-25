@@ -351,7 +351,7 @@ contract Book is IOptimisticRequester, IBookEvents {
 
         // Pull the bond from the disputer
         IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), bondAmount);
-        // Now the book is going to sponsor the dispute. We approve 2 times
+        // Now the book is going to sponsor the dispute. We approve 2 times. We don't re-use `bondAmount` directly as its less precise than the calculation below.
         IERC20(tokenIn).safeApprove(address(oracle), 2 * amountIn * disputeBondPct / 100);
 
         bytes32 disputeId = oracle.ask(
