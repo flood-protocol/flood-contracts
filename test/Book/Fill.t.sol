@@ -80,9 +80,10 @@ contract FillTest is TradeFixture, MockFloodFillCallee {
             "recipient should have received amountOut tokens"
         );
 
-        (uint filledAtInStorage, address filledByInStorage, , ,) = book.tradesData(tradeId);
+        (uint filledAtInStorage, address filledByInStorage,,,,uint amountPaid) = book.tradesData(tradeId);
         assertEq(filledAtInStorage, block.number);
         assertEq(filledByInStorage, bob);
+        assertEq(amountPaid, bobExpectedTokens);
     }
 
     function testCannotFillUninitialized() public {
@@ -194,9 +195,10 @@ contract FillTest is TradeFixture, MockFloodFillCallee {
             testRecipient.balance, recipientBalanceBefore + amountOut, "recipient should have received amountOut tokens"
         );
 
-        (uint filledAtInStorage, address filledByInStorage, , ,) = book.tradesData(tradeId);
+        (uint filledAtInStorage, address filledByInStorage,,,,uint amountPaid) = book.tradesData(tradeId);
         assertEq(filledAtInStorage, block.number);
         assertEq(filledByInStorage, bob);
+        assertEq(amountPaid, bobExpectedTokens, "amountPaid should be correct"); 
     }
 
     function testFillWithCallback() public {

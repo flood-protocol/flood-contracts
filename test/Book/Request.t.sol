@@ -44,7 +44,7 @@ contract RequestTest is TradeFixture {
         assertEq(IERC20(testTokenIn).balanceOf(alice), balanceBefore - amountIn);
 
         // Check that the trade has been initialized
-        (,,TradeStatus statusInStorage,,) = book.tradesData(id);
+        (,,TradeStatus statusInStorage,,,) = book.tradesData(id);
         assertEq(uint(statusInStorage), uint256(TradeStatus.REQUESTED), "Trade not initialized");
 
         // Check that the trade number has been increased
@@ -106,7 +106,7 @@ contract RequestTest is TradeFixture {
         // Check that the balance of Alice of `tokenIn` is reduced by `amount`.
         assertEq(IERC20(tokenIn).balanceOf(alice), balanceBefore - amountIn);
 
-        (,,TradeStatus statusInStorage,bool unwrapInStorage,) = book.tradesData(id); 
+        (,,TradeStatus statusInStorage,bool unwrapInStorage,,) = book.tradesData(id); 
         // Check that the trade has been initialized
         assertEq(uint(statusInStorage), uint256(TradeStatus.REQUESTED), "Trade not initialized");
         // Check that the unwrap preference is set to true
@@ -142,7 +142,7 @@ contract RequestTest is TradeFixture {
         // Check that the balance of Alice of `tokenIn` is reduced by `amount`.
         assertEq(alice.balance, balanceBefore - testAmountIn);
 
-        (,,TradeStatus statusInStorage,,bool isEthTradeInStorage) = book.tradesData(id);
+        (,,TradeStatus statusInStorage,,bool isEthTradeInStorage,) = book.tradesData(id);
          // Check that the trade has been initialized
         assertEq(uint(statusInStorage), uint256(TradeStatus.REQUESTED), "Trade not initialized");
         assertTrue(isEthTradeInStorage, "isEthTrade not set to true");
@@ -186,12 +186,13 @@ contract RequestTest is TradeFixture {
         assertEq(balanceAfter, balanceBefore, "trader balance should be unchanged");
         assertEq(bookBalanceAfter, bookBalanceBefore, "book balance should be unchanged");
 
-        (uint filledAtAfter, address filledByAfter,TradeStatus statusAfter,bool unwrapTradeAfter, bool isEthTradeAfter) = book.tradesData(tradeId);
+        (uint filledAtAfter, address filledByAfter,TradeStatus statusAfter,bool unwrapTradeAfter, bool isEthTradeAfter, uint amountPaidAfter) = book.tradesData(tradeId);
         assertEq(filledAtAfter, 0, "filledAt should be 0");
         assertEq(filledByAfter, address(0), "filledBy should be 0x0");
         assertEq(uint(statusAfter), uint256(TradeStatus.UNINITIALIZED), "trade status should be uninitialized");
         assertFalse(unwrapTradeAfter, "unwrap preference should be false");
         assertFalse(isEthTradeAfter, "isEthTrade should be false");
+        assertEq(amountPaidAfter, 0, "amountPaid should be 0");
 
     }
 

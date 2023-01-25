@@ -55,7 +55,7 @@ error Book__TradeNotFilled(bytes32 tradeId);
 error Book__TradeNotCancelable(bytes32 tradeId);
 error Book__AmountOutTooLow();
 error Book__DisputePeriodNotOver(uint256 blocksLeft);
-error Book__DisputePeriodOver();
+error Book__TradeNotDisputable();
 error Book__MaliciousCaller(address caller);
 error Book__NotTrader();
 
@@ -66,7 +66,9 @@ enum TradeStatus
     // The trade is initialized and can be filled
     REQUESTED,
     // The trade is filled but not settled/disputed
-    FILLED
+    FILLED,
+    // The trade has been disputed
+    DISPUTED
 }
 
 /**
@@ -76,6 +78,7 @@ enum TradeStatus
     @param status The status of the trade.
     @param unwrapOutput Whether the recipient wants to unwrap their output token.
     @param isEthTrade Whether the trade was requested with ETH.
+    @param amountPaid The amount of tokenIn paid by far by the contract to the relayer filling the trade, disputers or given as a rebate to users. This should never exceed the `amountIn` of the trade. 
  */
 struct TradeData {
     uint filledAtBlock;
@@ -83,6 +86,7 @@ struct TradeData {
     TradeStatus status;
     bool unwrapOutput;
     bool isEthTrade;
+    uint amountPaid;
 }
 
 contract Book is IOptimisticRequester, IBookEvents {
@@ -92,9 +96,8 @@ contract Book is IOptimisticRequester, IBookEvents {
     uint256 public immutable disputeBondPct;
     uint256 public immutable tradeRebatePct;
     uint256 public immutable relayerRefundPct;
-    // The fee taken on each trade by relayers, expressed in basis points (so 100% = 10000)
+    // The fee taken on each trade by relayers, expressed in basis points (so 100% = 10000). Not used in the code, but useful to coordinate off-chain.
     uint256 public immutable feePct;
-
     FloodRegistry public immutable registry;
     // The oracle to use for dispute resolution. At deployment, this is the latest oracle used in the protocol and it cannot be changed.
     AllKnowingOracle public immutable oracle;
@@ -178,7 +181,7 @@ contract Book is IOptimisticRequester, IBookEvents {
         emit TradeRequested(tokenIn, tokenOut, amountIn, minAmountOut, recipient, numberOfTrades, msg.sender);
 
         bytes32 tradeId = _getTradeId(tokenIn, tokenOut, amountIn, minAmountOut, recipient, numberOfTrades, msg.sender);
-        tradesData[tradeId] = TradeData(0, address(0), TradeStatus.REQUESTED, receiveETH, msg.value > 0);
+        tradesData[tradeId] = TradeData(0, address(0), TradeStatus.REQUESTED, receiveETH, msg.value > 0, 0);
         numberOfTrades++;
         if (msg.value > 0) {
             weth.deposit{value: amountIn}();
@@ -254,11 +257,13 @@ contract Book is IOptimisticRequester, IBookEvents {
         tradeData.filledAtBlock = block.number;
         tradeData.filledBy = msg.sender;
         tradeData.status = TradeStatus.FILLED;
+        uint256 amountInToRelayer = (amountIn * relayerRefundPct) / 100;
+        tradeData.amountPaid = amountInToRelayer;
         // Set the modified trade data in storage.
         tradesData[tradeId] = tradeData;
         emit TradeFilled(msg.sender, tradeIndex, amountToSend, trader);
 
-        uint256 amountInToRelayer = (amountIn * relayerRefundPct) / 100;
+       
         // Send some of the tokens to the relayer.
         IERC20(tokenIn).safeTransfer(msg.sender, amountInToRelayer);
         // Relayers can use the tokens they receive to pay for the swaps
@@ -291,24 +296,21 @@ contract Book is IOptimisticRequester, IBookEvents {
     ) external {
         bytes32 tradeId = _getTradeId(tokenIn, tokenOut, amountIn, minAmountOut, recipient, tradeIndex, trader);
         TradeData memory tradeData = tradesData[tradeId];
-        uint256 filledHeight = tradeData.filledAtBlock;
-        // Check if the trade has already been settled, is not filled or does not exist. We do not use the status as we need to read the filledHeight anyway.
-        if (filledHeight == 0) {
+        uint filledHeight = tradeData.filledAtBlock; 
+        if(tradeData.status != TradeStatus.FILLED) {
             revert Book__TradeNotFilled(tradeId);
         }
-        // safe cast as for the check above we know that filledAtBlock[tradeId] > 0.
-        if (_isDisputable(filledHeight)) {
+        // Check if the trade has already been settled, is not filled or does not exist.
+        if (_isDisputable(filledHeight, tradeData.status)) {
             // Always > 0 for the check above
             uint256 blocksLeft = safeBlockThreshold - (block.number - filledHeight);
             revert Book__DisputePeriodNotOver(blocksLeft);
         }
 
         address relayer = tradeData.filledBy;
-
+        // Since the trade is valid, the relayer can now receive all the tokens. We calculate this by subtracting the amount already paid to the relayer from the total amountIn.
+        uint256 amountInToRelayer = amountIn - tradeData.amountPaid;
         _deleteTrade(tradeId);
-
-        // Since the trade is valid, the relayer can now receive all the tokens.
-        uint256 amountInToRelayer = (amountIn * (100 - relayerRefundPct)) / 100;
         emit TradeSettled(relayer, tradeIndex, filledHeight, trader);
 
         IERC20(tokenIn).safeTransfer(relayer, amountInToRelayer);
@@ -337,22 +339,20 @@ contract Book is IOptimisticRequester, IBookEvents {
         address trader
     ) external {
         bytes32 tradeId = _getTradeId(tokenIn, tokenOut, amountIn, minAmountOut, recipient, tradeIndex, trader);
-       
-        uint256 filledHeight =  tradesData[tradeId].filledAtBlock;
+        TradeData memory tradeData = tradesData[tradeId]; 
+        uint filledHeight = tradeData.filledAtBlock;
+        
 
-        // Check that the trade exist and has not been disputed already. We do not use the status as we need to read the filledHeight anyway and thus save a read.
-        if (filledHeight == 0) {
-            revert Book__TradeNotFilled(tradeId);
+        // Check that the trade exist and has not been disputed already. 
+        if (!_isDisputable(filledHeight, tradeData.status)) {
+            revert Book__TradeNotDisputable();
         }
 
-        if (!_isDisputable(filledHeight)) {
-            revert Book__DisputePeriodOver();
-        }
-
-        address relayer = tradesData[tradeId].filledBy; 
+        
         uint256 bondAmount = amountIn * disputeBondPct / 100;
-
-        _deleteTrade(tradeId);
+        tradeData.amountPaid = tradeData.amountPaid + bondAmount;
+        tradeData.status = TradeStatus.DISPUTED;
+        tradesData[tradeId] = tradeData;
 
         // Pull the bond from the disputer
         IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), bondAmount);
@@ -360,9 +360,9 @@ contract Book is IOptimisticRequester, IBookEvents {
         IERC20(tokenIn).safeApprove(address(oracle), 2 * amountIn * disputeBondPct / 100);
 
         bytes32 disputeId = oracle.ask(
-            relayer, msg.sender, tokenIn, bondAmount, abi.encode(amountIn, recipient, tradeIndex, trader, tradeId)
+            tradeData.filledBy, msg.sender, tokenIn, bondAmount, abi.encode(amountIn, recipient, tradeIndex, trader, tradeId)
         );
-        emit TradeDisputed(relayer, tradeIndex, disputeId, filledHeight, trader);
+        emit TradeDisputed(tradeData.filledBy, tradeIndex, disputeId, filledHeight, trader);
     }
 
     function onPriceSettled(bytes32 id, Request calldata request) external {
@@ -372,7 +372,8 @@ contract Book is IOptimisticRequester, IBookEvents {
         (uint256 amountIn, address recipient, uint256 tradeIndex, address trader, bytes32 tradeId) =
             abi.decode(request.data, (uint256, address, uint256, address, bytes32));
         // If answer is true, it means the relayer was truthful, so he gets the tradeRebatePct of the trade as no rebate is necessary.
-        uint256 rebate = (amountIn * tradeRebatePct) / 100;
+        uint256 rebate = amountIn - tradesData[tradeId].amountPaid;
+        _deleteTrade(tradeId);
         emit TradeDisputeSettled(request.proposer, tradeIndex, id, request.answer, trader);
 
         if (request.answer) {
@@ -426,8 +427,8 @@ contract Book is IOptimisticRequester, IBookEvents {
         delete tradesData[tradeId];
     }
 
-    function _isDisputable(uint256 filledHeight) internal view returns (bool) {
-        return block.number < safeBlockThreshold + filledHeight;
+    function _isDisputable(uint256 filledHeight, TradeStatus status) internal view returns (bool) {
+        return status == TradeStatus.FILLED && block.number < safeBlockThreshold + filledHeight;
     }
 
     /**
