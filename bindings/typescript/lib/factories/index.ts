@@ -8,6 +8,7 @@ export { ERC20__factory } from "./ERC20__factory";
 export { IERC20__factory } from "./IERC20__factory";
 export { IERC20Metadata__factory } from "./IERC20Metadata__factory";
 export { IERC20Permit__factory } from "./IERC20Permit__factory";
+export { IFloodFillCallback__factory } from "./IFloodFillCallback__factory";
+export { IWETH9__factory } from "./IWETH9__factory";
 export { Ownable__factory } from "./Ownable__factory";
 export { Ownable2Step__factory } from "./Ownable2Step__factory";
-export { Owned__factory } from "./Owned__factory";

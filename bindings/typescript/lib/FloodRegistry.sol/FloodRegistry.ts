@@ -28,6 +28,7 @@ import type {
 
 export interface FloodRegistryInterface extends utils.Interface {
   functions: {
+    "WETH()": FunctionFragment;
     "acceptOwnership()": FunctionFragment;
     "batchWhitelistTokens(address[],bool[])": FunctionFragment;
     "isTokenWhitelisted(address)": FunctionFragment;
@@ -44,6 +45,7 @@ export interface FloodRegistryInterface extends utils.Interface {
 
   getFunction(
     nameOrSignatureOrTopic:
+      | "WETH"
       | "acceptOwnership"
       | "batchWhitelistTokens"
       | "isTokenWhitelisted"
@@ -58,6 +60,7 @@ export interface FloodRegistryInterface extends utils.Interface {
       | "whitelistedTokensCount"
   ): FunctionFragment;
 
+  encodeFunctionData(functionFragment: "WETH", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "acceptOwnership",
     values?: undefined
@@ -104,6 +107,7 @@ export interface FloodRegistryInterface extends utils.Interface {
     values?: undefined
   ): string;
 
+  decodeFunctionResult(functionFragment: "WETH", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "acceptOwnership",
     data: BytesLike
@@ -230,6 +234,8 @@ export interface FloodRegistry extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    WETH(overrides?: CallOverrides): Promise<[string]>;
+
     acceptOwnership(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
@@ -275,6 +281,8 @@ export interface FloodRegistry extends BaseContract {
 
     whitelistedTokensCount(overrides?: CallOverrides): Promise<[BigNumber]>;
   };
+
+  WETH(overrides?: CallOverrides): Promise<string>;
 
   acceptOwnership(
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -322,6 +330,8 @@ export interface FloodRegistry extends BaseContract {
   whitelistedTokensCount(overrides?: CallOverrides): Promise<BigNumber>;
 
   callStatic: {
+    WETH(overrides?: CallOverrides): Promise<string>;
+
     acceptOwnership(overrides?: CallOverrides): Promise<void>;
 
     batchWhitelistTokens(
@@ -401,6 +411,8 @@ export interface FloodRegistry extends BaseContract {
   };
 
   estimateGas: {
+    WETH(overrides?: CallOverrides): Promise<BigNumber>;
+
     acceptOwnership(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
@@ -448,6 +460,8 @@ export interface FloodRegistry extends BaseContract {
   };
 
   populateTransaction: {
+    WETH(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     acceptOwnership(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;

@@ -31,11 +31,12 @@ export interface AllKnowingOracleInterface extends utils.Interface {
   functions: {
     "acceptOwnership()": FunctionFragment;
     "ask(address,address,address,uint256,bytes)": FunctionFragment;
-    "getRequestId(address,address,address,address,uint256)": FunctionFragment;
+    "getRequestId(address,address,address,address,uint256,uint256)": FunctionFragment;
     "owner()": FunctionFragment;
     "pendingOwner()": FunctionFragment;
     "registry()": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
+    "requestCount()": FunctionFragment;
     "requests(bytes32)": FunctionFragment;
     "settle(bytes32,bool)": FunctionFragment;
     "settlers(address)": FunctionFragment;
@@ -52,6 +53,7 @@ export interface AllKnowingOracleInterface extends utils.Interface {
       | "pendingOwner"
       | "registry"
       | "renounceOwnership"
+      | "requestCount"
       | "requests"
       | "settle"
       | "settlers"
@@ -80,6 +82,7 @@ export interface AllKnowingOracleInterface extends utils.Interface {
       PromiseOrValue<string>,
       PromiseOrValue<string>,
       PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>
     ]
   ): string;
@@ -91,6 +94,10 @@ export interface AllKnowingOracleInterface extends utils.Interface {
   encodeFunctionData(functionFragment: "registry", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "requestCount",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -133,6 +140,10 @@ export interface AllKnowingOracleInterface extends utils.Interface {
     functionFragment: "renounceOwnership",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "requestCount",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "requests", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "settle", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "settlers", data: BytesLike): Result;
@@ -146,7 +157,7 @@ export interface AllKnowingOracleInterface extends utils.Interface {
   ): Result;
 
   events: {
-    "NewRequest(bytes32,address,address,address,uint256)": EventFragment;
+    "NewRequest(bytes32,address,address,address,uint256,uint256)": EventFragment;
     "OwnershipTransferStarted(address,address)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
     "RequestSettled(bytes32,bool)": EventFragment;
@@ -170,9 +181,10 @@ export interface NewRequestEventObject {
   disputer: string;
   currency: string;
   bond: BigNumber;
+  requestIndex: BigNumber;
 }
 export type NewRequestEvent = TypedEvent<
-  [string, string, string, string, BigNumber],
+  [string, string, string, string, BigNumber, BigNumber],
   NewRequestEventObject
 >;
 
@@ -295,6 +307,7 @@ export interface AllKnowingOracle extends BaseContract {
       disputer: PromiseOrValue<string>,
       currency: PromiseOrValue<string>,
       bond: PromiseOrValue<BigNumberish>,
+      requestIndex: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[string]>;
 
@@ -307,6 +320,8 @@ export interface AllKnowingOracle extends BaseContract {
     renounceOwnership(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
+
+    requestCount(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     requests(
       arg0: PromiseOrValue<BytesLike>,
@@ -366,6 +381,7 @@ export interface AllKnowingOracle extends BaseContract {
     disputer: PromiseOrValue<string>,
     currency: PromiseOrValue<string>,
     bond: PromiseOrValue<BigNumberish>,
+    requestIndex: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<string>;
 
@@ -378,6 +394,8 @@ export interface AllKnowingOracle extends BaseContract {
   renounceOwnership(
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
+
+  requestCount(overrides?: CallOverrides): Promise<BigNumber>;
 
   requests(
     arg0: PromiseOrValue<BytesLike>,
@@ -435,6 +453,7 @@ export interface AllKnowingOracle extends BaseContract {
       disputer: PromiseOrValue<string>,
       currency: PromiseOrValue<string>,
       bond: PromiseOrValue<BigNumberish>,
+      requestIndex: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<string>;
 
@@ -445,6 +464,8 @@ export interface AllKnowingOracle extends BaseContract {
     registry(overrides?: CallOverrides): Promise<string>;
 
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
+
+    requestCount(overrides?: CallOverrides): Promise<BigNumber>;
 
     requests(
       arg0: PromiseOrValue<BytesLike>,
@@ -486,19 +507,21 @@ export interface AllKnowingOracle extends BaseContract {
   };
 
   filters: {
-    "NewRequest(bytes32,address,address,address,uint256)"(
+    "NewRequest(bytes32,address,address,address,uint256,uint256)"(
       id?: PromiseOrValue<BytesLike> | null,
       proposer?: PromiseOrValue<string> | null,
       disputer?: PromiseOrValue<string> | null,
       currency?: null,
-      bond?: null
+      bond?: null,
+      requestIndex?: null
     ): NewRequestEventFilter;
     NewRequest(
       id?: PromiseOrValue<BytesLike> | null,
       proposer?: PromiseOrValue<string> | null,
       disputer?: PromiseOrValue<string> | null,
       currency?: null,
-      bond?: null
+      bond?: null,
+      requestIndex?: null
     ): NewRequestEventFilter;
 
     "OwnershipTransferStarted(address,address)"(
@@ -576,6 +599,7 @@ export interface AllKnowingOracle extends BaseContract {
       disputer: PromiseOrValue<string>,
       currency: PromiseOrValue<string>,
       bond: PromiseOrValue<BigNumberish>,
+      requestIndex: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -588,6 +612,8 @@ export interface AllKnowingOracle extends BaseContract {
     renounceOwnership(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
+
+    requestCount(overrides?: CallOverrides): Promise<BigNumber>;
 
     requests(
       arg0: PromiseOrValue<BytesLike>,
@@ -637,6 +663,7 @@ export interface AllKnowingOracle extends BaseContract {
       disputer: PromiseOrValue<string>,
       currency: PromiseOrValue<string>,
       bond: PromiseOrValue<BigNumberish>,
+      requestIndex: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -649,6 +676,8 @@ export interface AllKnowingOracle extends BaseContract {
     renounceOwnership(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
+
+    requestCount(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     requests(
       arg0: PromiseOrValue<BytesLike>,

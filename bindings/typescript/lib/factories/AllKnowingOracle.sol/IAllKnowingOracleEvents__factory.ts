@@ -43,6 +43,12 @@ const _abi = [
         name: "bond",
         type: "uint256",
       },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "requestIndex",
+        type: "uint256",
+      },
     ],
     name: "NewRequest",
     type: "event",
