@@ -16,7 +16,7 @@ export interface IAllKnowingOracleEventsInterface extends utils.Interface {
   functions: {};
 
   events: {
-    "NewRequest(bytes32,address,address,address,uint256)": EventFragment;
+    "NewRequest(bytes32,address,address,address,uint256,uint256)": EventFragment;
     "RequestSettled(bytes32,bool)": EventFragment;
     "RequesterWhitelisted(address,bool)": EventFragment;
     "SettlerWhitelisted(address,bool)": EventFragment;
@@ -36,9 +36,10 @@ export interface NewRequestEventObject {
   disputer: string;
   currency: string;
   bond: BigNumber;
+  requestIndex: BigNumber;
 }
 export type NewRequestEvent = TypedEvent<
-  [string, string, string, string, BigNumber],
+  [string, string, string, string, BigNumber, BigNumber],
   NewRequestEventObject
 >;
 
@@ -122,19 +123,21 @@ export interface IAllKnowingOracleEvents extends BaseContract {
   callStatic: {};
 
   filters: {
-    "NewRequest(bytes32,address,address,address,uint256)"(
+    "NewRequest(bytes32,address,address,address,uint256,uint256)"(
       id?: PromiseOrValue<BytesLike> | null,
       proposer?: PromiseOrValue<string> | null,
       disputer?: PromiseOrValue<string> | null,
       currency?: null,
-      bond?: null
+      bond?: null,
+      requestIndex?: null
     ): NewRequestEventFilter;
     NewRequest(
       id?: PromiseOrValue<BytesLike> | null,
       proposer?: PromiseOrValue<string> | null,
       disputer?: PromiseOrValue<string> | null,
       currency?: null,
-      bond?: null
+      bond?: null,
+      requestIndex?: null
     ): NewRequestEventFilter;
 
     "RequestSettled(bytes32,bool)"(

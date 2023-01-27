@@ -9,6 +9,7 @@ import type {
   CallOverrides,
   ContractTransaction,
   Overrides,
+  PayableOverrides,
   PopulatedTransaction,
   Signer,
   utils,
@@ -60,23 +61,21 @@ export type RequestStructOutput = [
 
 export interface BookInterface extends utils.Interface {
   functions: {
-    "cancelTrade(address,address,uint256,uint256,address,uint256,address)": FunctionFragment;
+    "cancelTrade(address,address,uint256,uint256,address,uint256)": FunctionFragment;
     "disputeBondPct()": FunctionFragment;
     "disputeTrade(address,address,uint256,uint256,address,uint256,address)": FunctionFragment;
     "feePct()": FunctionFragment;
-    "fillTrade(address,address,uint256,uint256,address,uint256,address,uint256)": FunctionFragment;
-    "filledAtBlock(bytes32)": FunctionFragment;
-    "filledBy(bytes32)": FunctionFragment;
+    "fillTrade(address,address,uint256,uint256,address,uint256,address,uint256,bytes)": FunctionFragment;
     "numberOfTrades()": FunctionFragment;
     "onPriceSettled(bytes32,(address,address,address,address,uint256,uint8,bool,bytes))": FunctionFragment;
     "oracle()": FunctionFragment;
     "registry()": FunctionFragment;
     "relayerRefundPct()": FunctionFragment;
-    "requestTrade(address,address,uint256,uint256,address)": FunctionFragment;
+    "requestTrade(address,address,uint256,uint256,address,bool)": FunctionFragment;
     "safeBlockThreshold()": FunctionFragment;
     "settleTrade(address,address,uint256,uint256,address,uint256,address)": FunctionFragment;
-    "status(bytes32)": FunctionFragment;
     "tradeRebatePct()": FunctionFragment;
+    "tradesData(bytes32)": FunctionFragment;
   };
 
   getFunction(
@@ -86,8 +85,6 @@ export interface BookInterface extends utils.Interface {
       | "disputeTrade"
       | "feePct"
       | "fillTrade"
-      | "filledAtBlock"
-      | "filledBy"
       | "numberOfTrades"
       | "onPriceSettled"
       | "oracle"
@@ -96,8 +93,8 @@ export interface BookInterface extends utils.Interface {
       | "requestTrade"
       | "safeBlockThreshold"
       | "settleTrade"
-      | "status"
       | "tradeRebatePct"
+      | "tradesData"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -108,8 +105,7 @@ export interface BookInterface extends utils.Interface {
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<string>
+      PromiseOrValue<BigNumberish>
     ]
   ): string;
   encodeFunctionData(
@@ -139,16 +135,9 @@ export interface BookInterface extends utils.Interface {
       PromiseOrValue<string>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BytesLike>
     ]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "filledAtBlock",
-    values: [PromiseOrValue<BytesLike>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "filledBy",
-    values: [PromiseOrValue<BytesLike>]
   ): string;
   encodeFunctionData(
     functionFragment: "numberOfTrades",
@@ -171,7 +160,8 @@ export interface BookInterface extends utils.Interface {
       PromiseOrValue<string>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
-      PromiseOrValue<string>
+      PromiseOrValue<string>,
+      PromiseOrValue<boolean>
     ]
   ): string;
   encodeFunctionData(
@@ -191,12 +181,12 @@ export interface BookInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
-    functionFragment: "status",
-    values: [PromiseOrValue<BytesLike>]
-  ): string;
-  encodeFunctionData(
     functionFragment: "tradeRebatePct",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "tradesData",
+    values: [PromiseOrValue<BytesLike>]
   ): string;
 
   decodeFunctionResult(
@@ -213,11 +203,6 @@ export interface BookInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "feePct", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "fillTrade", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "filledAtBlock",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "filledBy", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "numberOfTrades",
     data: BytesLike
@@ -244,11 +229,11 @@ export interface BookInterface extends utils.Interface {
     functionFragment: "settleTrade",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "status", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "tradeRebatePct",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "tradesData", data: BytesLike): Result;
 
   events: {
     "FeePctSet(uint256)": EventFragment;
@@ -421,7 +406,6 @@ export interface Book extends BaseContract {
       minAmountOut: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
       tradeIndex: PromiseOrValue<BigNumberish>,
-      trader: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -449,18 +433,9 @@ export interface Book extends BaseContract {
       tradeIndex: PromiseOrValue<BigNumberish>,
       trader: PromiseOrValue<string>,
       amountToSend: PromiseOrValue<BigNumberish>,
+      data: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
-
-    filledAtBlock(
-      arg0: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    filledBy(
-      arg0: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
 
     numberOfTrades(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -482,7 +457,8 @@ export interface Book extends BaseContract {
       amountIn: PromiseOrValue<BigNumberish>,
       minAmountOut: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      receiveETH: PromiseOrValue<boolean>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     safeBlockThreshold(overrides?: CallOverrides): Promise<[BigNumber]>;
@@ -498,12 +474,21 @@ export interface Book extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    status(
+    tradeRebatePct(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    tradesData(
       arg0: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
-    ): Promise<[number]>;
-
-    tradeRebatePct(overrides?: CallOverrides): Promise<[BigNumber]>;
+    ): Promise<
+      [BigNumber, string, number, boolean, boolean, BigNumber] & {
+        filledAtBlock: BigNumber;
+        filledBy: string;
+        status: number;
+        unwrapOutput: boolean;
+        isEthTrade: boolean;
+        amountPaid: BigNumber;
+      }
+    >;
   };
 
   cancelTrade(
@@ -513,7 +498,6 @@ export interface Book extends BaseContract {
     minAmountOut: PromiseOrValue<BigNumberish>,
     recipient: PromiseOrValue<string>,
     tradeIndex: PromiseOrValue<BigNumberish>,
-    trader: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -541,18 +525,9 @@ export interface Book extends BaseContract {
     tradeIndex: PromiseOrValue<BigNumberish>,
     trader: PromiseOrValue<string>,
     amountToSend: PromiseOrValue<BigNumberish>,
+    data: PromiseOrValue<BytesLike>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
-
-  filledAtBlock(
-    arg0: PromiseOrValue<BytesLike>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  filledBy(
-    arg0: PromiseOrValue<BytesLike>,
-    overrides?: CallOverrides
-  ): Promise<string>;
 
   numberOfTrades(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -574,7 +549,8 @@ export interface Book extends BaseContract {
     amountIn: PromiseOrValue<BigNumberish>,
     minAmountOut: PromiseOrValue<BigNumberish>,
     recipient: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    receiveETH: PromiseOrValue<boolean>,
+    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   safeBlockThreshold(overrides?: CallOverrides): Promise<BigNumber>;
@@ -590,12 +566,21 @@ export interface Book extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  status(
+  tradeRebatePct(overrides?: CallOverrides): Promise<BigNumber>;
+
+  tradesData(
     arg0: PromiseOrValue<BytesLike>,
     overrides?: CallOverrides
-  ): Promise<number>;
-
-  tradeRebatePct(overrides?: CallOverrides): Promise<BigNumber>;
+  ): Promise<
+    [BigNumber, string, number, boolean, boolean, BigNumber] & {
+      filledAtBlock: BigNumber;
+      filledBy: string;
+      status: number;
+      unwrapOutput: boolean;
+      isEthTrade: boolean;
+      amountPaid: BigNumber;
+    }
+  >;
 
   callStatic: {
     cancelTrade(
@@ -605,7 +590,6 @@ export interface Book extends BaseContract {
       minAmountOut: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
       tradeIndex: PromiseOrValue<BigNumberish>,
-      trader: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -633,18 +617,9 @@ export interface Book extends BaseContract {
       tradeIndex: PromiseOrValue<BigNumberish>,
       trader: PromiseOrValue<string>,
       amountToSend: PromiseOrValue<BigNumberish>,
+      data: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<void>;
-
-    filledAtBlock(
-      arg0: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    filledBy(
-      arg0: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<string>;
 
     numberOfTrades(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -666,6 +641,7 @@ export interface Book extends BaseContract {
       amountIn: PromiseOrValue<BigNumberish>,
       minAmountOut: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
+      receiveETH: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -682,12 +658,21 @@ export interface Book extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    status(
+    tradeRebatePct(overrides?: CallOverrides): Promise<BigNumber>;
+
+    tradesData(
       arg0: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
-    ): Promise<number>;
-
-    tradeRebatePct(overrides?: CallOverrides): Promise<BigNumber>;
+    ): Promise<
+      [BigNumber, string, number, boolean, boolean, BigNumber] & {
+        filledAtBlock: BigNumber;
+        filledBy: string;
+        status: number;
+        unwrapOutput: boolean;
+        isEthTrade: boolean;
+        amountPaid: BigNumber;
+      }
+    >;
   };
 
   filters: {
@@ -807,7 +792,6 @@ export interface Book extends BaseContract {
       minAmountOut: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
       tradeIndex: PromiseOrValue<BigNumberish>,
-      trader: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -835,17 +819,8 @@ export interface Book extends BaseContract {
       tradeIndex: PromiseOrValue<BigNumberish>,
       trader: PromiseOrValue<string>,
       amountToSend: PromiseOrValue<BigNumberish>,
+      data: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    filledAtBlock(
-      arg0: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    filledBy(
-      arg0: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     numberOfTrades(overrides?: CallOverrides): Promise<BigNumber>;
@@ -868,7 +843,8 @@ export interface Book extends BaseContract {
       amountIn: PromiseOrValue<BigNumberish>,
       minAmountOut: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      receiveETH: PromiseOrValue<boolean>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     safeBlockThreshold(overrides?: CallOverrides): Promise<BigNumber>;
@@ -884,12 +860,12 @@ export interface Book extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    status(
+    tradeRebatePct(overrides?: CallOverrides): Promise<BigNumber>;
+
+    tradesData(
       arg0: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    tradeRebatePct(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -900,7 +876,6 @@ export interface Book extends BaseContract {
       minAmountOut: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
       tradeIndex: PromiseOrValue<BigNumberish>,
-      trader: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -928,17 +903,8 @@ export interface Book extends BaseContract {
       tradeIndex: PromiseOrValue<BigNumberish>,
       trader: PromiseOrValue<string>,
       amountToSend: PromiseOrValue<BigNumberish>,
+      data: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    filledAtBlock(
-      arg0: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    filledBy(
-      arg0: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     numberOfTrades(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -961,7 +927,8 @@ export interface Book extends BaseContract {
       amountIn: PromiseOrValue<BigNumberish>,
       minAmountOut: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      receiveETH: PromiseOrValue<boolean>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     safeBlockThreshold(
@@ -979,11 +946,11 @@ export interface Book extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    status(
+    tradeRebatePct(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    tradesData(
       arg0: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
-
-    tradeRebatePct(overrides?: CallOverrides): Promise<PopulatedTransaction>;
   };
 }
