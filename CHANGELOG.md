@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2023-01-26
+
+### Added
+- Added an `amountPaid` field to the data associated with each trade, representing how much has been paid out to relayers, disputers and rebated to users. 
+- Added the `unwrapOutput` to the data associated with each trade, representing wether the user wants to receive native or wrapped ETH (or base currency on other chains, ex: Matic). `unwrapOutput` must now be added to each call to `requestTrade`.
+- Added the `isEthTrade` to the data associated with each trade, representing wether a user sent the native currency instead of the wrapped version of it.
+
+### Changed
+- `settlers` in the Oracle can't settle their own disputes anymore.
+- All trade data has been encapsulated in a `TradeData` struct and there is a mapping `tradesData` indexed by `tradeId` containing each trade data. The previous mappings such as `filledBy`, `filledAmount` have been deleted.
+- Oracle Request Ids now include a nonce called `requestIndex`, the current index can be read by calling `requestCount` on the Oracle contract. Each `requestIndex` is also in the `NewRequest` event.
+
+
+### Fixed
+- See audit report for full list.
 
 ## [0.3.1] - 2022-12-16
 
