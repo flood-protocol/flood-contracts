@@ -99,7 +99,7 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Ownable2Step {
      * @notice Compute the ID for a request.
      * @dev The bond is transferred from `msg.sender` rather than from `proposer` to allow contracts to sponsor proposals.
      * For example, in `Book`, the relayer has already sent funds to the contract, so they are pulled from the contract directly and the relayer is set as proposer.
-     * @param sender value of `msg.sender` when the request is created
+     * @param requester value of `msg.sender` when the request is created
      * @param proposer Address of the proposer
      * @param disputer Address of the disputer
      * @param currency Token to use for the bond
@@ -107,12 +107,12 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Ownable2Step {
      * @param requestIndex Index of the request
      * @return ID of the request
      */
-    function getRequestId(address sender, address proposer, address disputer, address currency, uint256 bond, uint requestIndex)
-        external
+    function getRequestId(address requester, address proposer, address disputer, address currency, uint256 bond, uint requestIndex)
+       public 
         pure
         returns (bytes32)
     {
-        return _getRequestId(sender, proposer, disputer, currency, bond, requestIndex);
+        return keccak256(abi.encodePacked(requester, proposer, disputer, currency, bond, requestIndex));
     }
 
     /**
@@ -129,7 +129,7 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Ownable2Step {
         external
         returns (bytes32 id)
     {
-        id = _getRequestId(msg.sender, proposer, disputer, currency, bond, requestCount);
+        id = getRequestId(msg.sender, proposer, disputer, currency, bond, requestCount);
         requestCount++;
         Request memory request = Request({
             requester: msg.sender,
@@ -181,19 +181,5 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Ownable2Step {
         if (request.requester.code.length != 0) {
             IOptimisticRequester(request.requester).onPriceSettled(id, request);
         }
-    }
-
-    /**
-     *
-     *          INTERNAL FUNCTIONS         *
-     *
-     */
-
-    function _getRequestId(address requester, address proposer, address disputer, address currency, uint256 bond, uint requestIndex)
-        internal
-        pure
-        returns (bytes32)
-    {
-        return keccak256(abi.encodePacked(requester, proposer, disputer, currency, bond, requestIndex));
     }
 }
