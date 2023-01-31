@@ -6,5 +6,5 @@ pragma solidity 0.8.17;
  * @notice Interface for Relayers to implement to optimistically receive the trade rebate pct
  */
 interface IFloodFillCallback {
-    function onFloodFill(bytes calldata data) external;
+    function onFloodFill(bytes calldata data) external returns (uint256);
 }
