@@ -60,8 +60,7 @@ error Book__MaliciousCaller(address caller);
 error Book__NotTrader();
 
 // The trade is not initialized, meaning it does not exist or was already settled/disputed
-enum TradeStatus
-{
+enum TradeStatus {
     UNINITIALIZED,
     // The trade is initialized and can be filled
     REQUESTED,
@@ -72,21 +71,21 @@ enum TradeStatus
 }
 
 /**
-    @notice A struct representing data associated with a trade. It is used to store the data of a trade in a mapping.
-    @param filledAtBlock The block the trade was filled at. A value of 0 means it has not been filled yet.
-    @param filledBy The relayer that filled the trade.
-    @param status The status of the trade.
-    @param unwrapOutput Whether the recipient wants to unwrap their output token.
-    @param isEthTrade Whether the trade was requested with ETH.
-    @param amountPaid The amount of tokenIn paid by far by the contract to the relayer filling the trade, disputers or given as a rebate to users. This should never exceed the `amountIn` of the trade. 
+ * @notice A struct representing data associated with a trade. It is used to store the data of a trade in a mapping.
+ *     @param filledAtBlock The block the trade was filled at. A value of 0 means it has not been filled yet.
+ *     @param filledBy The relayer that filled the trade.
+ *     @param status The status of the trade.
+ *     @param unwrapOutput Whether the recipient wants to unwrap their output token.
+ *     @param isEthTrade Whether the trade was requested with ETH.
+ *     @param amountPaid The amount of tokenIn paid by far by the contract to the relayer filling the trade, disputers or given as a rebate to users. This should never exceed the `amountIn` of the trade.
  */
 struct TradeData {
-    uint filledAtBlock;
+    uint256 filledAtBlock;
     address filledBy;
     TradeStatus status;
     bool unwrapOutput;
     bool isEthTrade;
-    uint amountPaid;
+    uint256 amountPaid;
 }
 
 contract Book is IOptimisticRequester, IBookEvents {
@@ -107,7 +106,7 @@ contract Book is IOptimisticRequester, IBookEvents {
     // A mapping from trade ids to trade data.
     mapping(bytes32 => TradeData) public tradesData;
 
-       constructor(
+    constructor(
         FloodRegistry _registry,
         uint256 _safeBlockThreshold,
         uint256 _disputeBondPct,
@@ -116,7 +115,7 @@ contract Book is IOptimisticRequester, IBookEvents {
         uint256 _feePct
     ) {
         if (address(_registry) == address(0)) {
-            revert Book__ZeroRegistry(); 
+            revert Book__ZeroRegistry();
         }
         if (_safeBlockThreshold == 0) {
             revert Book__ZeroSafeBlockThreshold();
@@ -233,7 +232,7 @@ contract Book is IOptimisticRequester, IBookEvents {
      * @param tradeIndex The index of the trade.
      * @param trader The address of the trader who initiated the trade.
      * @param amountToSend The amount of `tokenOut` given by the relayer to the trader.
-     * @param data The data to be passed to the calling contract in the `onFloodFill` callback. 
+     * @param data The data to be passed to the calling contract in the `onFloodFill` callback.
      */
     function fillTrade(
         address tokenIn,
@@ -263,7 +262,6 @@ contract Book is IOptimisticRequester, IBookEvents {
         tradesData[tradeId] = tradeData;
         emit TradeFilled(msg.sender, tradeIndex, amountToSend, trader);
 
-       
         // Send some of the tokens to the relayer.
         IERC20(tokenIn).safeTransfer(msg.sender, amountInToRelayer);
         // Relayers can use the tokens they receive to pay for the swaps
@@ -296,8 +294,8 @@ contract Book is IOptimisticRequester, IBookEvents {
     ) external {
         bytes32 tradeId = _getTradeId(tokenIn, tokenOut, amountIn, minAmountOut, recipient, tradeIndex, trader);
         TradeData memory tradeData = tradesData[tradeId];
-        uint filledHeight = tradeData.filledAtBlock; 
-        if(tradeData.status != TradeStatus.FILLED) {
+        uint256 filledHeight = tradeData.filledAtBlock;
+        if (tradeData.status != TradeStatus.FILLED) {
             revert Book__TradeNotFilled(tradeId);
         }
         // Check if the trade has already been settled, is not filled or does not exist.
@@ -339,16 +337,14 @@ contract Book is IOptimisticRequester, IBookEvents {
         address trader
     ) external {
         bytes32 tradeId = _getTradeId(tokenIn, tokenOut, amountIn, minAmountOut, recipient, tradeIndex, trader);
-        TradeData memory tradeData = tradesData[tradeId]; 
-        uint filledHeight = tradeData.filledAtBlock;
-        
+        TradeData memory tradeData = tradesData[tradeId];
+        uint256 filledHeight = tradeData.filledAtBlock;
 
-        // Check that the trade exist and has not been disputed already. 
+        // Check that the trade exist and has not been disputed already.
         if (!_isDisputable(filledHeight, tradeData.status)) {
             revert Book__TradeNotDisputable();
         }
 
-        
         uint256 bondAmount = amountIn * disputeBondPct / 100;
         tradeData.amountPaid = tradeData.amountPaid + bondAmount;
         tradeData.status = TradeStatus.DISPUTED;
@@ -360,7 +356,11 @@ contract Book is IOptimisticRequester, IBookEvents {
         IERC20(tokenIn).safeApprove(address(oracle), 2 * amountIn * disputeBondPct / 100);
 
         bytes32 disputeId = oracle.ask(
-            tradeData.filledBy, msg.sender, tokenIn, bondAmount, abi.encode(amountIn, recipient, tradeIndex, trader, tradeId)
+            tradeData.filledBy,
+            msg.sender,
+            tokenIn,
+            bondAmount,
+            abi.encode(amountIn, recipient, tradeIndex, trader, tradeId)
         );
         emit TradeDisputed(tradeData.filledBy, tradeIndex, disputeId, filledHeight, trader);
     }
@@ -403,7 +403,7 @@ contract Book is IOptimisticRequester, IBookEvents {
         if (sender == address(this)) {
             if (unwrap && address(token) == address(weth)) {
                 IWETH9(address(token)).withdraw(amount);
-                (bool success,) = payable(recipient).call{value: amount}("");
+                (bool success,) = recipient.call{value: amount}("");
                 require(success, "Book: ETH transfer failed");
             } else {
                 IERC20(token).safeTransfer(recipient, amount);
@@ -413,7 +413,8 @@ contract Book is IOptimisticRequester, IBookEvents {
         if (unwrap && address(token) == address(weth)) {
             token.safeTransferFrom(sender, address(this), amount);
             IWETH9(address(token)).withdraw(amount);
-            payable(recipient).transfer(amount);
+            (bool success,) = recipient.call{value: amount}("");
+            require(success, "Book: ETH transfer failed");
         } else {
             IERC20(token).safeTransferFrom(sender, recipient, amount);
         }
@@ -487,7 +488,7 @@ contract Book is IOptimisticRequester, IBookEvents {
     }
 
     /**
-    @notice Standard function to receive ETH. 
+     * @notice Standard function to receive ETH.
      */
     receive() external payable {}
 }

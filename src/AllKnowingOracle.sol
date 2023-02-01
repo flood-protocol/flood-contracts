@@ -42,7 +42,12 @@ interface IAllKnowingOracleEvents {
     event SettlerWhitelisted(address indexed settler, bool enabled);
     event RequesterWhitelisted(address indexed requester, bool enabled);
     event NewRequest(
-        bytes32 indexed id, address indexed proposer, address indexed disputer, address currency, uint256 bond, uint requestIndex
+        bytes32 indexed id,
+        address indexed proposer,
+        address indexed disputer,
+        address currency,
+        uint256 bond,
+        uint256 requestIndex
     );
     event RequestSettled(bytes32 indexed id, bool answer);
 }
@@ -59,7 +64,7 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Ownable2Step {
     mapping(bytes32 => Request) public requests;
     mapping(address => bool) public settlers;
     FloodRegistry public immutable registry;
-    uint public requestCount = 0;
+    uint256 public requestCount = 0;
 
     modifier onlySettler() {
         if (!settlers[msg.sender]) {
@@ -80,10 +85,10 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Ownable2Step {
      */
 
     /**
-    @notice Whitelists a settler, that is, an account authorized to settle requests. Only the owner can call this function.
-    @param settler Address of the settler
-    @param enabled Whether the settler is enabled
-    */
+     * @notice Whitelists a settler, that is, an account authorized to settle requests. Only the owner can call this function.
+     * @param settler Address of the settler
+     * @param enabled Whether the settler is enabled
+     */
     function whitelistSettler(address settler, bool enabled) external onlyOwner {
         settlers[settler] = enabled;
         emit SettlerWhitelisted(settler, enabled);
@@ -107,11 +112,14 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Ownable2Step {
      * @param requestIndex Index of the request
      * @return ID of the request
      */
-    function getRequestId(address requester, address proposer, address disputer, address currency, uint256 bond, uint requestIndex)
-       public 
-        pure
-        returns (bytes32)
-    {
+    function getRequestId(
+        address requester,
+        address proposer,
+        address disputer,
+        address currency,
+        uint256 bond,
+        uint256 requestIndex
+    ) public pure returns (bytes32) {
         return keccak256(abi.encodePacked(requester, proposer, disputer, currency, bond, requestIndex));
     }
 
@@ -124,6 +132,7 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Ownable2Step {
      * @param currency Token to use for the bond
      * @param bond Bond value which must be posted to dispute
      * @param data additional data associated with the request
+     * @return id ID of the new request
      */
     function ask(address proposer, address disputer, address currency, uint256 bond, bytes calldata data)
         external

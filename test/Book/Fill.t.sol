@@ -19,8 +19,7 @@ import {
 } from "src/Book.sol";
 import {TradeFixture} from "./Fixtures.sol";
 
-
-contract MockFloodFillCallee is IFloodFillCallback { 
+contract MockFloodFillCallee is IFloodFillCallback {
     function onFloodFill(bytes calldata data) external override {}
 }
 
@@ -80,7 +79,7 @@ contract FillTest is TradeFixture, MockFloodFillCallee {
             "recipient should have received amountOut tokens"
         );
 
-        (uint filledAtInStorage, address filledByInStorage,,,,uint amountPaid) = book.tradesData(tradeId);
+        (uint256 filledAtInStorage, address filledByInStorage,,,, uint256 amountPaid) = book.tradesData(tradeId);
         assertEq(filledAtInStorage, block.number);
         assertEq(filledByInStorage, bob);
         assertEq(amountPaid, bobExpectedTokens);
@@ -104,7 +103,9 @@ contract FillTest is TradeFixture, MockFloodFillCallee {
         );
 
         // Artificially fill&dispute the trade at the past block.
-        stdstore.target(address(book)).sig(book.tradesData.selector).with_key(tradeId).depth(0).checked_write(block.number);
+        stdstore.target(address(book)).sig(book.tradesData.selector).with_key(tradeId).depth(0).checked_write(
+            block.number
+        );
         vm.expectRevert(abi.encodeWithSelector(Book__TradeNotInFillableState.selector, tradeId));
         book.fillTrade(
             testTokenIn,
@@ -124,28 +125,46 @@ contract FillTest is TradeFixture, MockFloodFillCallee {
         // make a request
         deal(testTokenIn, testTrader, testAmountIn);
         IERC20(testTokenIn).approve(address(book), testAmountIn);
-        (uint tradeIndex, ) = _requestTrade(testTokenIn, testTokenOut, testAmountIn, amountOut - 1, testRecipient, testTrader, false);
+        (uint256 tradeIndex,) =
+            _requestTrade(testTokenIn, testTokenOut, testAmountIn, amountOut - 1, testRecipient, testTrader, false);
         vm.prank(bob);
         vm.expectRevert(bytes("ERC20: transfer amount exceeds balance"));
-        book.fillTrade(testTokenIn, testTokenOut, testAmountIn, amountOut - 1, testRecipient, tradeIndex, testTrader, amountOut, bytes(""));
+        book.fillTrade(
+            testTokenIn,
+            testTokenOut,
+            testAmountIn,
+            amountOut - 1,
+            testRecipient,
+            tradeIndex,
+            testTrader,
+            amountOut,
+            bytes("")
+        );
     }
 
     function testCannotFillIfAmountOutIsLessThanMin(uint256 minAmountOut) public {
         vm.assume(minAmountOut > 1);
-      
+
         // make a request
         deal(testTokenIn, testTrader, testAmountIn);
         IERC20(testTokenIn).approve(address(book), testAmountIn);
-        (uint tradeIndex, ) = _requestTrade(testTokenIn, testTokenOut, testAmountIn, minAmountOut, testRecipient, testTrader, false); 
+        (uint256 tradeIndex,) =
+            _requestTrade(testTokenIn, testTokenOut, testAmountIn, minAmountOut, testRecipient, testTrader, false);
         uint256 amountOut = minAmountOut - 1;
         vm.prank(bob);
         vm.expectRevert(Book__AmountOutTooLow.selector);
         book.fillTrade(
-            testTokenIn, testTokenOut, testAmountIn, minAmountOut, testRecipient, tradeIndex, testTrader, amountOut, bytes("")
+            testTokenIn,
+            testTokenOut,
+            testAmountIn,
+            minAmountOut,
+            testRecipient,
+            tradeIndex,
+            testTrader,
+            amountOut,
+            bytes("")
         );
     }
-
-
 
     function testFillWithUnwrap() public {
         testTokenIn = USDC;
@@ -195,28 +214,26 @@ contract FillTest is TradeFixture, MockFloodFillCallee {
             testRecipient.balance, recipientBalanceBefore + amountOut, "recipient should have received amountOut tokens"
         );
 
-        (uint filledAtInStorage, address filledByInStorage,,,,uint amountPaid) = book.tradesData(tradeId);
+        (uint256 filledAtInStorage, address filledByInStorage,,,, uint256 amountPaid) = book.tradesData(tradeId);
         assertEq(filledAtInStorage, block.number);
         assertEq(filledByInStorage, bob);
-        assertEq(amountPaid, bobExpectedTokens, "amountPaid should be correct"); 
+        assertEq(amountPaid, bobExpectedTokens, "amountPaid should be correct");
     }
 
     function testFillWithCallback() public {
         // make a request
         deal(testTokenIn, testTrader, testAmountIn);
         IERC20(testTokenIn).approve(address(book), testAmountIn);
-        (uint tradeIndex, ) = _requestTrade(testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, testTrader, false);
-       
+        (uint256 tradeIndex,) =
+            _requestTrade(testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, testTrader, false);
+
         // give the book the tokens in of the trade
         deal(testTokenIn, address(book), testAmountIn);
         // give this contract the tokens out of the trade
         deal(testTokenOut, address(this), testAmountOutMin);
         IERC20(testTokenOut).approve(address(book), testAmountOutMin);
         bytes memory data = abi.encode("Hello Flood");
-        vm.expectCall(
-            address(this),
-            abi.encodeCall(IFloodFillCallback.onFloodFill, (data))
-        );
+        vm.expectCall(address(this), abi.encodeCall(IFloodFillCallback.onFloodFill, (data)));
         book.fillTrade(
             testTokenIn,
             testTokenOut,
@@ -226,7 +243,7 @@ contract FillTest is TradeFixture, MockFloodFillCallee {
             tradeIndex,
             testTrader,
             testAmountOutMin,
-            data 
-        ); 
+            data
+        );
     }
 }

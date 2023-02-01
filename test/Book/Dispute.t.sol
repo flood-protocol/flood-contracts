@@ -24,7 +24,7 @@ contract DisputeTest is DisputeFixture {
             stdstore.target(address(book)).sig(book.tradesData.selector).with_key(tradeId).depth(0).read_int();
 
         // check that the request was received by the oracle
-        uint reqIndex = oracle.requestCount();
+        uint256 reqIndex = oracle.requestCount();
         bytes32 reqId = keccak256(abi.encodePacked(address(book), relayer, disputer, testTokenIn, bond, reqIndex));
 
         vm.expectEmit(true, true, true, true, address(book));
@@ -33,9 +33,8 @@ contract DisputeTest is DisputeFixture {
 
         // check that trade variables have been reset
         {
-            (, , TradeStatus statusAfterDispute, ,,uint amountPaid) =
-            book.tradesData(tradeId);
-            assertEq(uint8(statusAfterDispute),uint8(TradeStatus.DISPUTED));
+            (,, TradeStatus statusAfterDispute,,, uint256 amountPaid) = book.tradesData(tradeId);
+            assertEq(uint8(statusAfterDispute), uint8(TradeStatus.DISPUTED));
             assertEq(amountPaid, testAmountIn * (testRelayerRefundPct + testDisputeBondPct) / 100);
         }
 
@@ -84,7 +83,7 @@ contract DisputeTest is DisputeFixture {
         uint256 disputerBalanceBeforeDispute = IERC20(testTokenIn).balanceOf(disputer);
         uint256 relayerBalanceBeforeDispute = IERC20(testTokenIn).balanceOf(relayer);
         uint256 recipientBalanceBeforeDispute = IERC20(testTokenIn).balanceOf(testRecipient);
-        uint reqIndex = oracle.requestCount();
+        uint256 reqIndex = oracle.requestCount();
         bytes32 reqId = keccak256(abi.encodePacked(address(book), relayer, disputer, testTokenIn, bond, reqIndex));
 
         _disputeTrade(testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, tradeIndex, testTrader);
