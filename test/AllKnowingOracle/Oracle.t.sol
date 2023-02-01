@@ -32,7 +32,14 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
         super.setUp();
     }
 
-    function testGetId(address sender, address proposer, address disputer, address currency, uint256 bond, uint reqIndex) public {
+    function testGetId(
+        address sender,
+        address proposer,
+        address disputer,
+        address currency,
+        uint256 bond,
+        uint256 reqIndex
+    ) public {
         bytes32 id = keccak256(abi.encodePacked(sender, proposer, disputer, currency, bond, reqIndex));
         assertEq(oracle.getRequestId(sender, proposer, disputer, currency, bond, reqIndex), id);
     }
@@ -42,7 +49,7 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
         // As Charlie is the requester, he will pay the bond for Alice and Bob.
         deal(USDC, charlie, 2 * bond);
         uint256 charlieBalanceBefore = IERC20(USDC).balanceOf(charlie);
-        uint reqIndex = oracle.requestCount();
+        uint256 reqIndex = oracle.requestCount();
         bytes32 id = oracle.getRequestId(charlie, alice, bob, USDC, bond, reqIndex);
         vm.prank(charlie);
         vm.expectEmit(true, true, true, true, address(oracle));
@@ -134,12 +141,11 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
         oracle.settle(bytes32(0), true);
     }
 
-
     function testCannotSettleIfProposerOrDisputer() public {
-        uint bond = 100;
+        uint256 bond = 100;
         // As Charlie is the requester, he will pay the bond for Alice and Bob.
         deal(USDC, charlie, 2 * bond);
-        uint reqIndex = oracle.requestCount();
+        uint256 reqIndex = oracle.requestCount();
         bytes32 id = oracle.getRequestId(charlie, alice, bob, USDC, bond, reqIndex);
         vm.prank(charlie);
         oracle.ask(alice, bob, USDC, bond, abi.encode(charlie));
@@ -161,7 +167,7 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
         deal(USDC, charlie, 2 * bond);
         vm.prank(charlie);
         oracle.ask(alice, bob, USDC, bond, "");
-        uint reqIndex = oracle.requestCount() - 1;
+        uint256 reqIndex = oracle.requestCount() - 1;
         bytes32 id = oracle.getRequestId(charlie, alice, bob, USDC, bond, reqIndex);
 
         vm.prank(charlie);
@@ -173,7 +179,7 @@ contract AllKnowingOracleTest is IAllKnowingOracleEvents, OracleFixture {
         vm.expectRevert(abi.encodeWithSelector(AllKnowingOracle__NotSettleable.selector, id));
         oracle.settle(id, answer);
     }
-    
+
     function testCannotSettleIfUninitialized() public {
         vm.prank(charlie);
         vm.expectRevert(abi.encodeWithSelector(AllKnowingOracle__NotSettleable.selector, bytes32(0)));
