@@ -20,7 +20,10 @@ import {
 import {TradeFixture} from "./Fixtures.sol";
 
 contract MockFloodFillCallee is IFloodFillCallback {
-    function onFloodFill(bytes calldata data) external override {}
+    function onFloodFill(bytes calldata data) external override returns (uint256) {
+        uint256 amountToSend = abi.decode(data, (uint256));
+        return amountToSend;
+    }
 }
 
 contract FillTest is TradeFixture, MockFloodFillCallee {
@@ -232,7 +235,7 @@ contract FillTest is TradeFixture, MockFloodFillCallee {
         // give this contract the tokens out of the trade
         deal(testTokenOut, address(this), testAmountOutMin);
         IERC20(testTokenOut).approve(address(book), testAmountOutMin);
-        bytes memory data = abi.encode("Hello Flood");
+        bytes memory data = abi.encode(testAmountOutMin);
         vm.expectCall(address(this), abi.encodeCall(IFloodFillCallback.onFloodFill, (data)));
         book.fillTrade(
             testTokenIn,
@@ -242,8 +245,15 @@ contract FillTest is TradeFixture, MockFloodFillCallee {
             testRecipient,
             tradeIndex,
             testTrader,
-            testAmountOutMin,
+            // Setting amount to send to 0, the book should transfer the amount returns by the callback
+            0,
             data
+        );
+        assertEq(IERC20(testTokenOut).balanceOf(address(this)), 0, "Should have sent all tokens out to the recipient");
+        assertEq(
+            IERC20(testTokenOut).balanceOf(testRecipient),
+            testAmountOutMin,
+            "Should have sent all tokens out to the recipient"
         );
     }
 }

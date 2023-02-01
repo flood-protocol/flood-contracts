@@ -139,7 +139,7 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Ownable2Step {
         returns (bytes32 id)
     {
         // cache the current req count, then increment it
-        uint cachedReqCount = requestCount++;
+        uint256 cachedReqCount = requestCount++;
         id = getRequestId(msg.sender, proposer, disputer, currency, bond, cachedReqCount);
         Request memory request = Request({
             requester: msg.sender,

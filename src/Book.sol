@@ -250,9 +250,7 @@ contract Book is IOptimisticRequester, IBookEvents {
         if (tradeData.status != TradeStatus.REQUESTED) {
             revert Book__TradeNotInFillableState(tradeId);
         }
-        if (amountToSend < minAmountOut) {
-            revert Book__AmountOutTooLow();
-        }
+
         tradeData.filledAtBlock = block.number;
         tradeData.filledBy = msg.sender;
         tradeData.status = TradeStatus.FILLED;
@@ -264,13 +262,23 @@ contract Book is IOptimisticRequester, IBookEvents {
 
         // Send some of the tokens to the relayer.
         IERC20(tokenIn).safeTransfer(msg.sender, amountInToRelayer);
+
         // Relayers can use the tokens they receive to pay for the swaps
+        uint256 realAmountToSend = amountToSend;
         if (data.length > 0) {
-            IFloodFillCallback(msg.sender).onFloodFill(data);
+            uint256 amountFromCallback = IFloodFillCallback(msg.sender).onFloodFill(data);
+            // If the amount returned by the callback is greater than the amount to send, then send the amount returned by the callback.
+            if (amountFromCallback > amountToSend) {
+                realAmountToSend = amountFromCallback;
+            }
+        }
+
+        if (realAmountToSend < minAmountOut) {
+            revert Book__AmountOutTooLow();
         }
 
         // Send the tokens to the recipient.
-        _transferAndUnwrap(IERC20(tokenOut), msg.sender, recipient, amountToSend, tradeData.unwrapOutput);
+        _transferAndUnwrap(IERC20(tokenOut), msg.sender, recipient, realAmountToSend, tradeData.unwrapOutput);
     }
 
     /**
