@@ -129,8 +129,9 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Ownable2Step {
         external
         returns (bytes32 id)
     {
-        id = getRequestId(msg.sender, proposer, disputer, currency, bond, requestCount);
-        requestCount++;
+        // cache the current req count, then increment it
+        uint cachedReqCount = requestCount++;
+        id = getRequestId(msg.sender, proposer, disputer, currency, bond, cachedReqCount);
         Request memory request = Request({
             requester: msg.sender,
             proposer: proposer,
@@ -144,7 +145,7 @@ contract AllKnowingOracle is IAllKnowingOracleEvents, Ownable2Step {
 
         requests[id] = request;
 
-        emit NewRequest(id, proposer, disputer, currency, bond, requestCount - 1);
+        emit NewRequest(id, proposer, disputer, currency, bond, cachedReqCount);
 
         IERC20(currency).safeTransferFrom(msg.sender, address(this), 2 * bond);
     }
