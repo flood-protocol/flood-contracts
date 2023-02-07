@@ -84,7 +84,7 @@ export interface IFloodFillCallback extends BaseContract {
     onFloodFill(
       data: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
-    ): Promise<void>;
+    ): Promise<BigNumber>;
   };
 
   filters: {};

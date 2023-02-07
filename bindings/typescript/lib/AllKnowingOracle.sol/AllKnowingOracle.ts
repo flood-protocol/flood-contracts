@@ -302,7 +302,7 @@ export interface AllKnowingOracle extends BaseContract {
     ): Promise<ContractTransaction>;
 
     getRequestId(
-      sender: PromiseOrValue<string>,
+      requester: PromiseOrValue<string>,
       proposer: PromiseOrValue<string>,
       disputer: PromiseOrValue<string>,
       currency: PromiseOrValue<string>,
@@ -376,7 +376,7 @@ export interface AllKnowingOracle extends BaseContract {
   ): Promise<ContractTransaction>;
 
   getRequestId(
-    sender: PromiseOrValue<string>,
+    requester: PromiseOrValue<string>,
     proposer: PromiseOrValue<string>,
     disputer: PromiseOrValue<string>,
     currency: PromiseOrValue<string>,
@@ -448,7 +448,7 @@ export interface AllKnowingOracle extends BaseContract {
     ): Promise<string>;
 
     getRequestId(
-      sender: PromiseOrValue<string>,
+      requester: PromiseOrValue<string>,
       proposer: PromiseOrValue<string>,
       disputer: PromiseOrValue<string>,
       currency: PromiseOrValue<string>,
@@ -594,7 +594,7 @@ export interface AllKnowingOracle extends BaseContract {
     ): Promise<BigNumber>;
 
     getRequestId(
-      sender: PromiseOrValue<string>,
+      requester: PromiseOrValue<string>,
       proposer: PromiseOrValue<string>,
       disputer: PromiseOrValue<string>,
       currency: PromiseOrValue<string>,
@@ -658,7 +658,7 @@ export interface AllKnowingOracle extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     getRequestId(
-      sender: PromiseOrValue<string>,
+      requester: PromiseOrValue<string>,
       proposer: PromiseOrValue<string>,
       disputer: PromiseOrValue<string>,
       currency: PromiseOrValue<string>,
