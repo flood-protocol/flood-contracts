@@ -37,7 +37,7 @@ contract RequestTest is TradeFixture {
         uint256 balanceBefore = IERC20(testTokenIn).balanceOf(alice);
 
         vm.expectEmit(true, true, true, true, address(book));
-        emit TradeRequested(testTokenIn, testTokenOut, amountIn, amountOutMin, testRecipient, tradeIndex, alice);
+        emit TradeRequested(testTokenIn, testTokenOut, amountIn, amountOutMin, testRecipient, tradeIndex, alice, false, false);
         (, bytes32 id) = _requestTrade(testTokenIn, testTokenOut, amountIn, amountOutMin, testRecipient, alice, false);
 
         // Check that the balance of Alice of `tokenIn` is reduced by `amount`.
@@ -100,7 +100,7 @@ contract RequestTest is TradeFixture {
         uint256 balanceBefore = IERC20(tokenIn).balanceOf(alice);
 
         vm.expectEmit(true, true, true, true, address(book));
-        emit TradeRequested(tokenIn, tokenOut, amountIn, testAmountOutMin, testRecipient, tradeIndex, alice);
+        emit TradeRequested(tokenIn, tokenOut, amountIn, testAmountOutMin, testRecipient, tradeIndex, alice, true, false);
         (, bytes32 id) = _requestTrade(tokenIn, tokenOut, amountIn, testAmountOutMin, testRecipient, alice, true);
 
         // Check that the balance of Alice of `tokenIn` is reduced by `amount`.
@@ -129,7 +129,7 @@ contract RequestTest is TradeFixture {
         uint256 balanceBefore = alice.balance;
 
         vm.expectEmit(true, true, true, true, address(book));
-        emit TradeRequested(testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, tradeIndex, alice);
+        emit TradeRequested(testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, tradeIndex, alice, false, true);
         bytes32 id =
             _getTradeId(testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, tradeIndex, alice);
         vm.prank(alice);

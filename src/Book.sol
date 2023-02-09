@@ -19,7 +19,9 @@ interface IBookEvents {
         uint256 minAmountOut,
         address recipient,
         uint256 indexed tradeIndex,
-        address indexed trader
+        address indexed trader,
+        bool unwrapOutput,
+        bool wrapInput
     );
     event TradeFilled(address indexed relayer, uint256 indexed tradeIndex, uint256 amountOut, address indexed trader);
     event TradeSettled(
@@ -76,7 +78,7 @@ enum TradeStatus {
  *     @param filledBy The relayer that filled the trade.
  *     @param status The status of the trade.
  *     @param unwrapOutput Whether the recipient wants to unwrap their output token.
- *     @param isEthTrade Whether the trade was requested with ETH.
+ *     @param wrapInput Whether the trade was requested with ETH.
  *     @param amountPaid The amount of tokenIn paid by far by the contract to the relayer filling the trade, disputers or given as a rebate to users. This should never exceed the `amountIn` of the trade.
  */
 struct TradeData {
@@ -84,7 +86,7 @@ struct TradeData {
     address filledBy;
     TradeStatus status;
     bool unwrapOutput;
-    bool isEthTrade;
+    bool wrapInput;
     uint256 amountPaid;
 }
 
@@ -148,7 +150,7 @@ contract Book is IOptimisticRequester, IBookEvents {
      * @param amountIn The amount of `tokenIn` to be sold.
      * @param minAmountOut The minimum amount of `tokenOut` to be bought. This should be set offchain based on `tradeRebatePct`, for example, if `tradeRebatePct` is 20%, then `minAmountOut` could be 90% of optimal at the time of request.
      * @param recipient The address to receive the tokens bought.
-     * @param receiveETH If true, the recipient will receive ETH instead of WETH.
+     * @param unwrapOutput If true, the recipient will receive ETH instead of WETH.
      */
     function requestTrade(
         address tokenIn,
@@ -156,7 +158,7 @@ contract Book is IOptimisticRequester, IBookEvents {
         uint256 amountIn,
         uint256 minAmountOut,
         address recipient,
-        bool receiveETH
+        bool unwrapOutput
     ) external payable {
         // checks whether the tokens are whitelisted
         _isPairSupported(tokenIn, tokenOut);
@@ -173,14 +175,14 @@ contract Book is IOptimisticRequester, IBookEvents {
         if (recipient == address(0)) {
             revert Book__SentToBlackHole();
         }
-        if (receiveETH && tokenOut != address(weth)) {
+        if (unwrapOutput && tokenOut != address(weth)) {
             revert Book__NotWeth();
         }
 
-        emit TradeRequested(tokenIn, tokenOut, amountIn, minAmountOut, recipient, numberOfTrades, msg.sender);
+        emit TradeRequested(tokenIn, tokenOut, amountIn, minAmountOut, recipient, numberOfTrades, msg.sender, unwrapOutput, msg.value > 0);
 
         bytes32 tradeId = _getTradeId(tokenIn, tokenOut, amountIn, minAmountOut, recipient, numberOfTrades, msg.sender);
-        tradesData[tradeId] = TradeData(0, address(0), TradeStatus.REQUESTED, receiveETH, msg.value > 0, 0);
+        tradesData[tradeId] = TradeData(0, address(0), TradeStatus.REQUESTED, unwrapOutput, msg.value > 0, 0);
         numberOfTrades++;
         if (msg.value > 0) {
             weth.deposit{value: amountIn}();
@@ -216,7 +218,7 @@ contract Book is IOptimisticRequester, IBookEvents {
 
         emit TradeCancelled(tradeIndex, tradeId, msg.sender);
         // Refund the trader.
-        _transferAndUnwrap(IERC20(tokenIn), address(this), msg.sender, amountIn, tradeData.isEthTrade);
+        _transferAndUnwrap(IERC20(tokenIn), address(this), msg.sender, amountIn, tradeData.wrapInput);
     }
 
     /**
@@ -258,7 +260,6 @@ contract Book is IOptimisticRequester, IBookEvents {
         tradeData.amountPaid = amountInToRelayer;
         // Set the modified trade data in storage.
         tradesData[tradeId] = tradeData;
-        emit TradeFilled(msg.sender, tradeIndex, amountToSend, trader);
 
         // Send some of the tokens to the relayer.
         IERC20(tokenIn).safeTransfer(msg.sender, amountInToRelayer);
@@ -277,6 +278,7 @@ contract Book is IOptimisticRequester, IBookEvents {
             revert Book__AmountOutTooLow();
         }
 
+        emit TradeFilled(msg.sender, tradeIndex, realAmountToSend, trader);
         // Send the tokens to the recipient.
         _transferAndUnwrap(IERC20(tokenOut), msg.sender, recipient, realAmountToSend, tradeData.unwrapOutput);
     }
