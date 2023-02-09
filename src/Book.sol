@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 import {IERC20} from "@openzeppelin/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/token/ERC20/utils/SafeERC20.sol";
+import {ReentrancyGuard} from "@openzeppelin/security/ReentrancyGuard.sol";
 import {IWETH9} from "./interfaces/IWETH9.sol";
 import {IFloodFillCallback} from "./interfaces/IFloodFillCallback.sol";
 import {AllKnowingOracle, Request, IOptimisticRequester} from "./AllKnowingOracle.sol";
@@ -90,7 +91,7 @@ struct TradeData {
     uint256 amountPaid;
 }
 
-contract Book is IOptimisticRequester, IBookEvents {
+contract Book is IOptimisticRequester, IBookEvents, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     uint256 public immutable safeBlockThreshold;
@@ -246,7 +247,7 @@ contract Book is IOptimisticRequester, IBookEvents {
         address trader,
         uint256 amountToSend,
         bytes calldata data
-    ) external {
+    ) external nonReentrant {
         bytes32 tradeId = _getTradeId(tokenIn, tokenOut, amountIn, minAmountOut, recipient, tradeIndex, trader);
         TradeData memory tradeData = tradesData[tradeId];
         if (tradeData.status != TradeStatus.REQUESTED) {
