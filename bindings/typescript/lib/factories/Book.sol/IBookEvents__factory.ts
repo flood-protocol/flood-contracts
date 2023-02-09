@@ -236,6 +236,18 @@ const _abi = [
         name: "trader",
         type: "address",
       },
+      {
+        indexed: false,
+        internalType: "bool",
+        name: "unwrapOutput",
+        type: "bool",
+      },
+      {
+        indexed: false,
+        internalType: "bool",
+        name: "wrapInput",
+        type: "bool",
+      },
     ],
     name: "TradeRequested",
     type: "event",

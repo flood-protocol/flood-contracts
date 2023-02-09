@@ -243,7 +243,7 @@ export interface BookInterface extends utils.Interface {
     "TradeDisputeSettled(address,uint256,bytes32,bool,address)": EventFragment;
     "TradeDisputed(address,uint256,bytes32,uint256,address)": EventFragment;
     "TradeFilled(address,uint256,uint256,address)": EventFragment;
-    "TradeRequested(address,address,uint256,uint256,address,uint256,address)": EventFragment;
+    "TradeRequested(address,address,uint256,uint256,address,uint256,address,bool,bool)": EventFragment;
     "TradeSettled(address,uint256,uint256,address)": EventFragment;
   };
 
@@ -351,9 +351,21 @@ export interface TradeRequestedEventObject {
   recipient: string;
   tradeIndex: BigNumber;
   trader: string;
+  unwrapOutput: boolean;
+  wrapInput: boolean;
 }
 export type TradeRequestedEvent = TypedEvent<
-  [string, string, BigNumber, BigNumber, string, BigNumber, string],
+  [
+    string,
+    string,
+    BigNumber,
+    BigNumber,
+    string,
+    BigNumber,
+    string,
+    boolean,
+    boolean
+  ],
   TradeRequestedEventObject
 >;
 
@@ -457,7 +469,7 @@ export interface Book extends BaseContract {
       amountIn: PromiseOrValue<BigNumberish>,
       minAmountOut: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
-      receiveETH: PromiseOrValue<boolean>,
+      unwrapOutput: PromiseOrValue<boolean>,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -485,7 +497,7 @@ export interface Book extends BaseContract {
         filledBy: string;
         status: number;
         unwrapOutput: boolean;
-        isEthTrade: boolean;
+        wrapInput: boolean;
         amountPaid: BigNumber;
       }
     >;
@@ -549,7 +561,7 @@ export interface Book extends BaseContract {
     amountIn: PromiseOrValue<BigNumberish>,
     minAmountOut: PromiseOrValue<BigNumberish>,
     recipient: PromiseOrValue<string>,
-    receiveETH: PromiseOrValue<boolean>,
+    unwrapOutput: PromiseOrValue<boolean>,
     overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -577,7 +589,7 @@ export interface Book extends BaseContract {
       filledBy: string;
       status: number;
       unwrapOutput: boolean;
-      isEthTrade: boolean;
+      wrapInput: boolean;
       amountPaid: BigNumber;
     }
   >;
@@ -641,7 +653,7 @@ export interface Book extends BaseContract {
       amountIn: PromiseOrValue<BigNumberish>,
       minAmountOut: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
-      receiveETH: PromiseOrValue<boolean>,
+      unwrapOutput: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -669,7 +681,7 @@ export interface Book extends BaseContract {
         filledBy: string;
         status: number;
         unwrapOutput: boolean;
-        isEthTrade: boolean;
+        wrapInput: boolean;
         amountPaid: BigNumber;
       }
     >;
@@ -751,14 +763,16 @@ export interface Book extends BaseContract {
       trader?: PromiseOrValue<string> | null
     ): TradeFilledEventFilter;
 
-    "TradeRequested(address,address,uint256,uint256,address,uint256,address)"(
+    "TradeRequested(address,address,uint256,uint256,address,uint256,address,bool,bool)"(
       tokenIn?: PromiseOrValue<string> | null,
       tokenOut?: null,
       amountIn?: null,
       minAmountOut?: null,
       recipient?: null,
       tradeIndex?: PromiseOrValue<BigNumberish> | null,
-      trader?: PromiseOrValue<string> | null
+      trader?: PromiseOrValue<string> | null,
+      unwrapOutput?: null,
+      wrapInput?: null
     ): TradeRequestedEventFilter;
     TradeRequested(
       tokenIn?: PromiseOrValue<string> | null,
@@ -767,7 +781,9 @@ export interface Book extends BaseContract {
       minAmountOut?: null,
       recipient?: null,
       tradeIndex?: PromiseOrValue<BigNumberish> | null,
-      trader?: PromiseOrValue<string> | null
+      trader?: PromiseOrValue<string> | null,
+      unwrapOutput?: null,
+      wrapInput?: null
     ): TradeRequestedEventFilter;
 
     "TradeSettled(address,uint256,uint256,address)"(
@@ -843,7 +859,7 @@ export interface Book extends BaseContract {
       amountIn: PromiseOrValue<BigNumberish>,
       minAmountOut: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
-      receiveETH: PromiseOrValue<boolean>,
+      unwrapOutput: PromiseOrValue<boolean>,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -927,7 +943,7 @@ export interface Book extends BaseContract {
       amountIn: PromiseOrValue<BigNumberish>,
       minAmountOut: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
-      receiveETH: PromiseOrValue<boolean>,
+      unwrapOutput: PromiseOrValue<boolean>,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
