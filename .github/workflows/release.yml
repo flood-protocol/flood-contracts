@@ -83,7 +83,7 @@ jobs:
 
       - name: Publish to pypi
         working-directory: python
-        run: python3 -m twine upload dist/* --repository-url ${{ secrets.PYPI_REPOSITORY_URL }}
+        run: python3 -m twine upload -u ${{ secrets.PYPI_USERNAME }} -p ${{ secrets.PYPI_PASSWORD }} dist/* --repository-url ${{ secrets.PYPI_REPOSITORY_URL }}
 
 #      - name: Publish to cargo
 #        working-directory: bindings/rust
