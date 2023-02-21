@@ -51,6 +51,40 @@ jobs:
     steps:
       - name: Checkout repo and submodules
         uses: actions/checkout@v3
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Extract Git Tag
+        run: echo "GIT_TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
+
+      - name: Install deps
+        run: forge install
+
+      - name: Build contract artifacts
+        run: forge build
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.8'
+
+      - name: Install twine & build
+        run: pip3 install twine build
+
+      - name: Move contract artifacts to python folder
+        working-directory: python
+        run: python3 copy_abis.py
+
+      - name: Build flood_contracts_abi package
+        working-directory: python
+        run: python3 -m build
+
+      - name: Publish to pypi
+        working-directory: python
+        run: python3 -m twine upload -u ${{ secrets.PYPI_USERNAME }} -p ${{ secrets.PYPI_PASSWORD }} dist/* --repository-url ${{ secrets.PYPI_REPOSITORY_URL }}
+
       - name: Publish to cargo
         working-directory: bindings/rust
         run: cargo publish --registry fulmin-labs-registry
