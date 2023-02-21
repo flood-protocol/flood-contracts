@@ -75,7 +75,7 @@ jobs:
 
       - name: Move contract artifacts to python folder
         working-directory: python
-        run: copy_abis.py
+        run: python3 copy_abis.py
 
       - name: Build flood_contracts_abi package
         working-directory: python
