@@ -9,6 +9,6 @@ for d in contract_dirs:
     contract_name = contract_dir[:-5]
     contract_path = os.path.join('../out', d, contract_dir)
 
-    shutil.copyfile(contract_path, 'abis/' + contract_dir)
+    shutil.copyfile(contract_path, 'flood_contract_abi/abis/' + contract_dir)
 
 
