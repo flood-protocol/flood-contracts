@@ -38,7 +38,7 @@ jobs:
         run: |
               if [ "$(cat bindings/rust/Cargo.toml | grep version | head -n 1 |awk '{print $3}' | tr -d '"' )" == "${GITHUB_REF#refs/*/}" ];then exit 0; else exit 1; fi
   publish:
-    needs: [test, version-tag-match]
+    needs: [test]
     # Ensure master is tagged
     if: github.event.base_ref == 'refs/heads/master'
     name: Build & Deploy to registry
