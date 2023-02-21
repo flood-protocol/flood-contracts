@@ -40,7 +40,7 @@ jobs:
   publish:
     needs: [test, version-tag-match]
     # Ensure master is tagged
-    #if: github.event.base_ref == 'refs/heads/master'
+    if: github.event.base_ref == 'refs/heads/master'
     name: Build & Deploy to registry
     env:
       CARGO_REGISTRY_DEFAULT: fulmin-labs-registry
