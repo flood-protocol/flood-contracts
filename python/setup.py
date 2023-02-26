@@ -3,7 +3,7 @@ from os import environ
 
 setup(
     name='flood_contract_abi',
-    version=environ['GIT_TAG'],
+    version="1.0.2b1",
     license='MIT',
     author="Nick Erokhin",
     author_email='nick@fulminlabs.org',
