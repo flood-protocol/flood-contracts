@@ -1,9 +1,11 @@
+import os
+
 from setuptools import setup, find_packages
 from os import environ
 
 setup(
     name='flood_contract_abi',
-    version="1.0.2b1",
+    version=os.environ['GIT_TAG'],
     license='MIT',
     author="Nick Erokhin",
     author_email='nick@fulminlabs.org',
