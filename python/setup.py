@@ -5,7 +5,7 @@ from os import environ
 
 setup(
     name='flood_contract_abi',
-    version=os.environ['GIT_TAG'],
+    version=environ['GIT_TAG'],
     license='MIT',
     author="Nick Erokhin",
     author_email='nick@fulminlabs.org',
