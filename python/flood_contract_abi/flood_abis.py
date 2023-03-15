@@ -7,6 +7,8 @@ class FloodABIs:
         abi_dir = os.path.join(this_dir, 'abis')
         for contract_abi in os.listdir(abi_dir):
             contract_name = contract_abi[:-5]
+            if contract_name == "EmptyABI":
+                continue
             contract_path = os.path.join(abi_dir, contract_abi)
             with open(contract_path, 'r') as f:
                 contract = json.load(f)
