@@ -36,6 +36,9 @@ contract FloodRegistry is IFloodRegistryEvents, Ownable2Step {
     ///////////////////////////////
     constructor(IWETH9 weth) {
         WETH = weth;
+        // Whitelist WETH and ETH
+        _whitelistToken(weth, true);
+        _whitelistToken(IERC20(address(0)), true);
     }
 
     /////////////////////////////////

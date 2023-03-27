@@ -9,6 +9,7 @@ import {IWETH9} from "src/interfaces/IWETH9.sol";
 address constant ARBITRUM_USDC = 0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8;
 address constant ARBITRUM_WETH = 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1;
 address constant ARBITRUM_DAI = 0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1;
+address constant ARBITRUM_USDT = 0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9;
 
 contract MockToken is ERC20 {
     constructor(string memory name, string memory symbol, uint8 decimals) ERC20(name, symbol, decimals) {}
@@ -17,14 +18,21 @@ contract MockToken is ERC20 {
 contract MockWeth is ERC20 {
     constructor() ERC20("Wrapped Ether", "WETH", 18) {}
 
-    function deposit() external payable {
+    function deposit() public payable {
+        require(msg.value > 0, "Deposit amount must be greater than 0");
         _mint(msg.sender, msg.value);
     }
 
-    function withdraw(uint256 amount) external {
+    function withdraw(uint256 amount) public {
         require(balanceOf[msg.sender] >= amount, "ERC20: burn amount exceeds balance");
         _burn(msg.sender, amount);
-        payable(msg.sender).transfer(amount);
+
+        (bool _s,) = msg.sender.call{value: amount}("");
+        require(_s, "WETH: failed to send ether");
+    }
+
+    receive() external payable {
+        deposit();
     }
 }
 
@@ -32,6 +40,7 @@ contract TokenFixture is Test {
     IERC20 internal USDC = deployTokenIfEmpty(ARBITRUM_USDC, "USDC", "USDC", 6);
     IWETH9 internal WETH = deployWETHIfEmpty(ARBITRUM_WETH);
     IERC20 internal DAI = deployTokenIfEmpty(ARBITRUM_DAI, "DAI", "DAI", 18);
+    IERC20 internal USDT = deployTokenIfEmpty(ARBITRUM_USDT, "USDT", "USDT", 6);
 
     function deployWETHIfEmpty(address target) internal returns (IWETH9) {
         uint256 existingCode = target.code.length;

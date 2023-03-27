@@ -70,7 +70,7 @@ contract FloodRegistryTest is TokenFixture, IFloodRegistryEvents {
     function testAreTokensWhitelisted() public {
         IERC20[] memory tokens = new IERC20[](3);
         tokens[0] = USDC;
-        tokens[1] = WETH;
+        tokens[1] = USDT;
         tokens[2] = DAI;
 
         registry.whitelistToken(tokens[1], true);
@@ -84,7 +84,7 @@ contract FloodRegistryTest is TokenFixture, IFloodRegistryEvents {
     function testBatchWhitelistTokens() public {
         IERC20[] memory tokens = new IERC20[](3);
         tokens[0] = USDC;
-        tokens[1] = WETH;
+        tokens[1] = USDT;
         tokens[2] = DAI;
 
         bool[] memory enabled = new bool[](3);
