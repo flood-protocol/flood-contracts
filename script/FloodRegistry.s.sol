@@ -1,10 +1,10 @@
-// SPDX-License-Identifier: Unlicense
-pragma solidity 0.8.17;
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.19;
 
 import "forge-std/Script.sol";
+import {IERC20} from "@openzeppelin/token/ERC20/IERC20.sol";
 import {IWETH9} from "src/interfaces/IWETH9.sol";
 import {FloodRegistry} from "src/FloodRegistry.sol";
-import {AllKnowingOracle} from "src/AllKnowingOracle.sol";
 
 contract FloodRegistryScript is Script {
     function run() public virtual {
@@ -17,19 +17,12 @@ contract FloodRegistryScript is Script {
         registry = new FloodRegistry(weth);
     }
 
-    function setOracle(FloodRegistry registry, AllKnowingOracle oracle) public {
-        vm.broadcast();
-        registry.setOracle(oracle);
-    }
-
-    function whitelistToken(FloodRegistry registry, address token, bool isWhitelisted) public {
+    function whitelistToken(FloodRegistry registry, IERC20 token, bool isWhitelisted) public {
         vm.broadcast();
         registry.whitelistToken(token, isWhitelisted);
     }
 
-    function batchWhitelistTokens(FloodRegistry registry, address[] memory tokens, bool[] memory isWhitelisted)
-        public
-    {
+    function batchWhitelistTokens(FloodRegistry registry, IERC20[] memory tokens, bool[] memory isWhitelisted) public {
         vm.broadcast();
         registry.batchWhitelistTokens(tokens, isWhitelisted);
     }
