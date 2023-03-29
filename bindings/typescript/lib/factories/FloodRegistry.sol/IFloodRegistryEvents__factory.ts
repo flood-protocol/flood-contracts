@@ -15,12 +15,18 @@ const _abi = [
     inputs: [
       {
         indexed: true,
-        internalType: "contract AllKnowingOracle",
-        name: "oracle",
+        internalType: "address",
+        name: "relayer",
         type: "address",
       },
+      {
+        indexed: false,
+        internalType: "bool",
+        name: "whitelisted",
+        type: "bool",
+      },
     ],
-    name: "OracleChanged",
+    name: "RelayerWhitelisted",
     type: "event",
   },
   {
@@ -28,7 +34,7 @@ const _abi = [
     inputs: [
       {
         indexed: true,
-        internalType: "address",
+        internalType: "contract IERC20",
         name: "token",
         type: "address",
       },
