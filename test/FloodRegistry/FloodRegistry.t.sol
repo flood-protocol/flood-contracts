@@ -11,7 +11,8 @@ import {
     FloodRegistry__TokenAlreadyWhitelisted,
     FloodRegistry__TokenNotWhitelisted,
     FloodRegistry__RelayerAlreadyWhitelisted,
-    FloodRegistry__RelayerNotWhitelisted
+    FloodRegistry__RelayerNotWhitelisted,
+    FloodRegistry__InvalidInputLength
 } from "src/FloodRegistry.sol";
 import {TokenFixture} from "../utils/TokenFixture.sol";
 
@@ -105,6 +106,20 @@ contract FloodRegistryTest is TokenFixture, IFloodRegistryEvents {
 
         vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(address(2));
+        registry.batchWhitelistTokens(tokens, enabled);
+    }
+
+    function testCannotBatchWhitelistDiffLength() public {
+        IERC20[] memory tokens = new IERC20[](3);
+        tokens[0] = USDC;
+        tokens[1] = USDT;
+        tokens[2] = DAI;
+
+        bool[] memory enabled = new bool[](2);
+        enabled[0] = true;
+        enabled[1] = false;
+
+        vm.expectRevert(FloodRegistry__InvalidInputLength.selector);
         registry.batchWhitelistTokens(tokens, enabled);
     }
 }
