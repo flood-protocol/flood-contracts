@@ -16,20 +16,25 @@ export interface IFloodRegistryEventsInterface extends utils.Interface {
   functions: {};
 
   events: {
-    "OracleChanged(address)": EventFragment;
+    "RelayerWhitelisted(address,bool)": EventFragment;
     "TokenWhitelisted(address,bool)": EventFragment;
   };
 
-  getEvent(nameOrSignatureOrTopic: "OracleChanged"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "RelayerWhitelisted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TokenWhitelisted"): EventFragment;
 }
 
-export interface OracleChangedEventObject {
-  oracle: string;
+export interface RelayerWhitelistedEventObject {
+  relayer: string;
+  whitelisted: boolean;
 }
-export type OracleChangedEvent = TypedEvent<[string], OracleChangedEventObject>;
+export type RelayerWhitelistedEvent = TypedEvent<
+  [string, boolean],
+  RelayerWhitelistedEventObject
+>;
 
-export type OracleChangedEventFilter = TypedEventFilter<OracleChangedEvent>;
+export type RelayerWhitelistedEventFilter =
+  TypedEventFilter<RelayerWhitelistedEvent>;
 
 export interface TokenWhitelistedEventObject {
   token: string;
@@ -74,12 +79,14 @@ export interface IFloodRegistryEvents extends BaseContract {
   callStatic: {};
 
   filters: {
-    "OracleChanged(address)"(
-      oracle?: PromiseOrValue<string> | null
-    ): OracleChangedEventFilter;
-    OracleChanged(
-      oracle?: PromiseOrValue<string> | null
-    ): OracleChangedEventFilter;
+    "RelayerWhitelisted(address,bool)"(
+      relayer?: PromiseOrValue<string> | null,
+      whitelisted?: null
+    ): RelayerWhitelistedEventFilter;
+    RelayerWhitelisted(
+      relayer?: PromiseOrValue<string> | null,
+      whitelisted?: null
+    ): RelayerWhitelistedEventFilter;
 
     "TokenWhitelisted(address,bool)"(
       token?: PromiseOrValue<string> | null,

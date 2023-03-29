@@ -30,15 +30,17 @@ export interface FloodRegistryInterface extends utils.Interface {
   functions: {
     "WETH()": FunctionFragment;
     "acceptOwnership()": FunctionFragment;
+    "areTokensWhitelisted(address[])": FunctionFragment;
     "batchWhitelistTokens(address[],bool[])": FunctionFragment;
+    "isRelayerWhitelisted(address)": FunctionFragment;
     "isTokenWhitelisted(address)": FunctionFragment;
-    "latestOracle()": FunctionFragment;
     "owner()": FunctionFragment;
     "pendingOwner()": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
-    "setOracle(address)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
+    "whitelistRelayer(address,bool)": FunctionFragment;
     "whitelistToken(address,bool)": FunctionFragment;
+    "whitelistedRelayers()": FunctionFragment;
     "whitelistedTokens()": FunctionFragment;
     "whitelistedTokensCount()": FunctionFragment;
   };
@@ -47,15 +49,17 @@ export interface FloodRegistryInterface extends utils.Interface {
     nameOrSignatureOrTopic:
       | "WETH"
       | "acceptOwnership"
+      | "areTokensWhitelisted"
       | "batchWhitelistTokens"
+      | "isRelayerWhitelisted"
       | "isTokenWhitelisted"
-      | "latestOracle"
       | "owner"
       | "pendingOwner"
       | "renounceOwnership"
-      | "setOracle"
       | "transferOwnership"
+      | "whitelistRelayer"
       | "whitelistToken"
+      | "whitelistedRelayers"
       | "whitelistedTokens"
       | "whitelistedTokensCount"
   ): FunctionFragment;
@@ -66,16 +70,20 @@ export interface FloodRegistryInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "areTokensWhitelisted",
+    values: [PromiseOrValue<string>[]]
+  ): string;
+  encodeFunctionData(
     functionFragment: "batchWhitelistTokens",
     values: [PromiseOrValue<string>[], PromiseOrValue<boolean>[]]
   ): string;
   encodeFunctionData(
-    functionFragment: "isTokenWhitelisted",
+    functionFragment: "isRelayerWhitelisted",
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
-    functionFragment: "latestOracle",
-    values?: undefined
+    functionFragment: "isTokenWhitelisted",
+    values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
@@ -87,16 +95,20 @@ export interface FloodRegistryInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "setOracle",
-    values: [PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
     functionFragment: "transferOwnership",
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
+    functionFragment: "whitelistRelayer",
+    values: [PromiseOrValue<string>, PromiseOrValue<boolean>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "whitelistToken",
     values: [PromiseOrValue<string>, PromiseOrValue<boolean>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "whitelistedRelayers",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "whitelistedTokens",
@@ -113,15 +125,19 @@ export interface FloodRegistryInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "areTokensWhitelisted",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "batchWhitelistTokens",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "isTokenWhitelisted",
+    functionFragment: "isRelayerWhitelisted",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "latestOracle",
+    functionFragment: "isTokenWhitelisted",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
@@ -133,13 +149,20 @@ export interface FloodRegistryInterface extends utils.Interface {
     functionFragment: "renounceOwnership",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "setOracle", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "transferOwnership",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "whitelistRelayer",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "whitelistToken",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "whitelistedRelayers",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -152,24 +175,17 @@ export interface FloodRegistryInterface extends utils.Interface {
   ): Result;
 
   events: {
-    "OracleChanged(address)": EventFragment;
     "OwnershipTransferStarted(address,address)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
+    "RelayerWhitelisted(address,bool)": EventFragment;
     "TokenWhitelisted(address,bool)": EventFragment;
   };
 
-  getEvent(nameOrSignatureOrTopic: "OracleChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferStarted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "RelayerWhitelisted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TokenWhitelisted"): EventFragment;
 }
-
-export interface OracleChangedEventObject {
-  oracle: string;
-}
-export type OracleChangedEvent = TypedEvent<[string], OracleChangedEventObject>;
-
-export type OracleChangedEventFilter = TypedEventFilter<OracleChangedEvent>;
 
 export interface OwnershipTransferStartedEventObject {
   previousOwner: string;
@@ -194,6 +210,18 @@ export type OwnershipTransferredEvent = TypedEvent<
 
 export type OwnershipTransferredEventFilter =
   TypedEventFilter<OwnershipTransferredEvent>;
+
+export interface RelayerWhitelistedEventObject {
+  relayer: string;
+  whitelisted: boolean;
+}
+export type RelayerWhitelistedEvent = TypedEvent<
+  [string, boolean],
+  RelayerWhitelistedEventObject
+>;
+
+export type RelayerWhitelistedEventFilter =
+  TypedEventFilter<RelayerWhitelistedEvent>;
 
 export interface TokenWhitelistedEventObject {
   token: string;
@@ -240,18 +268,26 @@ export interface FloodRegistry extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    areTokensWhitelisted(
+      tokens: PromiseOrValue<string>[],
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
     batchWhitelistTokens(
       tokens: PromiseOrValue<string>[],
       enabled: PromiseOrValue<boolean>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    isRelayerWhitelisted(
+      relayer: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
     isTokenWhitelisted(
       token: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
-
-    latestOracle(overrides?: CallOverrides): Promise<[string]>;
 
     owner(overrides?: CallOverrides): Promise<[string]>;
 
@@ -261,13 +297,14 @@ export interface FloodRegistry extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    setOracle(
-      oracle: PromiseOrValue<string>,
+    transferOwnership(
+      newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    transferOwnership(
-      newOwner: PromiseOrValue<string>,
+    whitelistRelayer(
+      relayer: PromiseOrValue<string>,
+      enabled: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -276,6 +313,8 @@ export interface FloodRegistry extends BaseContract {
       enabled: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
+
+    whitelistedRelayers(overrides?: CallOverrides): Promise<[string[]]>;
 
     whitelistedTokens(overrides?: CallOverrides): Promise<[string[]]>;
 
@@ -288,18 +327,26 @@ export interface FloodRegistry extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  areTokensWhitelisted(
+    tokens: PromiseOrValue<string>[],
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
   batchWhitelistTokens(
     tokens: PromiseOrValue<string>[],
     enabled: PromiseOrValue<boolean>[],
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  isRelayerWhitelisted(
+    relayer: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
   isTokenWhitelisted(
     token: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<boolean>;
-
-  latestOracle(overrides?: CallOverrides): Promise<string>;
 
   owner(overrides?: CallOverrides): Promise<string>;
 
@@ -309,13 +356,14 @@ export interface FloodRegistry extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  setOracle(
-    oracle: PromiseOrValue<string>,
+  transferOwnership(
+    newOwner: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  transferOwnership(
-    newOwner: PromiseOrValue<string>,
+  whitelistRelayer(
+    relayer: PromiseOrValue<string>,
+    enabled: PromiseOrValue<boolean>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -324,6 +372,8 @@ export interface FloodRegistry extends BaseContract {
     enabled: PromiseOrValue<boolean>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
+
+  whitelistedRelayers(overrides?: CallOverrides): Promise<string[]>;
 
   whitelistedTokens(overrides?: CallOverrides): Promise<string[]>;
 
@@ -334,18 +384,26 @@ export interface FloodRegistry extends BaseContract {
 
     acceptOwnership(overrides?: CallOverrides): Promise<void>;
 
+    areTokensWhitelisted(
+      tokens: PromiseOrValue<string>[],
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
     batchWhitelistTokens(
       tokens: PromiseOrValue<string>[],
       enabled: PromiseOrValue<boolean>[],
       overrides?: CallOverrides
     ): Promise<void>;
 
+    isRelayerWhitelisted(
+      relayer: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
     isTokenWhitelisted(
       token: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<boolean>;
-
-    latestOracle(overrides?: CallOverrides): Promise<string>;
 
     owner(overrides?: CallOverrides): Promise<string>;
 
@@ -353,13 +411,14 @@ export interface FloodRegistry extends BaseContract {
 
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
-    setOracle(
-      oracle: PromiseOrValue<string>,
+    transferOwnership(
+      newOwner: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    transferOwnership(
-      newOwner: PromiseOrValue<string>,
+    whitelistRelayer(
+      relayer: PromiseOrValue<string>,
+      enabled: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -369,19 +428,14 @@ export interface FloodRegistry extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    whitelistedRelayers(overrides?: CallOverrides): Promise<string[]>;
+
     whitelistedTokens(overrides?: CallOverrides): Promise<string[]>;
 
     whitelistedTokensCount(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   filters: {
-    "OracleChanged(address)"(
-      oracle?: PromiseOrValue<string> | null
-    ): OracleChangedEventFilter;
-    OracleChanged(
-      oracle?: PromiseOrValue<string> | null
-    ): OracleChangedEventFilter;
-
     "OwnershipTransferStarted(address,address)"(
       previousOwner?: PromiseOrValue<string> | null,
       newOwner?: PromiseOrValue<string> | null
@@ -400,6 +454,15 @@ export interface FloodRegistry extends BaseContract {
       newOwner?: PromiseOrValue<string> | null
     ): OwnershipTransferredEventFilter;
 
+    "RelayerWhitelisted(address,bool)"(
+      relayer?: PromiseOrValue<string> | null,
+      whitelisted?: null
+    ): RelayerWhitelistedEventFilter;
+    RelayerWhitelisted(
+      relayer?: PromiseOrValue<string> | null,
+      whitelisted?: null
+    ): RelayerWhitelistedEventFilter;
+
     "TokenWhitelisted(address,bool)"(
       token?: PromiseOrValue<string> | null,
       whitelisted?: null
@@ -417,18 +480,26 @@ export interface FloodRegistry extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    areTokensWhitelisted(
+      tokens: PromiseOrValue<string>[],
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     batchWhitelistTokens(
       tokens: PromiseOrValue<string>[],
       enabled: PromiseOrValue<boolean>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    isRelayerWhitelisted(
+      relayer: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     isTokenWhitelisted(
       token: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    latestOracle(overrides?: CallOverrides): Promise<BigNumber>;
 
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -438,13 +509,14 @@ export interface FloodRegistry extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    setOracle(
-      oracle: PromiseOrValue<string>,
+    transferOwnership(
+      newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    transferOwnership(
-      newOwner: PromiseOrValue<string>,
+    whitelistRelayer(
+      relayer: PromiseOrValue<string>,
+      enabled: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -453,6 +525,8 @@ export interface FloodRegistry extends BaseContract {
       enabled: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
+
+    whitelistedRelayers(overrides?: CallOverrides): Promise<BigNumber>;
 
     whitelistedTokens(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -466,18 +540,26 @@ export interface FloodRegistry extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
+    areTokensWhitelisted(
+      tokens: PromiseOrValue<string>[],
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     batchWhitelistTokens(
       tokens: PromiseOrValue<string>[],
       enabled: PromiseOrValue<boolean>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
+    isRelayerWhitelisted(
+      relayer: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     isTokenWhitelisted(
       token: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
-
-    latestOracle(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -487,13 +569,14 @@ export interface FloodRegistry extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    setOracle(
-      oracle: PromiseOrValue<string>,
+    transferOwnership(
+      newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    transferOwnership(
-      newOwner: PromiseOrValue<string>,
+    whitelistRelayer(
+      relayer: PromiseOrValue<string>,
+      enabled: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -501,6 +584,10 @@ export interface FloodRegistry extends BaseContract {
       token: PromiseOrValue<string>,
       enabled: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    whitelistedRelayers(
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     whitelistedTokens(overrides?: CallOverrides): Promise<PopulatedTransaction>;
