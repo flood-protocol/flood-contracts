@@ -1,259 +1,335 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.17;
+pragma solidity 0.8.19;
 
-import "forge-std/Test.sol";
-import {IERC20} from "@openzeppelin/token/ERC20/IERC20.sol";
-import {IFloodFillCallback} from "src/interfaces/IFloodFillCallback.sol";
-import {
-    Book__SameToken,
-    Book__ZeroAmount,
-    Book__SentToBlackHole,
-    Book__InvalidToken,
-    Book__TradeNotInFillableState,
-    Book__NotTrader,
-    Book__TradeNotCancelable,
-    Book__AmountOutTooLow,
-    Book__NotWeth,
-    Book__InvalidValue,
-    TradeStatus
-} from "src/Book.sol";
-import {TradeFixture} from "./Fixtures.sol";
+import "@openzeppelin/token/ERC20/IERC20.sol";
+import {TradeFixture} from "./Fixture.t.sol";
+import {Book_UnauthorizedRelayer, Book__AmountOutTooLow, Book__TradeNotFillable, TradeStatus} from "src/Book.sol";
+import {IBook, IBookEvents} from "src/interfaces/IBook.sol";
+import {IFloodFillCallback, IFloodRecipient} from "src/interfaces/ICallbacks.sol";
 
 contract MockFloodFillCallee is IFloodFillCallback {
-    function onFloodFill(bytes calldata data) external override returns (uint256) {
-        uint256 amountToSend = abi.decode(data, (uint256));
+    function onFloodFill(bytes calldata data) external pure returns (uint128) {
+        uint128 amountToSend = abi.decode(data, (uint128));
         return amountToSend;
     }
 }
 
-contract FillTest is TradeFixture, MockFloodFillCallee {
-    using stdStorage for StdStorage;
+contract MockFloodRecipient is IFloodRecipient {
+    function onTradeFilled(
+        address trader,
+        IERC20[] calldata tokens,
+        uint128[] calldata amounts,
+        uint128 amountReceived,
+        bytes32 tradeId
+    ) external {
+        // Do nothing
+    }
+}
 
-    function setUp() public override {
+contract FillTest is TradeFixture, IBookEvents, MockFloodFillCallee, MockFloodRecipient {
+    address internal relayer = bob;
+
+    function setUp() public virtual override {
         super.setUp();
+        vm.label(relayer, "Relayer");
+        registry.whitelistRelayer(relayer, true);
+        vm.startPrank(relayer);
+        WETH.approve(address(book), type(uint256).max);
+        testBasket[testBasket.length - 1].approve(address(book), type(uint256).max);
+        vm.stopPrank();
     }
 
-    function testFillTrade(uint256 amountIn, uint256 amountOut) public {
-        vm.assume(amountIn > 0);
-        vm.assume(amountOut > testAmountOutMin);
-        vm.assume(amountIn < type(uint256).max / testRelayerRefundPct - 1);
+    function testFillTrade() public {
+        // Give the relayer some tokens
+        uint128 amountOut = testAmounts[testBasket.length - 1] * 2;
+        IBook.FillTradeArgs memory trade = IBook.FillTradeArgs({
+            tokens: testBasket,
+            amounts: testAmounts,
+            recipient: testRecipient,
+            tradeIndex: testTradeIndex,
+            trader: testTrader,
+            amountOut: amountOut,
+            callbackData: bytes("")
+        });
+        deal(address(testBasket[testBasket.length - 1]), relayer, amountOut);
 
-        deal(testTokenIn, alice, amountIn);
-        (uint256 tradeIndex, bytes32 tradeId) =
-            _requestTrade(testTokenIn, testTokenOut, amountIn, testAmountOutMin, testRecipient, alice, false);
+        vm.prank(relayer);
+        vm.expectEmit(address(book));
+        emit TradeFilled(relayer, trade.tradeIndex, trade.amountOut, trade.trader);
+        book.fillTrade(trade);
 
-        deal(testTokenOut, bob, amountOut);
-        uint256 bobBalanceOutBefore = IERC20(testTokenOut).balanceOf(bob);
-        uint256 bobBalanceInBefore = IERC20(testTokenIn).balanceOf(bob);
-        uint256 recipientBalanceBefore = IERC20(testTokenOut).balanceOf(testRecipient);
-
-        vm.prank(bob);
-        vm.expectEmit(true, true, true, true, address(book));
-        emit TradeFilled(bob, tradeIndex, amountOut, alice);
-        book.fillTrade(
-            testTokenIn,
-            testTokenOut,
-            amountIn,
-            testAmountOutMin,
-            testRecipient,
-            tradeIndex,
-            alice,
+        assertEq(
+            testBasket[testBasket.length - 1].balanceOf(trade.recipient),
             amountOut,
-            bytes("")
+            "Recipient should have received tokens"
         );
-        // Check bob submitted amountOut tokens
-        assertEq(
-            IERC20(testTokenOut).balanceOf(bob) + amountOut,
-            bobBalanceOutBefore,
-            "bob should have sent amountOut tokens"
-        );
-        // Check bob got relayerRefundPct * amountIn tokens
-        uint256 bobExpectedTokens = (amountIn * testRelayerRefundPct) / 100;
-
-        assertEq(
-            IERC20(testTokenIn).balanceOf(bob),
-            bobBalanceInBefore + bobExpectedTokens,
-            "bob should have received some tokens"
-        );
-        // Check the recipient received amountOut tokens
-        assertEq(
-            IERC20(testTokenOut).balanceOf(testRecipient),
-            recipientBalanceBefore + amountOut,
-            "recipient should have received amountOut tokens"
-        );
-
-        (uint256 filledAtInStorage, address filledByInStorage,,,, uint256 amountPaid) = book.tradesData(tradeId);
-        assertEq(filledAtInStorage, block.number);
-        assertEq(filledByInStorage, bob);
-        assertEq(amountPaid, bobExpectedTokens);
+        for (uint256 i = 0; i < testBasket.length - 1; i++) {
+            assertEq(testBasket[i].balanceOf(address(book)), 0, "Book should have no tokens");
+            assertEq(testBasket[i].balanceOf(relayer), testAmounts[i], "Relayer should have received tokens");
+        }
     }
 
-    function testCannotFillUninitialized() public {
-        bytes32 tradeId =
-            _getTradeId(testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, 1, testTrader);
-        // This should fail as the trade has not been requested.
-        vm.expectRevert(abi.encodeWithSelector(Book__TradeNotInFillableState.selector, tradeId));
-        book.fillTrade(
-            testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, 1, testTrader, 1, bytes("")
-        );
+    function testCannotFillIfNotAuthorized() public {
+        registry.whitelistRelayer(relayer, false);
+        uint128 amountOut = testAmounts[testBasket.length - 1] * 2;
+        IBook.FillTradeArgs memory trade = IBook.FillTradeArgs({
+            tokens: testBasket,
+            amounts: testAmounts,
+            recipient: testRecipient,
+            tradeIndex: testTradeIndex,
+            trader: testTrader,
+            amountOut: amountOut,
+            callbackData: bytes("")
+        });
+
+        vm.prank(relayer);
+        vm.expectRevert(abi.encodeWithSelector(Book_UnauthorizedRelayer.selector, relayer));
+        book.fillTrade(trade);
     }
 
-    function testCannotFillIfAlreadyFilled() public {
-        // Simulate a trade request. We assume that the request is valid and executed correctly.
-        uint256 tradeIndex = book.numberOfTrades() + 1;
-        bytes32 tradeId = _getTradeId(
-            testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, tradeIndex, testTrader
-        );
+    function testCannotFillIfNoTokens() public {
+        // Give the relayer some tokens
+        uint128 amountOut = testAmounts[testBasket.length - 1] * 2;
+        IBook.FillTradeArgs memory trade = IBook.FillTradeArgs({
+            tokens: testBasket,
+            amounts: testAmounts,
+            recipient: testRecipient,
+            tradeIndex: testTradeIndex,
+            trader: testTrader,
+            amountOut: amountOut,
+            callbackData: bytes("")
+        });
 
-        // Artificially fill&dispute the trade at the past block.
-        stdstore.target(address(book)).sig(book.tradesData.selector).with_key(tradeId).depth(0).checked_write(
-            block.number
-        );
-        vm.expectRevert(abi.encodeWithSelector(Book__TradeNotInFillableState.selector, tradeId));
-        book.fillTrade(
-            testTokenIn,
-            testTokenOut,
-            testAmountIn,
-            testAmountOutMin,
-            testRecipient,
-            tradeIndex,
-            testTrader,
-            testAmountOutMin + 1,
-            bytes("")
-        );
+        vm.prank(relayer);
+        vm.expectRevert();
+        book.fillTrade(trade);
     }
 
-    function testCannotFillIfNoTokens(uint256 amountOut) public {
-        vm.assume(amountOut > 1);
-        // make a request
-        deal(testTokenIn, testTrader, testAmountIn);
-        IERC20(testTokenIn).approve(address(book), testAmountIn);
-        (uint256 tradeIndex,) =
-            _requestTrade(testTokenIn, testTokenOut, testAmountIn, amountOut - 1, testRecipient, testTrader, false);
-        vm.prank(bob);
-        vm.expectRevert(bytes("ERC20: transfer amount exceeds balance"));
-        book.fillTrade(
-            testTokenIn,
-            testTokenOut,
-            testAmountIn,
-            amountOut - 1,
-            testRecipient,
-            tradeIndex,
-            testTrader,
-            amountOut,
-            bytes("")
-        );
-    }
+    function testCannotFillIfLessThanMinAmount() public {
+        // Give the relayer some tokens
+        uint128 amountOut = testAmounts[testBasket.length - 1] - 1;
+        IBook.FillTradeArgs memory trade = IBook.FillTradeArgs({
+            tokens: testBasket,
+            amounts: testAmounts,
+            recipient: testRecipient,
+            tradeIndex: testTradeIndex,
+            trader: testTrader,
+            amountOut: amountOut,
+            callbackData: bytes("")
+        });
 
-    function testCannotFillIfAmountOutIsLessThanMin(uint256 minAmountOut) public {
-        vm.assume(minAmountOut > 1);
-
-        // make a request
-        deal(testTokenIn, testTrader, testAmountIn);
-        IERC20(testTokenIn).approve(address(book), testAmountIn);
-        (uint256 tradeIndex,) =
-            _requestTrade(testTokenIn, testTokenOut, testAmountIn, minAmountOut, testRecipient, testTrader, false);
-        uint256 amountOut = minAmountOut - 1;
-        vm.prank(bob);
+        deal(address(testBasket[testBasket.length - 1]), relayer, amountOut);
+        vm.prank(relayer);
         vm.expectRevert(Book__AmountOutTooLow.selector);
-        book.fillTrade(
-            testTokenIn,
-            testTokenOut,
-            testAmountIn,
-            minAmountOut,
-            testRecipient,
-            tradeIndex,
-            testTrader,
-            amountOut,
-            bytes("")
-        );
+        book.fillTrade(trade);
     }
 
-    function testFillWithUnwrap() public {
-        testTokenIn = USDC;
-        testTokenOut = WETH;
-        testAmountIn = 2e9;
-        uint256 amountOut = 1 ether;
+    function testCannotFillIfNotRequested() public {
+        // Give the relayer some tokens
+        uint128 amountOut = testAmounts[testBasket.length - 1] * 2;
+        IBook.FillTradeArgs memory trade = IBook.FillTradeArgs({
+            tokens: testBasket,
+            amounts: testAmounts,
+            recipient: testRecipient,
+            // We know this trade index is not requested
+            tradeIndex: testTradeIndex + 1,
+            trader: testTrader,
+            amountOut: amountOut,
+            callbackData: bytes("")
+        });
 
-        deal(testTokenIn, alice, testAmountIn);
-        (uint256 tradeIndex, bytes32 tradeId) =
-            _requestTrade(testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, alice, true);
+        deal(address(testBasket[testBasket.length - 1]), relayer, amountOut);
+        vm.prank(relayer);
+        vm.expectRevert(Book__TradeNotFillable.selector);
+        book.fillTrade(trade);
+    }
 
-        deal(testTokenOut, bob, amountOut);
-        uint256 bobBalanceOutBefore = IERC20(testTokenOut).balanceOf(bob);
-        uint256 bobBalanceInBefore = IERC20(testTokenIn).balanceOf(bob);
-        uint256 recipientBalanceBefore = IERC20(testTokenOut).balanceOf(testRecipient);
+    function testCannotFillTwice() public {
+        // Give the relayer some tokens
+        uint128 amountOut = testAmounts[testBasket.length - 1] * 2;
+        IBook.FillTradeArgs memory trade = IBook.FillTradeArgs({
+            tokens: testBasket,
+            amounts: testAmounts,
+            recipient: testRecipient,
+            tradeIndex: testTradeIndex,
+            trader: testTrader,
+            amountOut: amountOut,
+            callbackData: bytes("")
+        });
 
-        vm.prank(bob);
-        vm.expectEmit(true, true, true, true, address(book));
-        emit TradeFilled(bob, tradeIndex, amountOut, alice);
-        book.fillTrade(
-            testTokenIn,
-            testTokenOut,
-            testAmountIn,
-            testAmountOutMin,
-            testRecipient,
-            tradeIndex,
-            alice,
+        deal(address(testBasket[testBasket.length - 1]), relayer, 2 * amountOut);
+        vm.prank(relayer);
+        book.fillTrade(trade);
+
+        vm.expectRevert(Book__TradeNotFillable.selector);
+        vm.prank(relayer);
+        book.fillTrade(trade);
+    }
+
+    function testFillReceivesETH() public {
+        uint256[] memory bookBalanceBefore = new uint[](testBasket.length);
+        // We set token out to be WETH
+        testBasket[testBasket.length - 1] = WETH;
+        for (uint256 i = 0; i < testBasket.length - 1; i++) {
+            deal(address(testBasket[i]), testTrader, testAmounts[i]);
+            bookBalanceBefore[i] = testBasket[i].balanceOf(address(book));
+        }
+        testUnwrapOutput = true;
+        vm.prank(testTrader);
+        book.requestTrade(testBasket, testAmounts, testRecipient, testUnwrapOutput);
+
+        // Give the relayer some tokens
+        uint128 amountOut = testAmounts[testBasket.length - 1];
+        IBook.FillTradeArgs memory trade = IBook.FillTradeArgs({
+            tokens: testBasket,
+            amounts: testAmounts,
+            recipient: testRecipient,
+            // This trade is right after the one in the setup.
+            tradeIndex: testTradeIndex + 1,
+            trader: testTrader,
+            amountOut: amountOut,
+            callbackData: bytes("")
+        });
+
+        deal(address(testBasket[testBasket.length - 1]), relayer, amountOut);
+        vm.prank(relayer);
+        book.fillTrade(trade);
+
+        assertEq(testRecipient.balance, amountOut, "Recipient should have received ETH");
+
+        for (uint256 i = 0; i < testBasket.length - 1; i++) {
+            assertEq(testBasket[i].balanceOf(address(book)), bookBalanceBefore[i], "Book should have no tokens");
+            assertEq(testBasket[i].balanceOf(relayer), testAmounts[i], "Relayer should have received tokens");
+        }
+    }
+
+    function testRelayerReceivesWETHEvenIfUserSentETH() public {
+        uint256[] memory bookBalanceBefore = new uint[](testBasket.length);
+        // We set token out to be WETH
+        testBasket[0] = IERC20(address(0));
+        // Give ETH to the trader
+        deal(testTrader, testAmounts[0]);
+        for (uint256 i = 1; i < testBasket.length - 1; i++) {
+            deal(address(testBasket[i]), testTrader, testAmounts[i]);
+            bookBalanceBefore[i] = testBasket[i].balanceOf(address(book));
+        }
+        vm.prank(testTrader);
+        book.requestTrade{value: testAmounts[0]}(testBasket, testAmounts, testRecipient, testUnwrapOutput);
+
+        // Give the relayer some tokens
+        uint128 amountOut = testAmounts[testBasket.length - 1];
+        IBook.FillTradeArgs memory trade = IBook.FillTradeArgs({
+            tokens: testBasket,
+            amounts: testAmounts,
+            recipient: testRecipient,
+            // This trade is right after the one in the setup.
+            tradeIndex: testTradeIndex + 1,
+            trader: testTrader,
+            amountOut: amountOut,
+            callbackData: bytes("")
+        });
+
+        deal(address(testBasket[testBasket.length - 1]), relayer, amountOut);
+        vm.prank(relayer);
+        book.fillTrade(trade);
+
+        assertEq(
+            testBasket[testBasket.length - 1].balanceOf(testRecipient),
             amountOut,
-            bytes("")
-        );
-        // Check bob submitted amountOut tokens
-        assertEq(
-            IERC20(testTokenOut).balanceOf(bob) + amountOut,
-            bobBalanceOutBefore,
-            "bob should have sent amountOut tokens"
-        );
-        // Check bob got relayerRefundPct * amountIn tokens
-        uint256 bobExpectedTokens = (testAmountIn * testRelayerRefundPct) / 100;
-
-        assertEq(
-            IERC20(testTokenIn).balanceOf(bob),
-            bobBalanceInBefore + bobExpectedTokens,
-            "bob should have received some tokens"
-        );
-        // Check the recipient received amountOut ethers
-        assertEq(
-            testRecipient.balance, recipientBalanceBefore + amountOut, "recipient should have received amountOut tokens"
+            "Recipient should have received tokens"
         );
 
-        (uint256 filledAtInStorage, address filledByInStorage,,,, uint256 amountPaid) = book.tradesData(tradeId);
-        assertEq(filledAtInStorage, block.number);
-        assertEq(filledByInStorage, bob);
-        assertEq(amountPaid, bobExpectedTokens, "amountPaid should be correct");
+        for (uint256 i = 0; i < testBasket.length - 1; i++) {
+            if (address(testBasket[i]) == address(0)) {
+                assertEq(address(book).balance, 0, "Book should have no ETH");
+                assertEq(WETH.balanceOf(relayer), testAmounts[i], "Relayer should have received WETH");
+            } else {
+                assertEq(testBasket[i].balanceOf(address(book)), bookBalanceBefore[i], "Book should have no tokens");
+                assertEq(testBasket[i].balanceOf(relayer), testAmounts[i], "Relayer should have received tokens");
+            }
+        }
     }
 
     function testFillWithCallback() public {
-        // make a request
-        deal(testTokenIn, testTrader, testAmountIn);
-        IERC20(testTokenIn).approve(address(book), testAmountIn);
-        (uint256 tradeIndex,) =
-            _requestTrade(testTokenIn, testTokenOut, testAmountIn, testAmountOutMin, testRecipient, testTrader, false);
+        // Give the relayer some tokens
+        uint128 realAmountOut = testAmounts[testBasket.length - 1] * 2;
 
-        // give the book the tokens in of the trade
-        deal(testTokenIn, address(book), testAmountIn);
-        // give this contract the tokens out of the trade
-        deal(testTokenOut, address(this), testAmountOutMin);
-        IERC20(testTokenOut).approve(address(book), testAmountOutMin);
-        bytes memory data = abi.encode(testAmountOutMin);
-        vm.expectCall(address(this), abi.encodeCall(IFloodFillCallback.onFloodFill, (data)));
-        book.fillTrade(
-            testTokenIn,
-            testTokenOut,
-            testAmountIn,
-            testAmountOutMin,
-            testRecipient,
-            tradeIndex,
-            testTrader,
-            // Setting amount to send to 0, the book should transfer the amount returns by the callback
-            0,
-            data
-        );
-        assertEq(IERC20(testTokenOut).balanceOf(address(this)), 0, "Should have sent all tokens out to the recipient");
+        IBook.FillTradeArgs memory trade = IBook.FillTradeArgs({
+            tokens: testBasket,
+            amounts: testAmounts,
+            recipient: testRecipient,
+            tradeIndex: testTradeIndex,
+            trader: testTrader,
+            // Set this to 0 so we can check that the callback is called
+            amountOut: 0,
+            callbackData: abi.encode(realAmountOut)
+        });
+        deal(address(testBasket[testBasket.length - 1]), relayer, realAmountOut);
+
+        registry.whitelistRelayer(address(this), true);
+        deal(address(testBasket[testBasket.length - 1]), address(this), realAmountOut);
+        testBasket[testBasket.length - 1].approve(address(book), realAmountOut);
+        vm.expectCall(address(this), abi.encodeCall(IFloodFillCallback.onFloodFill, (abi.encode(realAmountOut))));
+        vm.expectEmit(address(book));
+        emit TradeFilled(address(this), trade.tradeIndex, realAmountOut, trade.trader);
+        book.fillTrade(trade);
+
         assertEq(
-            IERC20(testTokenOut).balanceOf(testRecipient),
-            testAmountOutMin,
-            "Should have sent all tokens out to the recipient"
+            testBasket[testBasket.length - 1].balanceOf(testRecipient),
+            realAmountOut,
+            "Recipient should have received tokens"
         );
+        for (uint256 i = 0; i < testBasket.length - 1; i++) {
+            assertEq(testBasket[i].balanceOf(address(book)), 0, "Book should have no tokens");
+            assertEq(testBasket[i].balanceOf(address(this)), testAmounts[i], "Relayer should have received tokens");
+        }
+    }
+
+    function testRecipientGetsNotified() public {
+        testRecipient = address(this);
+        testTradeId = book.getTradeId(testBasket, testAmounts, testRecipient, testTradeIndex + 1, testTrader);
+        uint256[] memory bookBalanceBefore = new uint[](testBasket.length);
+
+        for (uint256 i = 0; i < testBasket.length - 1; i++) {
+            deal(address(testBasket[i]), testTrader, testAmounts[i]);
+            bookBalanceBefore[i] = testBasket[i].balanceOf(address(book));
+        }
+
+        vm.prank(testTrader);
+        book.requestTrade(testBasket, testAmounts, testRecipient, testUnwrapOutput);
+
+        (TradeStatus s,,) = book.tradesData(testTradeId);
+        assertEq(uint256(s), uint256(TradeStatus.REQUESTED), "Trade should be requested");
+
+        uint128 amountOut = testAmounts[testBasket.length - 1] * 2;
+        IBook.FillTradeArgs memory trade = IBook.FillTradeArgs({
+            tokens: testBasket,
+            amounts: testAmounts,
+            recipient: testRecipient,
+            tradeIndex: testTradeIndex + 1,
+            trader: testTrader,
+            amountOut: amountOut,
+            callbackData: bytes("")
+        });
+        deal(address(testBasket[testBasket.length - 1]), relayer, amountOut);
+
+        vm.prank(relayer);
+        vm.expectCall(
+            address(this),
+            abi.encodeCall(IFloodRecipient.onTradeFilled, (testTrader, testBasket, testAmounts, amountOut, testTradeId))
+        );
+        vm.expectEmit(address(book));
+        emit TradeFilled(relayer, trade.tradeIndex, trade.amountOut, trade.trader);
+        book.fillTrade(trade);
+
+        assertEq(
+            testBasket[testBasket.length - 1].balanceOf(trade.recipient),
+            amountOut,
+            "Recipient should have received tokens"
+        );
+        for (uint256 i = 0; i < testBasket.length - 1; i++) {
+            assertEq(testBasket[i].balanceOf(address(book)), bookBalanceBefore[i], "Book should have no tokens");
+            assertEq(testBasket[i].balanceOf(relayer), testAmounts[i], "Relayer should have received tokens");
+        }
     }
 }

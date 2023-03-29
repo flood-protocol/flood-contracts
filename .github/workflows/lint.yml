@@ -20,7 +20,7 @@ jobs:
         run: forge install
 
       - name: Run Slither
-        uses: crytic/slither-action@main
+        uses: crytic/slither-action@v0.3.0
         id: slither
         with:
           target: "src/"

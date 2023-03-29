@@ -1,67 +1,69 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.17;
+pragma solidity 0.8.19;
 
 import "forge-std/Test.sol";
-import {ERC20} from "@openzeppelin/token/ERC20/ERC20.sol";
+import {IERC20} from "@openzeppelin/token/ERC20/IERC20.sol";
+import {ERC20} from "solmate/tokens/ERC20.sol";
 import {IWETH9} from "src/interfaces/IWETH9.sol";
 
-address constant MAINNET_USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
-address constant MAINNET_WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
-address constant MAINNET_DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
+address constant ARBITRUM_USDC = 0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8;
+address constant ARBITRUM_WETH = 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1;
+address constant ARBITRUM_DAI = 0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1;
+address constant ARBITRUM_USDT = 0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9;
 
 contract MockToken is ERC20 {
-    uint8 private mockDecimals;
-
-    constructor(string memory _name, string memory _symbol, uint8 _decimals) ERC20(_name, _symbol) {
-        mockDecimals = _decimals;
-    }
-
-    function decimals() public view virtual override returns (uint8) {
-        return mockDecimals;
-    }
+    constructor(string memory name, string memory symbol, uint8 decimals) ERC20(name, symbol, decimals) {}
 }
 
-contract MockWeth is MockToken, IWETH9, Test {
-    constructor() MockToken("Wrapped Ether", "WETH", 18) {}
+contract MockWeth is ERC20 {
+    constructor() ERC20("Wrapped Ether", "WETH", 18) {}
 
-    function deposit() external payable {
+    function deposit() public payable {
+        require(msg.value > 0, "Deposit amount must be greater than 0");
         _mint(msg.sender, msg.value);
     }
 
-    function withdraw(uint256 amount) external {
-        deal(address(this), amount);
+    function withdraw(uint256 amount) public {
+        require(balanceOf[msg.sender] >= amount, "ERC20: burn amount exceeds balance");
         _burn(msg.sender, amount);
-        payable(msg.sender).transfer(amount);
+
+        (bool _s,) = msg.sender.call{value: amount}("");
+        require(_s, "WETH: failed to send ether");
+    }
+
+    receive() external payable {
+        deposit();
     }
 }
 
 contract TokenFixture is Test {
-    address internal USDC = deployERC20IfNotEmpty(MAINNET_USDC, "USDC", "USDC", 6);
-    address internal WETH = deployWethIfNotEmpty(MAINNET_WETH);
-    address internal DAI = deployERC20IfNotEmpty(MAINNET_DAI, "DAI", "DAI", 18);
+    IERC20 internal USDC = deployTokenIfEmpty(ARBITRUM_USDC, "USDC", "USDC", 6);
+    IWETH9 internal WETH = deployWETHIfEmpty(ARBITRUM_WETH);
+    IERC20 internal DAI = deployTokenIfEmpty(ARBITRUM_DAI, "DAI", "DAI", 18);
+    IERC20 internal USDT = deployTokenIfEmpty(ARBITRUM_USDT, "USDT", "USDT", 6);
 
-    // Deploys a contract to `target` if the address has no existing code.
-    // This is used to deploy contracts in tests ONLY if you're not forking.
-    function deployERC20IfNotEmpty(address target, string memory name, string memory symbol, uint8 decimals)
-        internal
-        returns (address)
-    {
+    function deployWETHIfEmpty(address target) internal returns (IWETH9) {
         uint256 existingCode = target.code.length;
         if (existingCode > 0) {
-            return target;
+            return IWETH9(target);
         }
-        ERC20 deployed = new MockToken(name, symbol, decimals);
-        return address(deployed);
+        MockWeth deployed = new MockWeth();
+
+        return IWETH9(address(deployed));
     }
 
     // Deploys a contract to `target` if the address has no existing code.
     // This is used to deploy contracts in tests ONLY if you're not forking.
-    function deployWethIfNotEmpty(address target) internal returns (address) {
+    function deployTokenIfEmpty(address target, string memory name, string memory symbol, uint8 decimals)
+        internal
+        returns (IERC20)
+    {
         uint256 existingCode = target.code.length;
         if (existingCode > 0) {
-            return target;
+            return IERC20(target);
         }
-        IWETH9 deployed = new MockWeth();
-        return address(deployed);
+        MockToken deployed = new MockToken(name, symbol, decimals);
+
+        return IERC20(address(deployed));
     }
 }
