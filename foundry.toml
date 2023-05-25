@@ -1,14 +1,17 @@
 [profile.default]
-src = "src"
+libs = ["node_modules"]
+optmitizer = false
 out = "out"
 remappings = [
     "ds-test/=node_modules/ds-test/src/",
     "forge-std/=node_modules/forge-std/src/",
     "@openzeppelin/=node_modules/openzeppelin-solidity/contracts/",
 ]
-optmitizer = false
 solc_version = "0.8.19"
-libs = ["node_modules"]
+src = "src"
+
+[profile.ci]
+fuzz_runs = 5000
 
 [profile.deploy]
 optmitizer = true
