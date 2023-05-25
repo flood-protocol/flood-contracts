@@ -18,13 +18,18 @@ jobs:
       - name: Checkout repo and submodules
         uses: actions/checkout@v3
 
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install deps
+        run: bun install
+
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
           version: nightly
-
-      - name: Install deps
-        run: forge install
 
       - name: Run tests
         run: forge test -vvv
@@ -51,16 +56,22 @@ jobs:
     steps:
       - name: Checkout repo and submodules
         uses: actions/checkout@v3
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install deps
+        run: bun install
+
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
-          version: nightly
-
+          version: nightly 
+  
       - name: Extract Git Tag
         run: echo "GIT_TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
-
-      - name: Install deps
-        run: forge install
 
       - name: Build contract artifacts
         run: forge build
