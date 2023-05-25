@@ -1,8 +1,20 @@
+# Ignores development broadcast logs
+!/broadcast
+contracts/broadcast/**/*
+/broadcast/**/dry-run/
+
+# env file
+.DS_Store
+.env
+*.env
+.env*
+.env.local
+.env.production
+
+# Forge deps
+node_modules
+**/node_modules
+
+# Compiler files
 cache/
 out/
-**/node_modules
-**/target
-*.env
-.env
-lib
-broadcast

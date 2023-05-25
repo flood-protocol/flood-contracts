@@ -1,0 +1,11 @@
+{
+  "name": "flood-contracts",
+  "devDependencies": {
+    "bun-types": "^0.5.0"
+  },
+  "dependencies": {
+    "ds-test": "https://github.com/dapphub/ds-test.git",
+    "forge-std": "https://github.com/foundry-rs/forge-std.git",
+    "openzeppelin-solidity": "https://github.com/OpenZeppelin/openzeppelin-contracts.git"
+  }
+}

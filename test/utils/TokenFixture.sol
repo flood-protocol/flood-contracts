@@ -3,7 +3,8 @@ pragma solidity 0.8.19;
 
 import "forge-std/Test.sol";
 import {IERC20} from "@openzeppelin/token/ERC20/IERC20.sol";
-import {ERC20} from "solmate/tokens/ERC20.sol";
+import {ERC20} from "@openzeppelin/token/ERC20/ERC20.sol";
+
 import {IWETH9} from "src/interfaces/IWETH9.sol";
 
 address constant ARBITRUM_USDC = 0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8;
@@ -12,11 +13,19 @@ address constant ARBITRUM_DAI = 0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1;
 address constant ARBITRUM_USDT = 0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9;
 
 contract MockToken is ERC20 {
-    constructor(string memory name, string memory symbol, uint8 decimals) ERC20(name, symbol, decimals) {}
+    uint8 public immutable __decimals;
+
+    constructor(string memory name, string memory symbol, uint8 _decimals) ERC20(name, symbol) {
+        __decimals = _decimals;
+    }
+
+    function decimals() public view override returns (uint8) {
+        return __decimals;
+    }
 }
 
 contract MockWeth is ERC20 {
-    constructor() ERC20("Wrapped Ether", "WETH", 18) {}
+    constructor() ERC20("Wrapped Ether", "WETH") {}
 
     function deposit() public payable {
         require(msg.value > 0, "Deposit amount must be greater than 0");
@@ -24,7 +33,7 @@ contract MockWeth is ERC20 {
     }
 
     function withdraw(uint256 amount) public {
-        require(balanceOf[msg.sender] >= amount, "ERC20: burn amount exceeds balance");
+        require(balanceOf(msg.sender) >= amount, "ERC20: burn amount exceeds balance");
         _burn(msg.sender, amount);
 
         (bool _s,) = msg.sender.call{value: amount}("");
