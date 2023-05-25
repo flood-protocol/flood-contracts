@@ -7,7 +7,7 @@ remappings = [
     "forge-std/=node_modules/forge-std/src/",
     "@openzeppelin/=node_modules/openzeppelin-solidity/contracts/",
 ]
-solc_version = "0.8.19"
+solc_version = "0.8.17"
 src = "src"
 
 [profile.ci]
