@@ -6,6 +6,8 @@
     "forge-std": "foundry-rs/forge-std#v1.5.5"
   },
   "dependencies": {
-    "openzeppelin-solidity": "OpenZeppelin/openzeppelin-contracts#v4.9.0"
+    "openzeppelin-solidity": "OpenZeppelin/openzeppelin-contracts#v4.9.0",
+    "seaport-core": "ProjectOpenSea/seaport-core#1.5.0",
+    "seaport-types": "ProjectOpenSea/seaport-types#23-05-13-main"
   }
 }
