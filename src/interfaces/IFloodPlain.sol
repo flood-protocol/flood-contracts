@@ -1,9 +1,43 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.17;
+pragma solidity ^0.8.13;
 
-import {OrderFulfiller} from "./OrderFulfiller.sol";
+contract IFloodPlain {
+    struct OrderComponents {
+        address offerer;
+        address zone;
+        Item[] offer;
+        Item[] consideration;
+        uint256 deadline;
+        uint256 salt;
+        uint256 counter;
+    }
 
-contract OrderBook is OrderFulfiller {
+    struct Item {
+        bool isNative;
+        address token;
+        uint256 amount;
+    }
+
+    struct OrderParameters {
+        address offerer;
+        address zone;
+        Item[] offer;
+        Item[] consideration;
+        uint256 deadline;
+        uint256 salt;
+    }
+
+    struct Order {
+        OrderParameters parameters;
+        bytes signature;
+    }
+
+    struct OrderStatus {
+        bool isValidated;
+        bool isCancelled;
+        bool isFilled;
+    }
+
     /**
      * @notice Fulfill an order with an arbitrary number of items for offer and
      *         consideration.
@@ -18,9 +52,7 @@ contract OrderBook is OrderFulfiller {
      * @return fulfilled A boolean indicating whether the order has been
      *                   successfully fulfilled.
      */
-    function fulfillOrder(Order calldata order, address fulfiller) external override returns (bool /* fulfilled */) {
-        return _validateAndFulfillOrder({ order: order, caller: msg.sender });
-    }
+    function fulfillOrder(Order calldata order, address fulfiller) external override returns (bool fulfilled);
 
     /**
      * @notice Cancel an arbitrary number of orders. Note that only the offerer
@@ -33,9 +65,7 @@ contract OrderBook is OrderFulfiller {
      * @return cancelled A boolean indicating whether the supplied orders have
      *                   been successfully cancelled.
      */
-    function cancel(OrderComponents[] calldata order) external override returns (bool /* cancelled */) {
-        return _cancel(order);
-    }
+    function cancel(OrderComponents[] calldata order) external override returns (bool cancelled);
 
     /**
      * @notice Validate an arbitrary number of orders, thereby registering their
@@ -52,9 +82,7 @@ contract OrderBook is OrderFulfiller {
      * @return validated A boolean indicating whether the supplied orders have
      *                   been successfully validated.
      */
-    function validate(Order[] calldata orders) external override returns (bool /* validated */ ) {
-        return _validate(orders);
-    }
+    function validate(Order[] calldata orders) external override returns (bool validated);
 
     /**
      * @notice Cancel all orders from a given offerer with a given zone in bulk
@@ -63,9 +91,7 @@ contract OrderBook is OrderFulfiller {
      *
      * @return newCounter The new counter.
      */
-    function incrementCounter() external override returns (uint256 /* newCounter */) {
-        return _incrementCounter();
-    }
+    function incrementCounter() external override returns (uint256 newCounter);
 
     /**
      * @notice Retrieve the order hash for a given order.
@@ -74,10 +100,7 @@ contract OrderBook is OrderFulfiller {
      *
      * @return orderHash The order hash.
      */
-    function getOrderHash(OrderComponents calldata order) external view override returns (bytes32 /* orderHash */) {
-        // Derive order hash by supplying order parameters along with counter.
-        return _deriveOrderHash(order);
-    }
+    function getOrderHash(OrderComponents calldata order) external view override returns (bytes32 orderHash);
 
     /**
      * @notice Retrieve the status of a given order by hash, including whether
@@ -93,10 +116,7 @@ contract OrderBook is OrderFulfiller {
      * @return isCancelled A boolean indicating whether the order in question
      *                     has been cancelled.
      */
-    function getOrderStatus(bytes32 orderHash) external view override returns (bool /* isValidated */, bool /* isCancelled */) {
-        // Retrieve the order status using the order hash.
-        return _getOrderStatus(orderHash);
-    }
+    function getOrderStatus(bytes32 orderHash) external view override returns (bool isValidated, bool isCancelled);
 
     /**
      * @notice Retrieve the current counter for a given offerer.
@@ -105,29 +125,5 @@ contract OrderBook is OrderFulfiller {
      *
      * @return counter The current counter.
      */
-    function getCounter(address offerer) external view override returns (uint256 /* counter */) {
-        // Return the counter for the supplied offerer.
-        return _getCounter(offerer);
-    }
-
-    /**
-     * @notice Retrieve configuration information for this contract.
-     *
-     * @return version           The contract version.
-     * @return domainSeparator   The domain separator for this contract.
-     */
-    function information() external view override returns (string memory /* version */, bytes32 /* domainSeparator */) {
-        // Return the information for this contract.
-        return _information();
-    }
-
-    /**
-     * @notice Retrieve the name of this contract.
-     *
-     * @return contractName The name of this contract.
-     */
-    function name() external pure override returns (string memory /* contractName */ ) {
-        // Return the name of the contract.
-        return _name();
-    }
+    function getCounter(address offerer) external view override returns (uint256 counter);
 }
