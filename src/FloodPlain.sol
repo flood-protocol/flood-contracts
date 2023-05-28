@@ -266,13 +266,13 @@ contract FloodPlain is IFloodPlain, EIP712, ReentrancyGuard {
 
             if (item.isNative) {
                 balanceBefore = to.balance;
-                IFulfiller(from).pullNativeToken({ to: to, amount: item.amount });
+                IFulfiller(from).pullNativeToken({to: to, amount: item.amount});
                 if (to.balance - balanceBefore != item.amount) {
                     revert InsufficientAmountPulled();
                 }
             } else {
                 balanceBefore = IERC20(item.token).balanceOf(to);
-                IFulfiller(from).pullToken({ token: item.token, to: to, amount: item.amount });
+                IFulfiller(from).pullToken({token: item.token, to: to, amount: item.amount});
                 if (IERC20(item.token).balanceOf(to) - balanceBefore != item.amount) {
                     revert InsufficientAmountPulled();
                 }
