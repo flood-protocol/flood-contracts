@@ -1,12 +1,23 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+// Inheritances
+import {EIP712} from "@openzeppelin/utils/cryptography/EIP712.sol";
+import {ReentrancyGuard} from "@openzeppelin/security/ReentrancyGuard.sol";
 import {IFloodPlain} from "./interfaces/IFloodPlain.sol";
 
-import {EIP721} from "@openzeppelin/utils/cryptography/EIP721.sol";
-import {ReentrancyGuard} from "@openzeppelin/security/ReentrancyGuard.sol";
+// Libraries
+import {SignatureChecker} from "@openzeppelin/utils/cryptography/SignatureChecker.sol";
+import {SafeERC20} from "@openzeppelin/token/ERC20/utils/SafeERC20.sol";
+
+// Interfaces
+import {IFulfiller} from "./interfaces/IFulfiller.sol";
+import {IZone} from "./interfaces/IZone.sol";
+import {IERC20} from "@openzeppelin/token/ERC20/IERC20.sol";
 
 contract FloodPlain is IFloodPlain, EIP712, ReentrancyGuard {
+    using SafeERC20 for IERC20;
+
     // Precompute type hashes on deployment.
     bytes32 private immutable _ITEM_TYPEHASH;
     bytes32 private immutable _ORDER_TYPEHASH;
@@ -21,10 +32,11 @@ contract FloodPlain is IFloodPlain, EIP712, ReentrancyGuard {
     mapping(address => uint256) private _contractNonces;
 
     // Ensures function is not cross entered.
-    modifier nonCrossEntrant {
-        if (_reentrancyGuardEntered) {
+    modifier nonCrossEntrant() {
+        if (_reentrancyGuardEntered()) {
             revert CrossEntrancy();
         }
+        _;
     }
 
     constructor() EIP712("FloodPlain", "1.0") {
@@ -34,6 +46,9 @@ contract FloodPlain is IFloodPlain, EIP712, ReentrancyGuard {
     function fulfillOrder(Order calldata order, address fulfiller, bytes calldata extraData) external nonReentrant {
         // Retrieve the order parameters.
         OrderParameters calldata orderParameters = order.parameters;
+
+        // Move offerer address to stack.
+        address offerer = orderParameters.offerer;
 
         // Retrieve the order hash for the counter value of the offerer.
         bytes32 orderHash = _deriveOrderHash(orderParameters, _counters[offerer]);
@@ -46,14 +61,20 @@ contract FloodPlain is IFloodPlain, EIP712, ReentrancyGuard {
 
         // If the order has not already been validated...
         if (!orderStatus.isValidated) {
+            orderStatus.isValidated = true;
             // Verify that the supplied signature recovers to the offerer.
-            _verifySignature(offerer, orderHash, order.signature);
+            if (!SignatureChecker.isValidSignatureNow(offerer, orderHash, order.signature)) {
+                revert InvalidSignature();
+            }
         }
 
         // Verify that the current timestamp has not passed the deadline.
-        if (orderParameter.deadline > block.timestamp) {
+        if (orderParameters.deadline > block.timestamp) {
             revert DeadlinePassed();
         }
+
+        // Optimistically update order status before any external call.
+        orderStatus.isFilled = true;
 
         // Check zone restrictions.
         address zone = orderParameters.zone;
@@ -68,7 +89,7 @@ contract FloodPlain is IFloodPlain, EIP712, ReentrancyGuard {
         }
 
         // Transfer each offer item to fulfiller.
-        _transferItemsFrom({ from: orderParameters.offerer, to: fulfiller, items: orderParameters.offer });
+        _transferOffer({from: orderParameters.offerer, to: fulfiller, items: orderParameters.offer});
 
         // Call fulfiller with order data and the caller address to source consideration items.
         // Contracts implementing Fulfiller interface could get all their tokens drained, hence
@@ -82,13 +103,13 @@ contract FloodPlain is IFloodPlain, EIP712, ReentrancyGuard {
         });
 
         // Transfer consideration items from fulfiller to offerer.
-        _transferItemsFrom({ from: fulfiller, to: offerer, items: orderParameters.consideration });
+        _transferConsideration({from: fulfiller, to: offerer, items: orderParameters.consideration});
 
         // Emit an event signifying that the order has been fulfilled.
-        emit OrderFulfilled(orderHash, orderParameters.offerer, orderParameters.fulfiller);
+        emit OrderFulfilled(orderHash, orderParameters.offerer, fulfiller);
     }
 
-    function cancel(OrderComponents[] calldata order) external nonCrossEntrant {
+    function cancel(OrderComponents[] calldata orders) external nonCrossEntrant {
         // Declare storage pointer outside of the loop.
         OrderStatus storage orderStatus;
 
@@ -96,7 +117,7 @@ contract FloodPlain is IFloodPlain, EIP712, ReentrancyGuard {
         uint256 totalOrders = orders.length;
 
         // Iterate over each order.
-        for (uint256 i = 0; i < totalOrders; ) {
+        for (uint256 i = 0; i < totalOrders;) {
             // Retrieve the order.
             OrderComponents calldata order = orders[i];
 
@@ -108,7 +129,7 @@ contract FloodPlain is IFloodPlain, EIP712, ReentrancyGuard {
                 revert InvalidCaller();
             }
 
-            bytes32 orderHash = _deriveOrderHash(order, order.counter);
+            bytes32 orderHash = _deriveOrderHash(order);
 
             // Retrieve the order status using the derived order hash.
             orderStatus = _orderStatus[orderHash];
@@ -131,9 +152,47 @@ contract FloodPlain is IFloodPlain, EIP712, ReentrancyGuard {
         // Read length of the orders array from memory and place on stack.
         uint256 totalOrders = orders.length;
 
+        // Initialize local variables only once outside the loop.
+        OrderStatus storage orderStatus;
+        Order calldata order;
+        OrderParameters calldata orderParameters;
+        address offerer;
+        bytes32 orderHash;
+
         // Iterate over each order.
-        for (uint256 i = 0; i < totalOrders; ) {
-            _validate(orders[i]);
+        for (uint256 i = 0; i < totalOrders;) {
+            // Retrieve the order.
+            order = orders[i];
+
+            // Retrieve the order parameters.
+            orderParameters = order.parameters;
+
+            // Move offerer from memory to the stack.
+            offerer = orderParameters.offerer;
+
+            // Get current counter and use it w/ params to derive order hash.
+            orderHash = _deriveOrderHash(orderParameters, _counters[offerer]);
+
+            // Retrieve the order status using the derived order hash.
+            orderStatus = _orderStatus[orderHash];
+
+            // Ensure order is fillable and retrieve the filled amount.
+            _verifyOrderStatus(orderHash, orderStatus);
+
+            // If the order has not already been validated...
+            if (!orderStatus.isValidated) {
+                // Verify the supplied signature.
+                if (!SignatureChecker.isValidSignatureNow(offerer, orderHash, order.signature)) {
+                    revert InvalidSignature();
+                }
+
+                // Update order status to mark the order as valid.
+                orderStatus.isValidated = true;
+
+                // Emit an event signifying the order has been validated.
+                emit OrderValidated(orderHash, orderParameters);
+            }
+
             unchecked {
                 ++i;
             }
@@ -167,69 +226,172 @@ contract FloodPlain is IFloodPlain, EIP712, ReentrancyGuard {
         emit CounterIncremented(newCounter, msg.sender);
     }
 
-    function getOrderHash(OrderComponents calldata order) external view returns (bytes32 /* orderHash */) {
+    function getOrderHash(OrderComponents calldata order) external view returns (bytes32 /* orderHash */ ) {
         // Derive order hash by supplying order parameters along with counter.
         return _deriveOrderHash(order);
     }
 
-    function getOrderStatus(bytes32 orderHash) external view returns (OrderStatus memory) {
+    function getOrderStatus(bytes32 orderHash) external view returns (OrderStatus memory /* orderStatus */ ) {
         // Retrieve the order status using the order hash.
         return _orderStatus[orderHash];
     }
 
-    function getCounter(address offerer) external view returns (uint256 /* counter */) {
+    function getCounter(address offerer) external view returns (uint256 /* counter */ ) {
         // Return the counter for the supplied offerer.
         return _counters[offerer];
     }
 
-    function _validate(Order calldata order) private return (bytes32 orderHash) {
-        // Retrieve the order parameters.
-        OrderParameters calldata orderParameters = order.parameters;
+    function _transferOffer(address from, address to, Item[] calldata items) private {
+        Item calldata item;
+        uint256 itemsLength = items.length;
 
-        // Move offerer from memory to the stack.
-        address offerer = orderParameters.offerer;
+        for (uint256 i = 0; i < itemsLength;) {
+            item = items[i];
 
-        // Get current counter and use it w/ params to derive order hash.
-        orderHash = _deriveOrderHash(order, _counters[offerer]);
+            IERC20(item.token).safeTransferFrom(from, to, item.amount);
 
-        // Retrieve the order status using the derived order hash.
-        OrderStatus storage orderStatus = _orderStatus[orderHash];
+            unchecked {
+                ++i;
+            }
+        }
+    }
 
-        // Ensure order is fillable and retrieve the filled amount.
-        _verifyOrderStatus(orderHash, orderStatus);
+    function _transferConsideration(address from, address to, Item[] calldata items) private {
+        Item calldata item;
+        uint256 itemsLength = items.length;
+        uint256 balanceBefore;
 
-        // If the order has not already been validated...
-        if (!orderStatus.isValidated) {
-            // Verify the supplied signature.
-            _verifySignature(offerer, orderHash, order.signature);
+        for (uint256 i = 0; i < itemsLength;) {
+            item = items[i];
 
-            // Update order status to mark the order as valid.
-            orderStatus.isValidated = true;
+            if (item.isNative) {
+                balanceBefore = to.balance;
+                IFulfiller(from).pullNativeToken({ to: to, amount: item.amount });
+                if (to.balance - balanceBefore != item.amount) {
+                    revert InsufficientAmountPulled();
+                }
+            } else {
+                balanceBefore = IERC20(item.token).balanceOf(to);
+                IFulfiller(from).pullToken({ token: item.token, to: to, amount: item.amount });
+                if (IERC20(item.token).balanceOf(to) - balanceBefore != item.amount) {
+                    revert InsufficientAmountPulled();
+                }
+            }
 
-            // Emit an event signifying the order has been validated.
-            emit OrderValidated(orderHash, orderParameters);
+            unchecked {
+                ++i;
+            }
         }
     }
 
     function _verifyOrderStatus(bytes32 orderHash, OrderStatus storage orderStatus) private view {
-        // Ensure that the order has not been cancelled.
+        // Ensure that the order has not been cancelled or filled.
         if (orderStatus.isCancelled || orderStatus.isFilled) {
             revert OrderIsFilledOrCancelled(orderHash);
         }
     }
 
-    function _deriveOrderHash(OrderParameters calldata orderParameters, uint256 counter) private view returns (bytes32 orderHash)  {
+    // TODO: Efficiently combine this with the function below.
+    function _deriveOrderHash(OrderComponents calldata orderComponents) private view returns (bytes32 orderHash) {
+        // Move lengths to stack.
+        uint256 offerLength = orderComponents.offer.length;
+        uint256 considerationLength = orderComponents.consideration.length;
+
+        // Designate new memory regions for offer and consideration item hashes.
+        bytes32[] memory offerHashes = new bytes32[](offerLength);
+        bytes32[] memory considerationHashes = new bytes32[](considerationLength);
+
+        // Iterate over each offer on the order.
+        for (uint256 i = 0; i < offerLength;) {
+            // Hash the offer and place the result into memory.
+            offerHashes[i] = _hashItem(orderComponents.offer[i]);
+
+            unchecked {
+                ++i;
+            }
+        }
+
+        // Iterate over each consideration on the order.
+        for (uint256 i = 0; i < considerationLength;) {
+            // Hash the consideration and place the result into memory.
+            considerationHashes[i] = _hashItem(orderComponents.consideration[i]);
+
+            unchecked {
+                ++i;
+            }
+        }
+
+        // Derive and return the order hash as specified by EIP-712.
+        return keccak256(
+            abi.encode(
+                _ORDER_TYPEHASH,
+                orderComponents.offerer,
+                orderComponents.zone,
+                keccak256(abi.encodePacked(offerHashes)),
+                keccak256(abi.encodePacked(considerationHashes)),
+                orderComponents.deadline,
+                orderComponents.salt,
+                orderComponents.counter
+            )
+        );
     }
 
-    function _getTypeHashes() private view returns (bytes32 /* itemTypeHash */, bytes32 /* orderTypehash */) {
-        // Construct the Item type string.
-        bytes memory itemTypeString = abi.encodePacked(
-            "Item(",
-            "bool isNative,",
-            "address token,",
-            "uint256 amount",
-            ")"
+    function _deriveOrderHash(OrderParameters calldata orderParameters, uint256 counter)
+        private
+        view
+        returns (bytes32 orderHash)
+    {
+        // Move lengths to stack.
+        uint256 offerLength = orderParameters.offer.length;
+        uint256 considerationLength = orderParameters.consideration.length;
+
+        // Designate new memory regions for offer and consideration item hashes.
+        bytes32[] memory offerHashes = new bytes32[](offerLength);
+        bytes32[] memory considerationHashes = new bytes32[](considerationLength);
+
+        // Iterate over each offer on the order.
+        for (uint256 i = 0; i < offerLength;) {
+            // Hash the offer and place the result into memory.
+            offerHashes[i] = _hashItem(orderParameters.offer[i]);
+
+            unchecked {
+                ++i;
+            }
+        }
+
+        // Iterate over each consideration on the order.
+        for (uint256 i = 0; i < considerationLength;) {
+            // Hash the consideration and place the result into memory.
+            considerationHashes[i] = _hashItem(orderParameters.consideration[i]);
+
+            unchecked {
+                ++i;
+            }
+        }
+
+        // Derive and return the order hash as specified by EIP-712.
+        return keccak256(
+            abi.encode(
+                _ORDER_TYPEHASH,
+                orderParameters.offerer,
+                orderParameters.zone,
+                keccak256(abi.encodePacked(offerHashes)),
+                keccak256(abi.encodePacked(considerationHashes)),
+                orderParameters.deadline,
+                orderParameters.salt,
+                counter
+            )
         );
+    }
+
+    function _hashItem(Item calldata item) internal view returns (bytes32 /* itemHash */ ) {
+        return keccak256(abi.encode(_ITEM_TYPEHASH, item.isNative, item.token, item.amount));
+    }
+
+    function _getTypeHashes() private pure returns (bytes32, /* itemTypeHash */ bytes32 /* orderTypehash */ ) {
+        // Construct the Item type string.
+        bytes memory itemTypeString =
+            abi.encodePacked("Item(", "bool isNative,", "address token,", "uint256 amount", ")");
 
         // Construct the OrderComponents type string.
         bytes memory orderComponentsTypeString = abi.encodePacked(
