@@ -10,11 +10,19 @@ contract MockFulfiller is IFulfiller {
     using SafeERC20 for IERC20;
     using Address for address payable;
 
-    function pullTokens(address to, IFloodPlain.ConsiderationItem[] calldata items) external {
-        uint256 length = items.length;
+    function sourceConsideration(
+        IFloodPlain.Order calldata order,
+        IFloodPlain.ConsiderationItem[] calldata requestedItems,
+        address caller,
+        bytes calldata context
+    ) external {
+        // do nothing. test should just send tokens to this contract
+
+        uint256 length = requestedItems.length;
+        address to = order.offerer;
         IFloodPlain.ConsiderationItem calldata item;
-        for (uint256 i = 0; i < length;) {
-            item = items[i];
+        for (uint256 i = 0; i < length; ) {
+            item = requestedItems[i];
 
             if (item.isNative) {
                 payable(to).sendValue(item.amount);
@@ -26,9 +34,5 @@ contract MockFulfiller is IFulfiller {
                 ++i;
             }
         }
-    }
-
-    function sourceConsideration(IFloodPlain.Order calldata order, address caller, bytes calldata context) external {
-        // do nothing. test should just send tokens to this contract
     }
 }

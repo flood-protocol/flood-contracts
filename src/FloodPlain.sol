@@ -31,9 +31,6 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
         address fulfiller,
         bytes calldata extraData
     ) external nonReentrant {
-        // Move offerer address to stack.
-        address offerer = order.offerer;
-
         // Retrieve the order hash for order.
         bytes32 orderHash = order.hash();
 
@@ -57,17 +54,8 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
             to: fulfiller
         });
 
-        // Call fulfiller with order data and the caller address to source consideration items.
-        // Contracts implementing Fulfiller interface could get all their tokens drained, hence
-        // they should restrict who can call them directly or indirectly.
-        IFulfiller(fulfiller).sourceConsideration({
-            order: order,
-            caller: msg.sender,
-            context: extraData
-        });
-
         // Transfer consideration items from fulfiller to offerer.
-        _transferConsideration({from: fulfiller, to: offerer, items: order.consideration});
+        _transferConsideration({order: order, fulfiller: fulfiller, extraData: extraData});
 
         // Emit an event signifying that the order has been fulfilled.
         emit OrderFulfilled(orderHash, order.offerer, fulfiller);
@@ -224,10 +212,11 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
     }
 
     function _transferConsideration(
-        address from,
-        address to,
-        ConsiderationItem[] calldata items
+        Order calldata order,
+        address fulfiller,
+        bytes calldata extraData
     ) private {
+        ConsiderationItem[] calldata items = order.consideration;
         ConsiderationItem calldata item;
         ConsiderationItem memory deduplicatedItem;
         uint256 itemsLength = items.length;
@@ -263,6 +252,7 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
         }
 
         uint256[] memory requiredAmounts = new uint256[](dedupCount);
+        address to = order.offerer;
         for (uint256 i = 0; i < dedupCount; ) {
             deduplicatedItem = deduplicatedItems[i];
 
@@ -284,7 +274,15 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
             mstore(deduplicatedItems, dedupCount)
         }
 
-        IFulfiller(from).pullTokens({to: to, items: deduplicatedItems});
+        // Call fulfiller with order data and the caller address to source consideration items.
+        // Contracts implementing Fulfiller interface could get all their tokens drained, hence
+        // they should restrict who can call them directly or indirectly.
+        IFulfiller(fulfiller).sourceConsideration({
+            order: order,
+            requestedItems: deduplicatedItems,
+            caller: msg.sender,
+            context: extraData
+        });
 
         uint256 newBalance;
         for (uint256 i = 0; i < dedupCount; ) {
