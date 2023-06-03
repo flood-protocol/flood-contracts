@@ -5,7 +5,7 @@ import {IFloodPlain} from "./IFloodPlain.sol";
 
 interface IZone {
     function validateOrder(
-        IFloodPlain.OrderParameters calldata order,
+        IFloodPlain.Order calldata order,
         address fulfiller,
         address caller,
         bytes32 orderHash,

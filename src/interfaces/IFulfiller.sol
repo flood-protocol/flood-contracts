@@ -1,16 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import {IFloodPlain} from "./IFloodPlain.sol";
+import {IFloodPlain} from "../interfaces/IFloodPlain.sol";
 
 interface IFulfiller {
-    function pullToken(address token, address to, uint256 amount) external;
-    function pullNativeToken(address to, uint256 amount) external;
+    function pullTokens(address to, IFloodPlain.ConsiderationItem[] calldata items) external;
+
     function sourceConsideration(
-        IFloodPlain.OrderParameters calldata order,
-        address fulfiller,
+        IFloodPlain.Order calldata order,
         address caller,
-        bytes32 orderHash,
         bytes calldata context
     ) external;
 }
