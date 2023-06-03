@@ -19,6 +19,8 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
 
     ISignatureTransfer private immutable _PERMIT2;
 
+    OrderWithSignature[] public etchedOrders;
+
     constructor(address permit2) {
         _PERMIT2 = ISignatureTransfer(permit2);
     }
@@ -69,6 +71,49 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
 
         // Emit an event signifying that the order has been fulfilled.
         emit OrderFulfilled(orderHash, order.offerer, fulfiller);
+    }
+
+    function fulfillEtchedOrder(
+        uint256 orderId,
+        address fulfiller,
+        bytes calldata extraData
+    ) external {
+        OrderWithSignature memory orderWithSignature = etchedOrders[orderId];
+        bytes memory data = abi.encodeWithSelector(
+            this.fulfillOrder.selector,
+            orderWithSignature.order,
+            orderWithSignature.signature,
+            fulfiller,
+            extraData
+        );
+        assembly {
+            let result := delegatecall(gas(), address(), add(data, 0x20), mload(data), 0, 0)
+
+            // Copy the returned data.
+            returndatacopy(0, 0, returndatasize())
+
+            switch result
+            // delegatecall returns 0 on error.
+            case 0 {
+                revert(0, returndatasize())
+            }
+            default {
+                return(0, returndatasize())
+            }
+        }
+    }
+
+    function etchOrder(
+        OrderWithSignature calldata orderWithSignature
+    ) external nonReentrant returns (uint256 orderId) {
+        orderId = etchedOrders.length;
+        etchedOrders.push(orderWithSignature);
+        emit OrderEtched({
+            orderId: orderId,
+            orderHash: orderWithSignature.order.hash(),
+            order: orderWithSignature.order,
+            signature: orderWithSignature.signature
+        });
     }
 
     function getPermitHash(Order calldata order) external pure returns (bytes32 /* permitHash */) {

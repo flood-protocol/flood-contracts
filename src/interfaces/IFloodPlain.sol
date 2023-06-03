@@ -10,6 +10,13 @@ interface IFloodPlain {
         address indexed fulfiller
     );
 
+    event OrderEtched(
+        uint256 indexed orderId,
+        bytes32 indexed orderHash,
+        Order order,
+        bytes signature
+    );
+
     struct Order {
         address offerer;
         address zone;
@@ -17,6 +24,11 @@ interface IFloodPlain {
         ConsiderationItem[] consideration;
         uint256 deadline;
         uint256 nonce;
+    }
+
+    struct OrderWithSignature {
+        Order order;
+        bytes signature;
     }
 
     struct OfferItem {
@@ -48,6 +60,31 @@ interface IFloodPlain {
     ) external;
 
     /**
+     * @notice Fulfill an order with an arbitrary number of items for offer and consideration.
+     *
+     * @param orderId   The order to fulfill.
+     * @param fulfiller The address that will receive offer items, then source consideration items
+     *                  for the offerer.
+     * @param extraData Extra bytes passed to the Zone and Fulfiller.
+     */
+    function fulfillEtchedOrder(
+        uint256 orderId,
+        address fulfiller,
+        bytes calldata extraData
+    ) external;
+
+    /**
+     * @notice Record an order on-chain to allow ease of use by other contracts.
+     *
+     * @param orderWithSignature The order and its signature to record.
+     *
+     * @return orderId Extra bytes passed to the Zone and Fulfiller.
+     */
+    function etchOrder(
+        OrderWithSignature calldata orderWithSignature
+    ) external returns (uint256 orderId);
+
+    /**
      * @notice Retrieve the permit2 hash for a given order.
      *
      * @param order The components of the order.
@@ -70,11 +107,8 @@ interface IFloodPlain {
      *         check signature validity and token approvals.
      *
      * @param order     The components of the order.
-     *
      * @param fulfiller The address that will fulfill the order.
-     *
      * @param caller    The address that will call `fulfillOrder`.
-     *
      * @param extraData Extra bytes that will be passed to Zone and Fulfiller.
      *
      * @return isValid A boolean guaranteeing the order cannot be fulfilled with supplied
@@ -100,7 +134,6 @@ interface IFloodPlain {
      * @notice Check if the nonce of a user is available.
      *
      * @param user  The address of the user to check the nonce of.
-     *
      * @param nonce The nonce of the user to check.
      *
      * @return isValid A boolean returning true if the nonce is not flipped.
