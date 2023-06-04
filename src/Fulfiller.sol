@@ -19,12 +19,12 @@ contract Fulfiller is Ownable2Step, Pausable, IFulfiller {
     address private _activeExecutor = _LOGICAL_ZERO_ADDRESS;
 
     // A list of executors that can be used to perform swaps.
-    address[] public executors;
+    address[] private _executors;
 
-    mapping(address => bool) public books;
-    mapping(uint256 => bool) public disabledExecutors;
+    mapping(address => bool) private _books;
+    mapping(uint256 => bool) private _disabledExecutors;
 
-    address public immutable zone;
+    address private immutable _zone;
 
     error InvalidFunctionSelector();
     error FallbackNotThroughExecutor();
@@ -41,44 +41,56 @@ contract Fulfiller is Ownable2Step, Pausable, IFulfiller {
         }
     }
 
-    constructor(address zone_) {
-        zone = zone_;
+    constructor(address zone) {
+        _zone = zone;
     }
 
-    function pause() external onlyOwner {
+    function getZone() external /*view*/ divertCallback returns (address) {
+        return _zone;
+    }
+
+    function getExecutorById(uint256 id) external /*view*/ divertCallback returns (address, bool) {
+        return (_executors[id], _disabledExecutors[id]);
+    }
+
+    function getBookValidity(address book) external /*view*/ divertCallback returns (bool) {
+        return _books[book];
+    }
+
+    function pause() external onlyOwner divertCallback {
         _pause();
     }
 
-    function unpause() external onlyOwner {
+    function unpause() external onlyOwner divertCallback {
         _unpause();
     }
 
-    function addExecutor(address executor) external onlyOwner {
-        executors.push(executor);
+    function addExecutor(address executor) external onlyOwner divertCallback {
+        _executors.push(executor);
     }
 
-    function disableExecutor(uint256 executorId) external onlyOwner {
-        disabledExecutors[executorId] = true;
+    function disableExecutor(uint256 executorId) external onlyOwner divertCallback {
+        _disabledExecutors[executorId] = true;
     }
 
-    function enableExecutor(uint256 executorId) external onlyOwner {
-        disabledExecutors[executorId] = false;
+    function enableExecutor(uint256 executorId) external onlyOwner divertCallback {
+        _disabledExecutors[executorId] = false;
     }
 
     // WARNING: Ensure added book uses zone for access restriction, otherwise ALL in this contract will be lost.
-    function enableBook(address book) external onlyOwner {
-        books[book] = true;
+    function enableBook(address book) external onlyOwner divertCallback {
+        _books[book] = true;
     }
 
-    function disableBook(address book) external onlyOwner {
-        books[book] = false;
+    function disableBook(address book) external onlyOwner divertCallback {
+        _books[book] = false;
     }
 
     /**
      * @notice Withdraws tokens from the contract.
      * @param tokens the tokens to withdraw.
      */
-    function batchWithdraw(address[] calldata tokens) external onlyOwner {
+    function batchWithdraw(address[] calldata tokens) external onlyOwner divertCallback {
         uint256 length = tokens.length;
         for (uint256 i = 0; i < length; ) {
             address token = tokens[i];
@@ -101,10 +113,10 @@ contract Fulfiller is Ownable2Step, Pausable, IFulfiller {
         address /* caller */,
         bytes calldata /* context */
     ) external whenNotPaused divertCallback {
-        if (!books[msg.sender]) {
+        if (!_books[msg.sender]) {
             revert InvalidBook();
         }
-        if (order.zone != zone) {
+        if (order.zone != _zone) {
             revert InvalidZone();
         }
 
