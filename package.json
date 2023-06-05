@@ -1,11 +1,14 @@
 {
   "name": "flood-contracts",
   "devDependencies": {
-    "bun-types": "^0.5.0"
+    "bun-types": "^0.5.0",
+    "ds-test": "dapphub/ds-test#e282159d5170298eb2455a6c05280ab5a73a4ef0",
+    "forge-std": "foundry-rs/forge-std#v1.5.5",
+    "permit2": "Uniswap/permit2#bbbc92f895049ca45c4b25a450f9d3e907659284"
   },
   "dependencies": {
-    "ds-test": "https://github.com/dapphub/ds-test.git",
-    "forge-std": "https://github.com/foundry-rs/forge-std.git",
-    "openzeppelin-solidity": "https://github.com/OpenZeppelin/openzeppelin-contracts.git"
+    "openzeppelin-solidity": "OpenZeppelin/openzeppelin-contracts#v4.9.0",
+    "seaport-core": "ProjectOpenSea/seaport-core#1.5.0",
+    "seaport-types": "ProjectOpenSea/seaport-types#23-05-13-main"
   }
 }
