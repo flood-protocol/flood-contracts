@@ -1,12 +1,7 @@
 [profile.default]
-libs = ["node_modules"]
+libs = ["lib"]
 optmitizer = false
 out = "out"
-remappings = [
-    "ds-test/=node_modules/ds-test/src/",
-    "forge-std/=node_modules/forge-std/src/",
-    "@openzeppelin/=node_modules/openzeppelin-solidity/contracts/",
-]
 solc_version = "0.8.17"
 src = "src"
 
