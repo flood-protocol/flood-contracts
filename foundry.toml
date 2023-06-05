@@ -2,6 +2,10 @@
 libs = ["lib"]
 optmitizer = false
 out = "out"
+remappings = [
+    "@openzeppelin/=lib/openzeppelin-contracts/contracts/",
+    "seaport-core/=lib/seaport-core/src/",
+]
 solc_version = "0.8.17"
 src = "src"
 

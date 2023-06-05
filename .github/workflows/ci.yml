@@ -10,46 +10,36 @@ env:
   FOUNDRY_PROFILE: ci
 
 jobs:
-  build: 
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
-      - name: Install Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-
-      - name: Install deps
-        run: bun install
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
           version: nightly
+
+      - name: Install deps
+        run: forge install
 
       - name: Build contracts
         run: |
           forge --version
-          forge build --sizes   
-    
+          forge build --sizes
+
   test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-    
-      - name: Install Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-
-      - name: Install deps
-        run: bun install
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
           version: nightly
+
+      - name: Install deps
+        run: forge install
 
       - name: Run tests
         run: forge test
@@ -59,16 +49,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-
-      - name: Install deps
-        run: bun install
-
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
+
+      - name: Install deps
+        run: forge install
 
       - name: Run coverage
         run: forge coverage --report summary --report lcov

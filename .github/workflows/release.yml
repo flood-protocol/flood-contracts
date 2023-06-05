@@ -18,18 +18,13 @@ jobs:
       - name: Checkout repo and submodules
         uses: actions/checkout@v3
 
-      - name: Install Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-
-      - name: Install deps
-        run: bun install
-
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
           version: nightly
+
+      - name: Install deps
+        run: forge install
 
       - name: Run tests
         run: forge test -vvv
@@ -41,7 +36,7 @@ jobs:
       - name: Parse cargo.toml and assert version tag matching
         # Hacky way of parsing the version from Cargo.toml and comparing it to tag
         run: |
-              if [ "$(cat bindings/rust/Cargo.toml | grep version | head -n 1 |awk '{print $3}' | tr -d '"' )" == "${GITHUB_REF#refs/*/}" ];then exit 0; else exit 1; fi
+          if [ "$(cat bindings/rust/Cargo.toml | grep version | head -n 1 |awk '{print $3}' | tr -d '"' )" == "${GITHUB_REF#refs/*/}" ];then exit 0; else exit 1; fi
   publish:
     needs: [test, version-tag-match]
     # Ensure master is tagged
@@ -57,19 +52,14 @@ jobs:
       - name: Checkout repo and submodules
         uses: actions/checkout@v3
 
-      - name: Install Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-
-      - name: Install deps
-        run: bun install
-
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
-          version: nightly 
-  
+          version: nightly
+
+      - name: Install deps
+        run: forge install
+
       - name: Extract Git Tag
         run: echo "GIT_TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
 
@@ -79,7 +69,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.8'
+          python-version: "3.8"
 
       - name: Install twine & build
         run: pip3 install twine build

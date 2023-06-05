@@ -21,7 +21,7 @@ contract MockFulfiller is IFulfiller {
         uint256 length = requestedItems.length;
         address to = order.offerer;
         IFloodPlain.ConsiderationItem calldata item;
-        for (uint256 i = 0; i < length; ) {
+        for (uint256 i = 0; i < length;) {
             item = requestedItems[i];
 
             if (item.isNative) {

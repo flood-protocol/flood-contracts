@@ -4,18 +4,9 @@ pragma solidity ^0.8.13;
 interface IFloodPlain {
     error InsufficientAmountPulled();
 
-    event OrderFulfilled(
-        bytes32 indexed orderHash,
-        address indexed offerer,
-        address indexed fulfiller
-    );
+    event OrderFulfilled(bytes32 indexed orderHash, address indexed offerer, address indexed fulfiller);
 
-    event OrderEtched(
-        uint256 indexed orderId,
-        bytes32 indexed orderHash,
-        Order order,
-        bytes signature
-    );
+    event OrderEtched(uint256 indexed orderId, bytes32 indexed orderHash, Order order, bytes signature);
 
     struct Order {
         address offerer;
@@ -52,12 +43,8 @@ interface IFloodPlain {
      *                  for the offerer.
      * @param extraData Extra bytes passed to the Zone and Fulfiller.
      */
-    function fulfillOrder(
-        Order calldata order,
-        bytes calldata signature,
-        address fulfiller,
-        bytes calldata extraData
-    ) external;
+    function fulfillOrder(Order calldata order, bytes calldata signature, address fulfiller, bytes calldata extraData)
+        external;
 
     /**
      * @notice Fulfill an order with an arbitrary number of items for offer and consideration.
@@ -67,11 +54,7 @@ interface IFloodPlain {
      *                  for the offerer.
      * @param extraData Extra bytes passed to the Zone and Fulfiller.
      */
-    function fulfillEtchedOrder(
-        uint256 orderId,
-        address fulfiller,
-        bytes calldata extraData
-    ) external;
+    function fulfillEtchedOrder(uint256 orderId, address fulfiller, bytes calldata extraData) external;
 
     /**
      * @notice Record an order on-chain to allow ease of use by other contracts.
@@ -80,9 +63,7 @@ interface IFloodPlain {
      *
      * @return orderId Extra bytes passed to the Zone and Fulfiller.
      */
-    function etchOrder(
-        OrderWithSignature calldata orderWithSignature
-    ) external returns (uint256 orderId);
+    function etchOrder(OrderWithSignature calldata orderWithSignature) external returns (uint256 orderId);
 
     /**
      * @notice Retrieve the permit2 hash for a given order.
@@ -114,12 +95,10 @@ interface IFloodPlain {
      * @return isValid A boolean guaranteeing the order cannot be fulfilled with supplied
      *                 parameters if false.
      */
-    function getOrderValidity(
-        Order calldata order,
-        address fulfiller,
-        address caller,
-        bytes calldata extraData
-    ) external view returns (bool isValid);
+    function getOrderValidity(Order calldata order, address fulfiller, address caller, bytes calldata extraData)
+        external
+        view
+        returns (bool isValid);
 
     /**
      * @notice Check if the order deadline has passed or its nonce has been cancelled or used.

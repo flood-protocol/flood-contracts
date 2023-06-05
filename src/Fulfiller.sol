@@ -92,7 +92,7 @@ contract Fulfiller is Ownable2Step, Pausable, IFulfiller {
      */
     function batchWithdraw(address[] calldata tokens) external onlyOwner divertCallback {
         uint256 length = tokens.length;
-        for (uint256 i = 0; i < length; ) {
+        for (uint256 i = 0; i < length;) {
             address token = tokens[i];
 
             if (token == address(0)) {
@@ -110,7 +110,7 @@ contract Fulfiller is Ownable2Step, Pausable, IFulfiller {
     function sourceConsideration(
         IFloodPlain.Order calldata order,
         IFloodPlain.ConsiderationItem[] calldata requestedItems,
-        address /* caller */,
+        address, /* caller */
         bytes calldata /* context */
     ) external whenNotPaused divertCallback {
         if (!_books[msg.sender]) {
@@ -130,7 +130,7 @@ contract Fulfiller is Ownable2Step, Pausable, IFulfiller {
             uint256 itemsLength = requestedItems.length;
             address to = order.offerer;
             IFloodPlain.ConsiderationItem calldata item;
-            for (uint256 i = 0; i < itemsLength; ) {
+            for (uint256 i = 0; i < itemsLength;) {
                 item = requestedItems[i];
 
                 if (item.isNative) {
@@ -165,12 +165,8 @@ contract Fulfiller is Ownable2Step, Pausable, IFulfiller {
 
                 switch result
                 // delegatecall returns 0 on error.
-                case 0 {
-                    revert(0, returndatasize())
-                }
-                default {
-                    return(0, returndatasize())
-                }
+                case 0 { revert(0, returndatasize()) }
+                default { return(0, returndatasize()) }
             }
         }
     }

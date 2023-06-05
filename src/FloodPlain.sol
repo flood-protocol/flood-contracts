@@ -25,12 +25,10 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
         _PERMIT2 = ISignatureTransfer(permit2);
     }
 
-    function fulfillOrder(
-        Order calldata order,
-        bytes calldata signature,
-        address fulfiller,
-        bytes calldata extraData
-    ) external nonReentrant {
+    function fulfillOrder(Order calldata order, bytes calldata signature, address fulfiller, bytes calldata extraData)
+        external
+        nonReentrant
+    {
         // Retrieve the order hash for order.
         bytes32 orderHash = order.hash();
 
@@ -47,12 +45,7 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
         }
 
         // Transfer each offer item to fulfiller using Permit2.
-        _permitTransferOffer({
-            order: order,
-            signature: signature,
-            orderHash: orderHash,
-            to: fulfiller
-        });
+        _permitTransferOffer({order: order, signature: signature, orderHash: orderHash, to: fulfiller});
 
         // Transfer consideration items from fulfiller to offerer.
         _transferConsideration({order: order, fulfiller: fulfiller, extraData: extraData});
@@ -61,18 +54,10 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
         emit OrderFulfilled(orderHash, order.offerer, fulfiller);
     }
 
-    function fulfillEtchedOrder(
-        uint256 orderId,
-        address fulfiller,
-        bytes calldata extraData
-    ) external {
+    function fulfillEtchedOrder(uint256 orderId, address fulfiller, bytes calldata extraData) external {
         OrderWithSignature memory orderWithSignature = etchedOrders[orderId];
         bytes memory data = abi.encodeWithSelector(
-            this.fulfillOrder.selector,
-            orderWithSignature.order,
-            orderWithSignature.signature,
-            fulfiller,
-            extraData
+            this.fulfillOrder.selector, orderWithSignature.order, orderWithSignature.signature, fulfiller, extraData
         );
         assembly {
             let result := delegatecall(gas(), address(), add(data, 0x20), mload(data), 0, 0)
@@ -82,18 +67,16 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
 
             switch result
             // delegatecall returns 0 on error.
-            case 0 {
-                revert(0, returndatasize())
-            }
-            default {
-                return(0, returndatasize())
-            }
+            case 0 { revert(0, returndatasize()) }
+            default { return(0, returndatasize()) }
         }
     }
 
-    function etchOrder(
-        OrderWithSignature calldata orderWithSignature
-    ) external nonReentrant returns (uint256 orderId) {
+    function etchOrder(OrderWithSignature calldata orderWithSignature)
+        external
+        nonReentrant
+        returns (uint256 orderId)
+    {
         orderId = etchedOrders.length;
         etchedOrders.push(orderWithSignature);
         emit OrderEtched({
@@ -104,22 +87,21 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
         });
     }
 
-    function getPermitHash(Order calldata order) external pure returns (bytes32 /* permitHash */) {
+    function getPermitHash(Order calldata order) external pure returns (bytes32 /* permitHash */ ) {
         // Derive permit2 hash with order hash as witness by supplying order parameters.
         return order.hashAsWitness();
     }
 
-    function getOrderHash(Order calldata order) external pure returns (bytes32 /* orderHash */) {
+    function getOrderHash(Order calldata order) external pure returns (bytes32 /* orderHash */ ) {
         // Derive order hash by supplying order parameters.
         return order.hash();
     }
 
-    function getOrderValidity(
-        Order calldata order,
-        address fulfiller,
-        address caller,
-        bytes calldata extraData
-    ) external view returns (bool /* isValid */) {
+    function getOrderValidity(Order calldata order, address fulfiller, address caller, bytes calldata extraData)
+        external
+        view
+        returns (bool /* isValid */ )
+    {
         if (!getOrderStatus({order: order})) {
             return false;
         }
@@ -127,15 +109,13 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
         if (order.zone == address(0)) {
             return true;
         } else {
-            try
-                IZone(order.zone).validateOrder({
-                    order: order,
-                    fulfiller: fulfiller,
-                    caller: caller,
-                    orderHash: order.hash(),
-                    context: extraData
-                })
-            {
+            try IZone(order.zone).validateOrder({
+                order: order,
+                fulfiller: fulfiller,
+                caller: caller,
+                orderHash: order.hash(),
+                context: extraData
+            }) {
                 return true;
             } catch {
                 return false;
@@ -143,7 +123,7 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
         }
     }
 
-    function getOrderStatus(Order calldata order) public view returns (bool /* isValid */) {
+    function getOrderStatus(Order calldata order) public view returns (bool /* isValid */ ) {
         if (block.timestamp > order.deadline) {
             return false;
         }
@@ -153,43 +133,33 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
         return true;
     }
 
-    function getNonceStatus(address user, uint256 nonce) public view returns (bool /* isValid */) {
+    function getNonceStatus(address user, uint256 nonce) public view returns (bool /* isValid */ ) {
         uint256 wordPos = uint248(nonce >> 8);
         uint256 bitPos = uint8(nonce);
         return _PERMIT2.nonceBitmap(user, wordPos) & (1 << bitPos) == 0;
     }
 
-    function _permitTransferOffer(
-        Order calldata order,
-        bytes calldata signature,
-        bytes32 orderHash,
-        address to
-    ) private {
+    function _permitTransferOffer(Order calldata order, bytes calldata signature, bytes32 orderHash, address to)
+        private
+    {
         OfferItem[] calldata offer = order.offer;
         uint256 itemsLength = offer.length;
 
-        ISignatureTransfer.TokenPermissions[]
-            memory permitted = new ISignatureTransfer.TokenPermissions[](itemsLength);
-        ISignatureTransfer.SignatureTransferDetails[]
-            memory transferDetails = new ISignatureTransfer.SignatureTransferDetails[](
+        ISignatureTransfer.TokenPermissions[] memory permitted = new ISignatureTransfer.TokenPermissions[](itemsLength);
+        ISignatureTransfer.SignatureTransferDetails[] memory transferDetails =
+        new ISignatureTransfer.SignatureTransferDetails[](
                 itemsLength
             );
 
         {
             OfferItem calldata item;
             uint256 amount;
-            for (uint256 i = 0; i < itemsLength; ) {
+            for (uint256 i = 0; i < itemsLength;) {
                 item = offer[i];
                 amount = item.amount;
 
-                permitted[i] = ISignatureTransfer.TokenPermissions({
-                    token: item.token,
-                    amount: amount
-                });
-                transferDetails[i] = ISignatureTransfer.SignatureTransferDetails({
-                    to: to,
-                    requestedAmount: amount
-                });
+                permitted[i] = ISignatureTransfer.TokenPermissions({token: item.token, amount: amount});
+                transferDetails[i] = ISignatureTransfer.SignatureTransferDetails({to: to, requestedAmount: amount});
 
                 unchecked {
                     ++i;
@@ -211,11 +181,7 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
         });
     }
 
-    function _transferConsideration(
-        Order calldata order,
-        address fulfiller,
-        bytes calldata extraData
-    ) private {
+    function _transferConsideration(Order calldata order, address fulfiller, bytes calldata extraData) private {
         ConsiderationItem[] calldata items = order.consideration;
         ConsiderationItem calldata item;
         ConsiderationItem memory deduplicatedItem;
@@ -223,15 +189,12 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
 
         ConsiderationItem[] memory deduplicatedItems = new ConsiderationItem[](itemsLength);
         uint256 dedupCount;
-        for (uint256 i = 0; i < itemsLength; ) {
+        for (uint256 i = 0; i < itemsLength;) {
             item = items[i];
             bool isFound;
-            for (uint256 j = 0; j < dedupCount; ) {
+            for (uint256 j = 0; j < dedupCount;) {
                 deduplicatedItem = deduplicatedItems[j];
-                if (
-                    (deduplicatedItem.isNative && item.isNative) ||
-                    (deduplicatedItem.token == item.token)
-                ) {
+                if ((deduplicatedItem.isNative && item.isNative) || (deduplicatedItem.token == item.token)) {
                     deduplicatedItem.amount += item.amount;
                     isFound = true;
                     break;
@@ -253,15 +216,13 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
 
         uint256[] memory requiredAmounts = new uint256[](dedupCount);
         address to = order.offerer;
-        for (uint256 i = 0; i < dedupCount; ) {
+        for (uint256 i = 0; i < dedupCount;) {
             deduplicatedItem = deduplicatedItems[i];
 
             if (deduplicatedItem.isNative) {
                 requiredAmounts[i] = deduplicatedItem.amount + to.balance;
             } else {
-                requiredAmounts[i] =
-                    deduplicatedItem.amount +
-                    IERC20(deduplicatedItem.token).balanceOf(to);
+                requiredAmounts[i] = deduplicatedItem.amount + IERC20(deduplicatedItem.token).balanceOf(to);
             }
 
             unchecked {
@@ -285,11 +246,9 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
         });
 
         uint256 newBalance;
-        for (uint256 i = 0; i < dedupCount; ) {
+        for (uint256 i = 0; i < dedupCount;) {
             deduplicatedItem = deduplicatedItems[i];
-            newBalance = deduplicatedItem.isNative
-                ? to.balance
-                : IERC20(deduplicatedItem.token).balanceOf(to);
+            newBalance = deduplicatedItem.isNative ? to.balance : IERC20(deduplicatedItem.token).balanceOf(to);
             if (newBalance < requiredAmounts[i]) {
                 revert InsufficientAmountPulled();
             }
