@@ -4,7 +4,8 @@ optmitizer = false
 out = "out"
 remappings = [
     "@openzeppelin/=lib/openzeppelin-contracts/contracts/",
-    "seaport-core/=lib/seaport-core/src/",
+    "seaport-core/=lib/seaport-core/",
+    "seaport-types/=lib/seaport-types/",
 ]
 solc_version = "0.8.17"
 src = "src"
