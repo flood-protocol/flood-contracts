@@ -1,21 +1,21 @@
 [profile.default]
-libs = ["lib"]
-optmitizer = false
-out = "out"
-remappings = [
+  libs = ["lib"]
+  optmitizer = false
+  out = "out"
+  remappings = [
     "@openzeppelin/=lib/openzeppelin-contracts/contracts/",
     "seaport-core/=lib/seaport-core/",
     "seaport-types/=lib/seaport-types/",
-]
-solc_version = "0.8.17"
-src = "src"
+  ]
+  solc_version = "0.8.17"
+  src = "src"
 
 [profile.ci]
-fuzz_runs = 5000
+  fuzz_runs = 5000
 
 [profile.deploy]
-optmitizer = true
-optmitizer-runs = 10_000_000
-via_ir = true
+  optmitizer = true
+  optmitizer-runs = 10_000_000
+  via_ir = true
 
-# See more config options https://github.com/foundry-rs/foundry/tree/master/config
+  # See more config options https://github.com/foundry-rs/foundry/tree/master/config
