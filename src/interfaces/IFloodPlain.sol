@@ -4,6 +4,10 @@ pragma solidity ^0.8.13;
 interface IFloodPlain {
     error InsufficientAmountPulled();
 
+    error ZeroAddress();
+
+    error InvalidNativeTokenAddress();
+
     event OrderFulfilled(bytes32 indexed orderHash, address indexed offerer, address indexed fulfiller);
 
     event OrderEtched(uint256 indexed orderId, bytes32 indexed orderHash, Order order, bytes signature);
@@ -29,14 +33,51 @@ interface IFloodPlain {
         uint256 amount;
     }
 
+    // If `isNative` is true, the token address must be zero address.
     struct ConsiderationItem {
         bool isNative;
         address token;
         uint256 amount;
     }
 
-    function etchedOrders(uint256 etchedOrderId) external view returns (OrderWithSignature memory order);
-    function decoders(uint256 deocerId) external view returns (address decoder);
+    /**
+     * @notice Get all the details of the etched order corresponding to an order identifier.
+     *
+     * @param etchedOrderId The identifier of the etched order.
+     *
+     * @return order All the details of the order, including its signature.
+     */
+    function getEtchedOrder(uint256 etchedOrderId) external view returns (OrderWithSignature memory order);
+
+    /**
+     * @notice Get the decoder address corresponding to an identifier.
+     *
+     * @param decoderId The identifier of the decoder.
+     *
+     * @return decoder The address of the decoder.
+     */
+    function getDecoder(uint256 decoderId) external view returns (address decoder);
+
+    /**
+     * @notice Add a decoder address to the decoders array.
+     *
+     * @dev Decoders above identifier 255 will not be accessible. Be mindful when adding decoders.
+     *
+     * @param decoder The address of the decoder.
+     *
+     * @return decoderId The identifier of the new decoder added.
+     */
+    function addDecoder(address decoder) external returns (uint256 decoderId);
+
+    /**
+     * @notice Decode an arbitrarily encoded calldata to have reduced calldata length in L2s.
+     *
+     * @dev The first byte of the calldata is not used. The first byte should be any byte that has
+     *      no match with the first byte of a function selector in the contract. It is guaranteed
+     *      that such a unique byte exists for a contract with less than 257 external functions.
+     *      The second byte should be the identifier of the decoder to decode any arbitrary bytes
+     *      passed after the second byte.
+     */
     fallback() external;
 
     /**

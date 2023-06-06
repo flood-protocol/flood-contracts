@@ -20,18 +20,30 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard, Ownable2Step {
 
     ISignatureTransfer private immutable _PERMIT2;
 
-    OrderWithSignature[] public etchedOrders;
+    OrderWithSignature[] private _etchedOrders;
 
-    address[] public decoders;
+    address[] private _decoders;
 
     constructor(address permit2) {
         _PERMIT2 = ISignatureTransfer(permit2);
     }
 
     function addDecoder(address decoder) external onlyOwner returns (uint256 decoderId) {
-        decoderId = decoders.length;
-        decoders.push(decoder);
+        if (decoder == address(0)) {
+            revert ZeroAddress();
+        }
+
+        decoderId = _decoders.length;
+        _decoders.push(decoder);
         emit DecoderAdded(decoderId, decoder);
+    }
+
+    function getDecoder(uint256 decoderId) external view returns (address /* decoder */ ) {
+        return _decoders[decoderId];
+    }
+
+    function getEtchedOrder(uint256 etchedOrderId) external view returns (OrderWithSignature memory /* etchedOrder */ ) {
+        return _etchedOrders[etchedOrderId];
     }
 
     function fulfillOrder(Order calldata order, bytes calldata signature, address fulfiller, bytes calldata extraData)
@@ -64,7 +76,9 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard, Ownable2Step {
     }
 
     function fulfillEtchedOrder(uint256 orderId, address fulfiller, bytes calldata extraData) external {
-        OrderWithSignature memory orderWithSignature = etchedOrders[orderId];
+        OrderWithSignature memory orderWithSignature = _etchedOrders[orderId];
+
+        // Fulfill the etched order using the standard fulfillment function.
         bytes memory data = abi.encodeWithSelector(
             this.fulfillOrder.selector, orderWithSignature.order, orderWithSignature.signature, fulfiller, extraData
         );
@@ -86,8 +100,8 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard, Ownable2Step {
         nonReentrant
         returns (uint256 orderId)
     {
-        orderId = etchedOrders.length;
-        etchedOrders.push(orderWithSignature);
+        orderId = _etchedOrders.length;
+        _etchedOrders.push(orderWithSignature);
         emit OrderEtched({
             orderId: orderId,
             orderHash: orderWithSignature.order.hash(),
@@ -198,12 +212,15 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard, Ownable2Step {
 
         ConsiderationItem[] memory deduplicatedItems = new ConsiderationItem[](itemsLength);
         uint256 dedupCount;
+        // For each consideration item...
         for (uint256 i = 0; i < itemsLength;) {
             item = items[i];
             bool isFound;
+            // Check if it is the same as a previous consideration item in the array.
             for (uint256 j = 0; j < dedupCount;) {
                 deduplicatedItem = deduplicatedItems[j];
                 if ((deduplicatedItem.isNative && item.isNative) || (deduplicatedItem.token == item.token)) {
+                    // And add the amounts of the two consideration items with identical tokens.
                     deduplicatedItem.amount += item.amount;
                     isFound = true;
                     break;
@@ -214,15 +231,19 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard, Ownable2Step {
                 }
             }
 
+            // If the consideration item is encountered the first time...
             if (!isFound) {
+                // Add it to the deduplicated consideration items array.
                 deduplicatedItems[dedupCount] = item;
 
+                // And increase the actual length of the array.
                 unchecked {
                     ++dedupCount;
                 }
             }
         }
 
+        // Get the minimum required final balances of the consideration items.
         uint256[] memory requiredAmounts = new uint256[](dedupCount);
         address to = order.offerer;
         for (uint256 i = 0; i < dedupCount;) {
@@ -230,6 +251,11 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard, Ownable2Step {
 
             if (deduplicatedItem.isNative) {
                 requiredAmounts[i] = deduplicatedItem.amount + to.balance;
+
+                // Ensure native token address is set as zero address.
+                if (deduplicatedItem.token != address(0)) {
+                    revert InvalidNativeTokenAddress();
+                }
             } else {
                 requiredAmounts[i] = deduplicatedItem.amount + IERC20(deduplicatedItem.token).balanceOf(to);
             }
@@ -239,8 +265,8 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard, Ownable2Step {
             }
         }
 
-        // TODO: Test this!
         assembly {
+            // Trim the array to its actual size. TODO: Test to ensure it works.
             mstore(deduplicatedItems, dedupCount)
         }
 
@@ -254,6 +280,7 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard, Ownable2Step {
             context: extraData
         });
 
+        // Check the offerer has received necessary amounts of all the consideration items.
         uint256 newBalance;
         for (uint256 i = 0; i < dedupCount;) {
             deduplicatedItem = deduplicatedItems[i];
@@ -269,16 +296,17 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard, Ownable2Step {
     }
 
     fallback() external {
-        // First byte of the calldata is not used. Any first byte that does not clash with other function signatures can be used to enter fallback.
-        // TODO: Add tests to ensure that there is at least one unique byte that no other function signatures start with. This is guaranteed if we have 256 or less external Solidity functions.
-
-        // The second byte is the decoder ID. A decoder can employ any decoding scheme.
+        // The first byte is ignored. It should not match the first byte of any other function
+        // selector in the contract to guarantee the fallback is executed. The second byte is the
+        // decoder ID. A decoder can employ any decoding scheme.
         uint256 decoderId;
         assembly {
+            // Get the decoder identifier from the second byte of calldata.
             decoderId := shr(248, calldataload(0x01))
         }
 
-        address decoder = decoders[decoderId];
+        // Get the decoder address by its identifier from the decoders mapping.
+        address decoder = _decoders[decoderId];
 
         assembly {
             // Move the effective calldata size to stack.
@@ -287,8 +315,8 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard, Ownable2Step {
             // Copy calldata starting from third byte to the memory.
             calldatacopy(0x00, 0x02, trimmedCalldataSize)
 
-            // Call the decoder to get the decoded data.
-            let result := call(gas(), decoder, 0, 0, trimmedCalldataSize, 0, 0)
+            // Staticcall the decoder to get the decoded data.
+            let result := staticcall(gas(), decoder, 0, trimmedCalldataSize, 0, 0)
 
             // Copy the returned data.
             returndatacopy(0, 0, returndatasize())

@@ -11,7 +11,7 @@ import {Address} from "@openzeppelin/utils/Address.sol";
 
 // fulfiller holds both operating capital and accumulated fees.
 //
-contract Fulfiller is Ownable2Step, Pausable, IFulfiller {
+contract Fulfiller is IFulfiller, Ownable2Step, Pausable {
     using SafeERC20 for IERC20;
     using Address for address payable;
 
