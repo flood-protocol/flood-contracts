@@ -8,6 +8,8 @@ interface IFloodPlain {
 
     event OrderEtched(uint256 indexed orderId, bytes32 indexed orderHash, Order order, bytes signature);
 
+    event DecoderAdded(uint256 indexed decoderId, address indexed decoder);
+
     struct Order {
         address offerer;
         address zone;
@@ -33,6 +35,10 @@ interface IFloodPlain {
         uint256 amount;
     }
 
+    function etchedOrders(uint256 etchedOrderId) external view returns (OrderWithSignature memory order);
+    function decoders(uint256 deocerId) external view returns (address decoder);
+    fallback() external;
+
     /**
      * @notice Fulfill an order with an arbitrary number of items for offer and consideration.
      *
@@ -49,7 +55,7 @@ interface IFloodPlain {
     /**
      * @notice Fulfill an order with an arbitrary number of items for offer and consideration.
      *
-     * @param orderId   The order to fulfill.
+     * @param orderId   The identifier of the etched order to fulfill.
      * @param fulfiller The address that will receive offer items, then source consideration items
      *                  for the offerer.
      * @param extraData Extra bytes passed to the Zone and Fulfiller.
@@ -57,7 +63,7 @@ interface IFloodPlain {
     function fulfillEtchedOrder(uint256 orderId, address fulfiller, bytes calldata extraData) external;
 
     /**
-     * @notice Record an order on-chain to allow ease of use by other contracts.
+     * @notice Record an order on-chain for ease of use by other contracts.
      *
      * @param orderWithSignature The order and its signature to record.
      *

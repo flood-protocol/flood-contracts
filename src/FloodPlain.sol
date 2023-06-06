@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 // Inheritances
 import {ReentrancyGuard} from "@openzeppelin/security/ReentrancyGuard.sol";
 import {IFloodPlain} from "./interfaces/IFloodPlain.sol";
+import {Ownable2Step} from "@openzeppelin/access/Ownable2Step.sol";
 
 // Interfaces
 import {IFulfiller} from "./interfaces/IFulfiller.sol";
@@ -14,15 +15,23 @@ import {ISignatureTransfer} from "permit2/src/interfaces/ISignatureTransfer.sol"
 // Libraries
 import {OrderHash} from "./libraries/OrderHash.sol";
 
-contract FloodPlain is IFloodPlain, ReentrancyGuard {
+contract FloodPlain is IFloodPlain, ReentrancyGuard, Ownable2Step {
     using OrderHash for Order;
 
     ISignatureTransfer private immutable _PERMIT2;
 
     OrderWithSignature[] public etchedOrders;
 
+    address[] public decoders;
+
     constructor(address permit2) {
         _PERMIT2 = ISignatureTransfer(permit2);
+    }
+
+    function addDecoder(address decoder) external onlyOwner returns (uint256 decoderId) {
+        decoderId = decoders.length;
+        decoders.push(decoder);
+        emit DecoderAdded(decoderId, decoder);
     }
 
     function fulfillOrder(Order calldata order, bytes calldata signature, address fulfiller, bytes calldata extraData)
@@ -256,6 +265,49 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
             unchecked {
                 ++i;
             }
+        }
+    }
+
+    fallback() external {
+        // First byte of the calldata is not used. Any first byte that does not clash with other function signatures can be used to enter fallback.
+        // TODO: Add tests to ensure that there is at least one unique byte that no other function signatures start with. This is guaranteed if we have 256 or less external Solidity functions.
+
+        // The second byte is the decoder ID. A decoder can employ any decoding scheme.
+        uint256 decoderId;
+        assembly {
+            decoderId := shr(248, calldataload(0x01))
+        }
+
+        address decoder = decoders[decoderId];
+
+        assembly {
+            // Move the effective calldata size to stack.
+            let trimmedCalldataSize := sub(calldatasize(), 0x02)
+
+            // Copy calldata starting from third byte to the memory.
+            calldatacopy(0x00, 0x02, trimmedCalldataSize)
+
+            // Call the decoder to get the decoded data.
+            let result := call(gas(), decoder, 0, 0, trimmedCalldataSize, 0, 0)
+
+            // Copy the returned data.
+            returndatacopy(0, 0, returndatasize())
+
+            // Revert with return data if the call failed.
+            if iszero(result) {
+                revert(0, returndatasize())
+            }
+
+            // Delegatecall to this address with the decoded data.
+            result := delegatecall(gas(), address(), 0, returndatasize(), 0, 0)
+
+            // Copy the returned data.
+            returndatacopy(0, 0, returndatasize())
+
+            switch result
+            // delegatecall returns 0 on error.
+            case 0 { revert(0, returndatasize()) }
+            default { return(0, returndatasize()) }
         }
     }
 }
