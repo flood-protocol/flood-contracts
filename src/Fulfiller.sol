@@ -26,6 +26,7 @@ contract Fulfiller is IFulfiller, Ownable2Step, Pausable, ReentrancyGuard {
 
     address internal constant _LOGICAL_ZERO_ADDRESS = address(0xdead);
     address public activeExecutor = _LOGICAL_ZERO_ADDRESS;
+    address public activePool = _LOGICAL_ZERO_ADDRESS;
 
     address[] internal _executors;
     BitMaps.BitMap internal _disabledExecutors;
@@ -33,8 +34,8 @@ contract Fulfiller is IFulfiller, Ownable2Step, Pausable, ReentrancyGuard {
     mapping(address => bool) internal _books;
 
     constructor(address zone) {
-        if (zone == address(0)) {
-            revert ZeroAddress();
+        if (zone.code.length == 0) {
+            revert NotAContract();
         }
 
         ZONE = zone;
@@ -57,8 +58,8 @@ contract Fulfiller is IFulfiller, Ownable2Step, Pausable, ReentrancyGuard {
     }
 
     function addExecutor(address executor) external onlyOwner returns (uint256 executorId) {
-        if (executor == address(0)) {
-            revert ZeroAddress();
+        if (executor.code.length == 0) {
+            revert NotAContract();
         }
 
         executorId = _executors.length;
@@ -131,6 +132,7 @@ contract Fulfiller is IFulfiller, Ownable2Step, Pausable, ReentrancyGuard {
         // honest swap data. The caller is a trusted address and the access control is enforced
         // through the zone.
 
+        // Execute swaps based on the swap instructions provided.
         _executeSwaps(context);
 
         // Send requested items to the offerer.
@@ -180,6 +182,7 @@ contract Fulfiller is IFulfiller, Ownable2Step, Pausable, ReentrancyGuard {
         uint256 ptr = 0;
         bool end = false;
         while(end) {
+            // Decode instructions based on the described scheme.
             uint256 executorId = abi.decode(swaps[ptr:++ptr], (uint256));
             uint256 amountsSizes = abi.decode(swaps[ptr:++ptr], (uint256));
             uint256 amountInSize = (amountsSizes >> 4) + 1;
@@ -191,13 +194,17 @@ contract Fulfiller is IFulfiller, Ownable2Step, Pausable, ReentrancyGuard {
             uint256 tokenInIndex = tokenIndices >> 4;
             uint256 tokenOutIndex = amountsSizes & 0x0f;
 
+            // Ensure executor is not disabled.
             if (_disabledExecutors.get(executorId)) {
                 revert DisabledExecutor();
             }
+
+            // Get executor address from the executor index.
             address executor = _executors[executorId];
 
-            // Set active executor before delegating execution to the executor.
+            // Set active executor and pool before delegating execution to the executor.
             activeExecutor = executor;
+            activePool = pool;
 
             bytes memory data = abi.encodeWithSelector(
                 IExecutor.swap.selector, pool, tokenInIndex, tokenOutIndex, amountIn, amountOut
@@ -216,8 +223,9 @@ contract Fulfiller is IFulfiller, Ownable2Step, Pausable, ReentrancyGuard {
                 end := iszero(calldataload(ptr))
             }
 
-            // Unset active executor after the swap is completed.
+            // Unset active executor and pool after the swap is completed.
             activeExecutor = _LOGICAL_ZERO_ADDRESS;
+            activePool = _LOGICAL_ZERO_ADDRESS;
         }
     }
 
@@ -226,6 +234,10 @@ contract Fulfiller is IFulfiller, Ownable2Step, Pausable, ReentrancyGuard {
         if (executor == _LOGICAL_ZERO_ADDRESS) {
             revert FallbackNotThroughExecutor();
         } else {
+            // Ensure only the pool can callback.
+            if (msg.sender != activePool) {
+                revert CallbackNotByPool();
+            }
             // When a swap is going through the executor, a call made the Fulfiller is actually
             // a callback to the executor. So we delegatecall to the active executor to continue
             // completing the swap. Note that if a callback function has a signature clash with an

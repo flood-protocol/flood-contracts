@@ -25,8 +25,8 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard, Ownable2Step {
     address[] internal _decoders;
 
     constructor(address permit2) {
-        if (permit2 == address(0)) {
-            revert ZeroAddress();
+        if (permit2.code.length == 0) {
+            revert NotAContract();
         }
 
         PERMIT2 = ISignatureTransfer(permit2);
@@ -41,8 +41,8 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard, Ownable2Step {
     }
 
     function addDecoder(address decoder) external onlyOwner returns (uint256 decoderId) {
-        if (decoder == address(0)) {
-            revert ZeroAddress();
+        if (decoder.code.length == 0) {
+            revert NotAContract();
         }
 
         decoderId = _decoders.length;

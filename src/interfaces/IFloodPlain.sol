@@ -6,7 +6,7 @@ import {ISignatureTransfer} from "permit2/src/interfaces/ISignatureTransfer.sol"
 interface IFloodPlain {
     error InsufficientAmountPulled();
 
-    error ZeroAddress();
+    error NotAContract();
 
     error InvalidNativeTokenAddress();
 

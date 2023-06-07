@@ -10,9 +10,11 @@ interface IFulfiller {
 
     error InvalidZone();
 
-    error ZeroAddress();
-
     error DisabledExecutor();
+
+    error CallbackNotByPool();
+
+    error NotAContract();
 
     event ExecutorAdded(uint256 indexed executorId, address indexed executor);
 
@@ -27,18 +29,28 @@ interface IFulfiller {
     /**
      * @notice Get the zone address that the Fulfiller requires all orders to go through.
      *
-     * @return The zone address.
+     * @return zone The zone address.
      */
-    function ZONE() external view returns (address);
+    function ZONE() external view returns (address zone);
 
     /**
      * @notice Get the executor the current swap is going through.
      *
      * @dev Returns `address(0xdead)` if there is no active executor.
      *
-     * @return The active executor address.
+     * @return executor The active executor address.
      */
-    function activeExecutor() external view returns (address);
+    function activeExecutor() external view returns (address executor);
+
+    /**
+     * @notice Get the pool address the executor is using for the swap.
+     *
+     * @dev Returns `address(0xdead)` if there is no active executor.
+     *
+     * @return pool The active pool address.
+     */
+    function activePool() external view returns (address pool);
+
 
     /**
      * @notice Get the executor that corresponds to an identifier.
