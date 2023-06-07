@@ -26,6 +26,19 @@ interface IFulfiller {
 
     event BookDisabled(address indexed book);
 
+    struct ExecutorInfo {
+        address executor;
+        bool hasCallback;
+        bool isEnabled;
+    }
+
+    struct CallbackInfo {
+        bool alwaysTrue;
+        bool expectingCallback;
+        uint64 activeExecutorId;
+        address callbackSource;
+    }
+
     /**
      * @notice Get the zone address that the Fulfiller requires all orders to go through.
      *
@@ -34,35 +47,15 @@ interface IFulfiller {
     function ZONE() external view returns (address zone);
 
     /**
-     * @notice Get the executor the current swap is going through.
-     *
-     * @dev Returns `address(0xdead)` if there is no active executor.
-     *
-     * @return executor The active executor address.
-     */
-    function activeExecutor() external view returns (address executor);
-
-    /**
-     * @notice Get the pool address the executor is using for the swap.
-     *
-     * @dev Returns `address(0xdead)` if there is no active executor.
-     *
-     * @return pool The active pool address.
-     */
-    function activePool() external view returns (address pool);
-
-
-    /**
      * @notice Get the executor that corresponds to an identifier.
      *
      * @dev An executor performs a specific swap to source consideration items.
      *
      * @param executorId The array index of the executor.
      *
-     * @return executor The address of the executor.
-     * @return enabled Whether the executor can be used.
+     * @return executorInfo The details of the executor.
      */
-    function getExecutor(uint256 executorId) external view returns (address executor, bool enabled);
+    function getExecutor(uint256 executorId) external view returns (ExecutorInfo memory executorInfo);
 
     /**
      * @notice Restricted function to disable `sourceConsiderations` function.

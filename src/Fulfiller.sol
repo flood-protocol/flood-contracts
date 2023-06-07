@@ -10,7 +10,6 @@ import {ReentrancyGuard} from "@openzeppelin/security/ReentrancyGuard.sol";
 // Libraries
 import {SafeERC20} from "@openzeppelin/token/ERC20/utils/SafeERC20.sol";
 import {Address} from "@openzeppelin/utils/Address.sol";
-import {BitMaps} from "@openzeppelin/utils/structs/BitMaps.sol";
 
 // Interfaces
 import {IFloodPlain} from "./interfaces/IFloodPlain.sol";
@@ -20,18 +19,14 @@ import {IERC20} from "@openzeppelin/token/ERC20/IERC20.sol";
 contract Fulfiller is IFulfiller, Ownable2Step, Pausable, ReentrancyGuard {
     using SafeERC20 for IERC20;
     using Address for address payable;
-    using BitMaps for BitMaps.BitMap;
 
     address public immutable ZONE;
 
-    address internal constant _LOGICAL_ZERO_ADDRESS = address(0xdead);
-    address public activeExecutor = _LOGICAL_ZERO_ADDRESS;
-    address public activePool = _LOGICAL_ZERO_ADDRESS;
-
-    address[] internal _executors;
-    BitMaps.BitMap internal _disabledExecutors;
+    ExecutorInfo[] internal _executors;
 
     mapping(address => bool) internal _books;
+
+    CallbackInfo internal _callbackInfo;
 
     constructor(address zone) {
         if (zone.code.length == 0) {
@@ -39,10 +34,12 @@ contract Fulfiller is IFulfiller, Ownable2Step, Pausable, ReentrancyGuard {
         }
 
         ZONE = zone;
+
+        _callbackInfo.alwaysTrue = true;
     }
 
-    function getExecutor(uint256 executorId) external view returns (address, /* executor */ bool /* enabled */ ) {
-        return (_executors[executorId], !_disabledExecutors.get(executorId));
+    function getExecutor(uint256 executorId) external view returns (ExecutorInfo memory /* executorInfo */ ) {
+        return _executors[executorId];
     }
 
     function getBookValidity(address book) external view returns (bool /* enabled */ ) {
@@ -58,24 +55,26 @@ contract Fulfiller is IFulfiller, Ownable2Step, Pausable, ReentrancyGuard {
     }
 
     function addExecutor(address executor) external onlyOwner returns (uint256 executorId) {
-        if (executor.code.length == 0) {
-            revert NotAContract();
-        }
+        ExecutorInfo memory executorInfo = ExecutorInfo({
+            executor: executor,
+            hasCallback: IExecutor(executor).hasCallback(),
+            isEnabled: true
+        });
 
         executorId = _executors.length;
-        _executors.push(executor);
+        _executors.push(executorInfo);
 
         emit ExecutorAdded(executorId, executor);
     }
 
     function disableExecutor(uint256 executorId) external onlyOwner {
-        _disabledExecutors.set(executorId);
+        _executors[executorId].isEnabled = false;
 
         emit ExecutorDisabled(executorId);
     }
 
     function enableExecutor(uint256 executorId) external onlyOwner {
-        _disabledExecutors.unset(executorId);
+        _executors[executorId].isEnabled = true;
 
         emit ExecutorEnabled(executorId);
     }
@@ -172,16 +171,34 @@ contract Fulfiller is IFulfiller, Ownable2Step, Pausable, ReentrancyGuard {
         // Variables reset at each iteration, defined outside the loop to save gas.
         IExecutor.Swap memory swap;
         bytes memory swapData;
+        uint64 executorId;
+        ExecutorInfo memory executorInfo;
+        CallbackInfo storage callbackInfo = _callbackInfo;
         address executor;
+        bool hasCallback;
 
         // Execute a swap with each iteration.
         while(end) {
             // Decode first swap instructions from ptr, ensuring executor is not disabled.
-            (ptr, executor, swap) = _decodeSwap(ptr, swaps);
+            (ptr, executorId, swap) = _decodeSwap(ptr, swaps);
 
-            // Set active executor and pool before delegating execution to the executor.
-            activeExecutor = executor;
-            activePool = swap.pool;
+            // Get executor details.
+            executorInfo = _executors[executorId];
+            executor = executorInfo.executor;
+
+            // Ensure executor is not disabled.
+            if (!executorInfo.isEnabled) {
+                revert DisabledExecutor();
+            }
+
+            // If executor requires a callback...
+            hasCallback = executorInfo.hasCallback;
+            if (hasCallback) {
+                // Set callback info pseudo-transient storage accordingly.
+                callbackInfo.expectingCallback = true;
+                callbackInfo.activeExecutorId = executorId;
+                callbackInfo.callbackSource = IExecutor(executor).getCallbackSource(swap);
+            }
 
             // Construct calldata to pass to the executor.
             swapData = abi.encodeWithSelector(IExecutor.swap.selector, swap);
@@ -200,9 +217,13 @@ contract Fulfiller is IFulfiller, Ownable2Step, Pausable, ReentrancyGuard {
                 end := iszero(calldataload(ptr))
             }
 
-            // Unset active executor and pool after the swap is completed.
-            activeExecutor = _LOGICAL_ZERO_ADDRESS;
-            activePool = _LOGICAL_ZERO_ADDRESS;
+            // If executor had a callback...
+            if (hasCallback) {
+                // Unset callback info pseudo-transient storage after the swap is completed.
+                callbackInfo.expectingCallback = false;
+                callbackInfo.activeExecutorId = 0;
+                callbackInfo.callbackSource = address(0);
+            }
         }
     }
 
@@ -222,39 +243,35 @@ contract Fulfiller is IFulfiller, Ownable2Step, Pausable, ReentrancyGuard {
     // Caveat: Token indices in a pool can change when tokens are added or removed from a
     //         multi-token pool. This can theoretically be abused by the pool owner to steal funds
     //         from the fulfiller by frontrunning a swap. This is an accepted risk.
-    function _decodeSwap(uint256 ptr, bytes calldata swaps) internal view returns (uint256 endPtr, address executor, IExecutor.Swap memory swap) {
-            unchecked {
-                // Decode instructions based on the above-described scheme.
-                uint256 executorId = abi.decode(swaps[ptr:++ptr], (uint256));
-                uint256 amountsSizes = abi.decode(swaps[ptr:++ptr], (uint256));
-                uint256 amountInSize = (amountsSizes >> 4) + 1;
-                uint256 amountOutSize = (amountsSizes & 0x0f) + 1;
-                swap.amountIn = abi.decode(swaps[ptr:ptr += amountInSize], (uint256));
-                swap.amountOut = abi.decode(swaps[ptr:ptr += amountOutSize], (uint256));
-                swap.pool = abi.decode(swaps[ptr:ptr += 20], (address));
-                uint256 tokenIndices = abi.decode(swaps[ptr:endPtr = ptr + 1], (uint256));
-                swap.tokenInIndex = tokenIndices >> 4;
-                swap.tokenOutIndex = amountsSizes & 0x0f;
-
-                // Ensure executor is not disabled.
-                if (_disabledExecutors.get(executorId)) {
-                    revert DisabledExecutor();
-                }
-
-                // Get executor address from the executor index.
-                executor = _executors[executorId];
-            }
+    function _decodeSwap(uint256 ptr, bytes calldata swaps) internal pure returns (uint256 endPtr, uint64 executorId, IExecutor.Swap memory swap) {
+        unchecked {
+            // Decode instructions based on the above-described scheme.
+            executorId = abi.decode(swaps[ptr:++ptr], (uint64));
+            uint256 amountsSizes = abi.decode(swaps[ptr:++ptr], (uint256));
+            uint256 amountInSize = (amountsSizes >> 4) + 1;
+            uint256 amountOutSize = (amountsSizes & 0x0f) + 1;
+            swap.amountIn = abi.decode(swaps[ptr:ptr += amountInSize], (uint256));
+            swap.amountOut = abi.decode(swaps[ptr:ptr += amountOutSize], (uint256));
+            swap.pool = abi.decode(swaps[ptr:ptr += 20], (address));
+            uint256 tokenIndices = abi.decode(swaps[ptr:endPtr = ptr + 1], (uint256));
+            swap.tokenInIndex = tokenIndices >> 4;
+            swap.tokenOutIndex = amountsSizes & 0x0f;
+        }
     }
 
     function _fallback() internal {
-        address executor = activeExecutor;
-        if (executor == _LOGICAL_ZERO_ADDRESS) {
+        CallbackInfo memory callbackInfo = _callbackInfo;
+        if (!callbackInfo.expectingCallback) {
             revert FallbackNotThroughExecutor();
         } else {
             // Ensure only the pool can callback.
-            if (msg.sender != activePool) {
+            if (callbackInfo.callbackSource != msg.sender) {
                 revert CallbackNotByPool();
             }
+
+            // Get executor address corresponding to an identifier.
+            address executor = _executors[callbackInfo.activeExecutorId].executor;
+
             // When a swap is going through the executor, a call made the Fulfiller is actually
             // a callback to the executor. So we delegatecall to the active executor to continue
             // completing the swap. Note that if a callback function has a signature clash with an
