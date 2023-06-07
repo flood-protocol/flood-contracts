@@ -24,13 +24,13 @@ contract Fulfiller is IFulfiller, Ownable2Step, Pausable, ReentrancyGuard {
 
     address public immutable ZONE;
 
-    address private constant _LOGICAL_ZERO_ADDRESS = address(0xdead);
+    address internal constant _LOGICAL_ZERO_ADDRESS = address(0xdead);
     address public activeExecutor = _LOGICAL_ZERO_ADDRESS;
 
-    address[] private _executors;
-    BitMaps.BitMap private _disabledExecutors;
+    address[] internal _executors;
+    BitMaps.BitMap internal _disabledExecutors;
 
-    mapping(address => bool) private _books;
+    mapping(address => bool) internal _books;
 
     constructor(address zone) {
         if (zone == address(0)) {
@@ -176,7 +176,7 @@ contract Fulfiller is IFulfiller, Ownable2Step, Pausable, ReentrancyGuard {
     // Caveat: Token indices in a pool can change when tokens are added or removed from a
     //         multi-token pool. This can theoretically be abused by the pool owner to steal funds
     //         from the fulfiller by frontrunning a swap. This is an accepted risk.
-    function _executeSwaps(bytes calldata swaps) private {
+    function _executeSwaps(bytes calldata swaps) internal {
         uint256 ptr = 0;
         bool end = false;
         while(end) {
@@ -221,7 +221,7 @@ contract Fulfiller is IFulfiller, Ownable2Step, Pausable, ReentrancyGuard {
         }
     }
 
-    function _fallback() private {
+    function _fallback() internal {
         address executor = activeExecutor;
         if (executor == _LOGICAL_ZERO_ADDRESS) {
             revert FallbackNotThroughExecutor();

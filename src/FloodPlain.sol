@@ -20,9 +20,9 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard, Ownable2Step {
 
     ISignatureTransfer public immutable PERMIT2;
 
-    OrderWithSignature[] private _etchedOrders;
+    OrderWithSignature[] internal _etchedOrders;
 
-    address[] private _decoders;
+    address[] internal _decoders;
 
     constructor(address permit2) {
         if (permit2 == address(0)) {
@@ -167,7 +167,7 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard, Ownable2Step {
     }
 
     function _permitTransferOffer(Order calldata order, bytes calldata signature, bytes32 orderHash, address to)
-        private
+        internal
     {
         Item[] calldata offer = order.offer;
         uint256 itemsLength = offer.length;
@@ -208,7 +208,7 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard, Ownable2Step {
         });
     }
 
-    function _transferConsideration(Order calldata order, address fulfiller, bytes calldata extraData) private {
+    function _transferConsideration(Order calldata order, address fulfiller, bytes calldata extraData) internal {
         Item[] calldata items = order.consideration;
         Item calldata item;
         Item memory deduplicatedItem;
