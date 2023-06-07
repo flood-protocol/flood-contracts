@@ -162,55 +162,32 @@ contract Fulfiller is IFulfiller, Ownable2Step, Pausable, ReentrancyGuard {
         _fallback();
     }
 
-    // Swaps are series of packets which follow the following scheme:
-    //
-    // * 1 byte - executor Id
-    // * 1 byte - bytes required for amountIn and amountOut
-    //       1 nibble - bytes required for amountIn, subtracted by one
-    //       1 nibble - bytes required for amountOut, subtracted by one
-    // * n bytes - amount in (this fulfiller uses max-in-exact-out slippage control scheme)
-    // * m bytes - amount out
-    // * 20 bytes - pool address to perform the swap
-    // * 1 byte - indices of token in & token out in the pool
-    //       1 nibble - index of token in
-    //       1 nibble - index of token out
-    //
-    // Caveat: Token indices in a pool can change when tokens are added or removed from a
-    //         multi-token pool. This can theoretically be abused by the pool owner to steal funds
-    //         from the fulfiller by frontrunning a swap. This is an accepted risk.
     function _executeSwaps(bytes calldata swaps) internal {
+        // Pointer is incremented with each loop.
         uint256 ptr = 0;
+
+        // End is the condition set at end of each iteration to break the loop.
         bool end = false;
+
+        // Variables reset at each iteration, defined outside the loop to save gas.
+        IExecutor.Swap memory swap;
+        bytes memory swapData;
+        address executor;
+
+        // Execute a swap with each iteration.
         while(end) {
-            // Decode instructions based on the described scheme.
-            uint256 executorId = abi.decode(swaps[ptr:++ptr], (uint256));
-            uint256 amountsSizes = abi.decode(swaps[ptr:++ptr], (uint256));
-            uint256 amountInSize = (amountsSizes >> 4) + 1;
-            uint256 amountOutSize = (amountsSizes & 0x0f) + 1;
-            uint256 amountIn = abi.decode(swaps[ptr:ptr += amountInSize], (uint256));
-            uint256 amountOut = abi.decode(swaps[ptr:ptr += amountOutSize], (uint256));
-            address pool = abi.decode(swaps[ptr:ptr += 20], (address));
-            uint256 tokenIndices = abi.decode(swaps[ptr:++ptr], (uint256));
-            uint256 tokenInIndex = tokenIndices >> 4;
-            uint256 tokenOutIndex = amountsSizes & 0x0f;
-
-            // Ensure executor is not disabled.
-            if (_disabledExecutors.get(executorId)) {
-                revert DisabledExecutor();
-            }
-
-            // Get executor address from the executor index.
-            address executor = _executors[executorId];
+            // Decode first swap instructions from ptr, ensuring executor is not disabled.
+            (ptr, executor, swap) = _decodeSwap(ptr, swaps);
 
             // Set active executor and pool before delegating execution to the executor.
             activeExecutor = executor;
-            activePool = pool;
+            activePool = swap.pool;
 
-            bytes memory data = abi.encodeWithSelector(
-                IExecutor.swap.selector, pool, tokenInIndex, tokenOutIndex, amountIn, amountOut
-            );
+            // Construct calldata to pass to the executor.
+            swapData = abi.encodeWithSelector(IExecutor.swap.selector, swap);
             assembly {
-                let result := delegatecall(gas(), executor, add(data, 0x20), mload(data), 0, 0)
+                // Delegate swap execution to the executor.
+                let result := delegatecall(gas(), executor, add(swapData, 0x20), mload(swapData), 0, 0)
 
                 // Copy the returned data.
                 returndatacopy(0, 0, returndatasize())
@@ -227,6 +204,46 @@ contract Fulfiller is IFulfiller, Ownable2Step, Pausable, ReentrancyGuard {
             activeExecutor = _LOGICAL_ZERO_ADDRESS;
             activePool = _LOGICAL_ZERO_ADDRESS;
         }
+    }
+
+    // Swaps are series of packets which follow the following scheme:
+    //
+    // * 1 byte - executor Id
+    // * 1 byte - bytes required for amountIn and amountOut
+    //       1 nibble - bytes required for amountIn, subtracted by one
+    //       1 nibble - bytes required for amountOut, subtracted by one
+    // * n bytes - amount in (this fulfiller uses max-in-exact-out slippage control scheme)
+    // * m bytes - amount out
+    // * 20 bytes - pool address to perform the swap
+    // * 1 byte - indices of token in & token out in the pool
+    //       1 nibble - index of token in
+    //       1 nibble - index of token out
+    //
+    // Caveat: Token indices in a pool can change when tokens are added or removed from a
+    //         multi-token pool. This can theoretically be abused by the pool owner to steal funds
+    //         from the fulfiller by frontrunning a swap. This is an accepted risk.
+    function _decodeSwap(uint256 ptr, bytes calldata swaps) internal view returns (uint256 endPtr, address executor, IExecutor.Swap memory swap) {
+            unchecked {
+                // Decode instructions based on the above-described scheme.
+                uint256 executorId = abi.decode(swaps[ptr:++ptr], (uint256));
+                uint256 amountsSizes = abi.decode(swaps[ptr:++ptr], (uint256));
+                uint256 amountInSize = (amountsSizes >> 4) + 1;
+                uint256 amountOutSize = (amountsSizes & 0x0f) + 1;
+                swap.amountIn = abi.decode(swaps[ptr:ptr += amountInSize], (uint256));
+                swap.amountOut = abi.decode(swaps[ptr:ptr += amountOutSize], (uint256));
+                swap.pool = abi.decode(swaps[ptr:ptr += 20], (address));
+                uint256 tokenIndices = abi.decode(swaps[ptr:endPtr = ptr + 1], (uint256));
+                swap.tokenInIndex = tokenIndices >> 4;
+                swap.tokenOutIndex = amountsSizes & 0x0f;
+
+                // Ensure executor is not disabled.
+                if (_disabledExecutors.get(executorId)) {
+                    revert DisabledExecutor();
+                }
+
+                // Get executor address from the executor index.
+                executor = _executors[executorId];
+            }
     }
 
     function _fallback() internal {
