@@ -12,6 +12,8 @@ interface IFulfiller {
 
     error ZeroAddress();
 
+    error DisabledExecutor();
+
     event ExecutorAdded(uint256 indexed executorId, address indexed executor);
 
     event ExecutorEnabled(uint256 indexed executorId);
