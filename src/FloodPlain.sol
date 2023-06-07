@@ -6,26 +6,38 @@ import {ReentrancyGuard} from "@openzeppelin/security/ReentrancyGuard.sol";
 import {IFloodPlain} from "./interfaces/IFloodPlain.sol";
 import {Ownable2Step} from "@openzeppelin/access/Ownable2Step.sol";
 
+// Libraries
+import {OrderHash} from "./libraries/OrderHash.sol";
+
 // Interfaces
 import {IFulfiller} from "./interfaces/IFulfiller.sol";
 import {IZone} from "./interfaces/IZone.sol";
 import {IERC20} from "@openzeppelin/token/ERC20/IERC20.sol";
 import {ISignatureTransfer} from "permit2/src/interfaces/ISignatureTransfer.sol";
 
-// Libraries
-import {OrderHash} from "./libraries/OrderHash.sol";
-
 contract FloodPlain is IFloodPlain, ReentrancyGuard, Ownable2Step {
     using OrderHash for Order;
 
-    ISignatureTransfer private immutable _PERMIT2;
+    ISignatureTransfer public immutable PERMIT2;
 
     OrderWithSignature[] private _etchedOrders;
 
     address[] private _decoders;
 
     constructor(address permit2) {
-        _PERMIT2 = ISignatureTransfer(permit2);
+        if (permit2 == address(0)) {
+            revert ZeroAddress();
+        }
+
+        PERMIT2 = ISignatureTransfer(permit2);
+    }
+
+    function getDecoder(uint256 decoderId) external view returns (address /* decoder */ ) {
+        return _decoders[decoderId];
+    }
+
+    function getEtchedOrder(uint256 etchedOrderId) external view returns (OrderWithSignature memory /* etchedOrder */ ) {
+        return _etchedOrders[etchedOrderId];
     }
 
     function addDecoder(address decoder) external onlyOwner returns (uint256 decoderId) {
@@ -36,14 +48,6 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard, Ownable2Step {
         decoderId = _decoders.length;
         _decoders.push(decoder);
         emit DecoderAdded(decoderId, decoder);
-    }
-
-    function getDecoder(uint256 decoderId) external view returns (address /* decoder */ ) {
-        return _decoders[decoderId];
-    }
-
-    function getEtchedOrder(uint256 etchedOrderId) external view returns (OrderWithSignature memory /* etchedOrder */ ) {
-        return _etchedOrders[etchedOrderId];
     }
 
     function fulfillOrder(Order calldata order, bytes calldata signature, address fulfiller, bytes calldata extraData)
@@ -159,13 +163,13 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard, Ownable2Step {
     function getNonceStatus(address user, uint256 nonce) public view returns (bool /* isValid */ ) {
         uint256 wordPos = uint248(nonce >> 8);
         uint256 bitPos = uint8(nonce);
-        return _PERMIT2.nonceBitmap(user, wordPos) & (1 << bitPos) == 0;
+        return PERMIT2.nonceBitmap(user, wordPos) & (1 << bitPos) == 0;
     }
 
     function _permitTransferOffer(Order calldata order, bytes calldata signature, bytes32 orderHash, address to)
         private
     {
-        OfferItem[] calldata offer = order.offer;
+        Item[] calldata offer = order.offer;
         uint256 itemsLength = offer.length;
 
         ISignatureTransfer.TokenPermissions[] memory permitted = new ISignatureTransfer.TokenPermissions[](itemsLength);
@@ -175,7 +179,7 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard, Ownable2Step {
             );
 
         {
-            OfferItem calldata item;
+            Item calldata item;
             uint256 amount;
             for (uint256 i = 0; i < itemsLength;) {
                 item = offer[i];
@@ -190,7 +194,7 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard, Ownable2Step {
             }
         }
 
-        _PERMIT2.permitWitnessTransferFrom({
+        PERMIT2.permitWitnessTransferFrom({
             permit: ISignatureTransfer.PermitBatchTransferFrom({
                 permitted: permitted,
                 nonce: order.nonce,
@@ -205,12 +209,12 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard, Ownable2Step {
     }
 
     function _transferConsideration(Order calldata order, address fulfiller, bytes calldata extraData) private {
-        ConsiderationItem[] calldata items = order.consideration;
-        ConsiderationItem calldata item;
-        ConsiderationItem memory deduplicatedItem;
+        Item[] calldata items = order.consideration;
+        Item calldata item;
+        Item memory deduplicatedItem;
         uint256 itemsLength = items.length;
 
-        ConsiderationItem[] memory deduplicatedItems = new ConsiderationItem[](itemsLength);
+        Item[] memory deduplicatedItems = new Item[](itemsLength);
         uint256 dedupCount;
         // For each consideration item...
         for (uint256 i = 0; i < itemsLength;) {
@@ -219,7 +223,7 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard, Ownable2Step {
             // Check if it is the same as a previous consideration item in the array.
             for (uint256 j = 0; j < dedupCount;) {
                 deduplicatedItem = deduplicatedItems[j];
-                if ((deduplicatedItem.isNative && item.isNative) || (deduplicatedItem.token == item.token)) {
+                if (deduplicatedItem.token == item.token) {
                     // And add the amounts of the two consideration items with identical tokens.
                     deduplicatedItem.amount += item.amount;
                     isFound = true;
@@ -249,16 +253,9 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard, Ownable2Step {
         for (uint256 i = 0; i < dedupCount;) {
             deduplicatedItem = deduplicatedItems[i];
 
-            if (deduplicatedItem.isNative) {
-                requiredAmounts[i] = deduplicatedItem.amount + to.balance;
-
-                // Ensure native token address is set as zero address.
-                if (deduplicatedItem.token != address(0)) {
-                    revert InvalidNativeTokenAddress();
-                }
-            } else {
-                requiredAmounts[i] = deduplicatedItem.amount + IERC20(deduplicatedItem.token).balanceOf(to);
-            }
+            requiredAmounts[i] = deduplicatedItem.token == address(0)
+                ? deduplicatedItem.amount + to.balance
+                : deduplicatedItem.amount + IERC20(deduplicatedItem.token).balanceOf(to);
 
             unchecked {
                 ++i;
@@ -273,7 +270,7 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard, Ownable2Step {
         // Call fulfiller with order data and the caller address to source consideration items.
         // Contracts implementing Fulfiller interface could get all their tokens drained, hence
         // they should restrict who can call them directly or indirectly.
-        IFulfiller(fulfiller).sourceConsideration({
+        IFulfiller(payable(fulfiller)).sourceConsideration({
             order: order,
             requestedItems: deduplicatedItems,
             caller: msg.sender,
@@ -284,7 +281,7 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard, Ownable2Step {
         uint256 newBalance;
         for (uint256 i = 0; i < dedupCount;) {
             deduplicatedItem = deduplicatedItems[i];
-            newBalance = deduplicatedItem.isNative ? to.balance : IERC20(deduplicatedItem.token).balanceOf(to);
+            newBalance = deduplicatedItem.token == address(0) ? to.balance : IERC20(deduplicatedItem.token).balanceOf(to);
             if (newBalance < requiredAmounts[i]) {
                 revert InsufficientAmountPulled();
             }

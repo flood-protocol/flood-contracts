@@ -7,24 +7,18 @@ import {ISignatureTransfer, PermitHash} from "permit2/src/libraries/PermitHash.s
 library OrderHash {
     using OrderHash for IFloodPlain.Order;
 
-    bytes32 public constant _OFFER_ITEM_TYPEHASH = keccak256("OfferItem(address token,uint256 amount)");
-    bytes32 public constant _CONSIDERATION_ITEM_TYPEHASH =
-        keccak256("ConsiderationItem(bool isNative,address token,uint256 amount)");
+    bytes32 public constant _ITEM_TYPEHASH = keccak256("Item(address token,uint256 amount)");
     bytes32 public constant _ORDER_TYPEHASH = keccak256(
-        "Order(address offerer,address zone,OfferItem[] offer,ConsiderationItem[] consideration,uint256 deadline,uint256 nonce)ConsiderationItem(bool isNative,address token,uint256 amount)OfferItem(address token,uint256 amount)"
+        "Order(address offerer,address zone,Item[] offer,Item[] consideration,uint256 deadline,uint256 nonce)Item(address token,uint256 amount)"
     );
     bytes32 public constant _PERMIT_TYPEHASH = keccak256(
-        "PermitBatchWitnessTransferFrom(TokenPermissions[] permitted,address spender,uint256 nonce,uint256 deadline,Order witness)ConsiderationItem(bool isNative,address token,uint256 amount)OfferItem(address token,uint256 amount)Order(address offerer,address zone,OfferItem[] offer,ConsiderationItem[] consideration,uint256 deadline,uint256 nonce)TokenPermissions(address token,uint256 amount)"
+        "PermitBatchWitnessTransferFrom(TokenPermissions[] permitted,address spender,uint256 nonce,uint256 deadline,Order witness)Item(address token,uint256 amount)Order(address offerer,address zone,Item[] offer,Item[] consideration,uint256 deadline,uint256 nonce)TokenPermissions(address token,uint256 amount)"
     );
     string public constant _WITNESS_TYPESTRING =
-        "Order witness)ConsiderationItem(bool isNative,address token,uint256 amount)OfferItem(address token,uint256 amount)Order(address offerer,address zone,OfferItem[] offer,ConsiderationItem[] consideration,uint256 deadline,uint256 nonce)TokenPermissions(address token,uint256 amount)";
+        "Order witness)Item(address token,uint256 amount)Order(address offerer,address zone,Item[] offer,Item[] consideration,uint256 deadline,uint256 nonce)TokenPermissions(address token,uint256 amount)";
 
-    function hash(IFloodPlain.OfferItem calldata item) internal pure returns (bytes32) {
-        return keccak256(abi.encode(_OFFER_ITEM_TYPEHASH, item.token, item.amount));
-    }
-
-    function hash(IFloodPlain.ConsiderationItem calldata item) internal pure returns (bytes32) {
-        return keccak256(abi.encode(_CONSIDERATION_ITEM_TYPEHASH, item.isNative, item.token, item.amount));
+    function hash(IFloodPlain.Item calldata item) internal pure returns (bytes32) {
+        return keccak256(abi.encode(_ITEM_TYPEHASH, item.token, item.amount));
     }
 
     function hash(IFloodPlain.Order calldata order) internal pure returns (bytes32) {
@@ -71,10 +65,10 @@ library OrderHash {
     }
 
     function hashAsWitness(IFloodPlain.Order calldata order) internal pure returns (bytes32) {
-        IFloodPlain.OfferItem[] calldata offer = order.offer;
+        IFloodPlain.Item[] calldata offer = order.offer;
         uint256 itemsLength = offer.length;
 
-        IFloodPlain.OfferItem calldata item;
+        IFloodPlain.Item calldata item;
         bytes32[] memory tokenPermissionHashes = new bytes32[](itemsLength);
         for (uint256 i = 0; i < itemsLength;) {
             item = offer[i];

@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
+import {ISignatureTransfer} from "permit2/src/interfaces/ISignatureTransfer.sol";
+
 interface IFloodPlain {
     error InsufficientAmountPulled();
 
@@ -17,8 +19,8 @@ interface IFloodPlain {
     struct Order {
         address offerer;
         address zone;
-        OfferItem[] offer;
-        ConsiderationItem[] consideration;
+        Item[] offer;
+        Item[] consideration;
         uint256 deadline;
         uint256 nonce;
     }
@@ -28,17 +30,15 @@ interface IFloodPlain {
         bytes signature;
     }
 
-    struct OfferItem {
+    struct Item {
         address token;
         uint256 amount;
     }
 
-    // If `isNative` is true, the token address must be zero address.
-    struct ConsiderationItem {
-        bool isNative;
-        address token;
-        uint256 amount;
-    }
+    /**
+     * @notice Get Permit2 SignatureTransfer contract that is used in verifying orders.
+     */
+    function PERMIT2() external view returns (ISignatureTransfer);
 
     /**
      * @notice Get all the details of the etched order corresponding to an order identifier.

@@ -1,104 +1,106 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+// Inheritances
 import {IFulfiller} from "./interfaces/IFulfiller.sol";
-import {IFloodPlain} from "./interfaces/IFloodPlain.sol";
 import {Ownable2Step} from "@openzeppelin/access/Ownable2Step.sol";
 import {Pausable} from "@openzeppelin/security/Pausable.sol";
+import {ReentrancyGuard} from "@openzeppelin/security/ReentrancyGuard.sol";
 
-import {IERC20, SafeERC20} from "@openzeppelin/token/ERC20/utils/SafeERC20.sol";
+// Libraries
+import {SafeERC20} from "@openzeppelin/token/ERC20/utils/SafeERC20.sol";
 import {Address} from "@openzeppelin/utils/Address.sol";
+import {BitMaps} from "@openzeppelin/utils/structs/BitMaps.sol";
 
-// fulfiller holds both operating capital and accumulated fees.
-//
-contract Fulfiller is IFulfiller, Ownable2Step, Pausable {
+// Interfaces
+import {IFloodPlain} from "./interfaces/IFloodPlain.sol";
+import {IERC20} from "@openzeppelin/token/ERC20/IERC20.sol";
+
+contract Fulfiller is IFulfiller, Ownable2Step, Pausable, ReentrancyGuard {
     using SafeERC20 for IERC20;
     using Address for address payable;
+    using BitMaps for BitMaps.BitMap;
+
+    address public immutable ZONE;
 
     address private constant _LOGICAL_ZERO_ADDRESS = address(0xdead);
-    address private _activeExecutor = _LOGICAL_ZERO_ADDRESS;
+    address public activeExecutor = _LOGICAL_ZERO_ADDRESS;
 
-    // A list of executors that can be used to perform swaps.
     address[] private _executors;
+    BitMaps.BitMap private _disabledExecutors;
 
     mapping(address => bool) private _books;
-    mapping(uint256 => bool) private _disabledExecutors;
-
-    address private immutable _zone;
-
-    error InvalidFunctionSelector();
-    error FallbackNotThroughExecutor();
-    error InvalidBook();
-    error InvalidZone();
-
-    modifier divertCallback() {
-        address activeExecutor = _activeExecutor;
-        if (_activeExecutor == _LOGICAL_ZERO_ADDRESS) {
-            _;
-        } else {
-            // Selector clash, go to fallback.
-            _fallback(activeExecutor);
-        }
-    }
 
     constructor(address zone) {
-        _zone = zone;
+        if (zone == address(0)) {
+            revert ZeroAddress();
+        }
+
+        ZONE = zone;
     }
 
-    function getZone() external /*view*/ divertCallback returns (address) {
-        return _zone;
+    function getExecutor(uint256 executorId) external view returns (address, /* executor */ bool /* enabled */ ) {
+        return (_executors[executorId], !_disabledExecutors.get(executorId));
     }
 
-    function getExecutorById(uint256 id) external /*view*/ divertCallback returns (address, bool) {
-        return (_executors[id], _disabledExecutors[id]);
-    }
-
-    function getBookValidity(address book) external /*view*/ divertCallback returns (bool) {
+    function getBookValidity(address book) external view returns (bool /* enabled */ ) {
         return _books[book];
     }
 
-    function pause() external onlyOwner divertCallback {
+    function pause() external onlyOwner {
         _pause();
     }
 
-    function unpause() external onlyOwner divertCallback {
+    function unpause() external onlyOwner {
         _unpause();
     }
 
-    function addExecutor(address executor) external onlyOwner divertCallback {
+    function addExecutor(address executor) external onlyOwner returns (uint256 executorId) {
+        if (executor == address(0)) {
+            revert ZeroAddress();
+        }
+
+        executorId = _executors.length;
         _executors.push(executor);
+
+        emit ExecutorAdded(executorId, executor);
     }
 
-    function disableExecutor(uint256 executorId) external onlyOwner divertCallback {
-        _disabledExecutors[executorId] = true;
+    function disableExecutor(uint256 executorId) external onlyOwner {
+        _disabledExecutors.set(executorId);
+
+        emit ExecutorDisabled(executorId);
     }
 
-    function enableExecutor(uint256 executorId) external onlyOwner divertCallback {
-        _disabledExecutors[executorId] = false;
+    function enableExecutor(uint256 executorId) external onlyOwner {
+        _disabledExecutors.unset(executorId);
+
+        emit ExecutorEnabled(executorId);
     }
 
-    // WARNING: Ensure added book uses zone for access restriction, otherwise ALL in this contract will be lost.
-    function enableBook(address book) external onlyOwner divertCallback {
-        _books[book] = true;
-    }
-
-    function disableBook(address book) external onlyOwner divertCallback {
+    function disableBook(address book) external onlyOwner {
         _books[book] = false;
+
+        emit BookDisabled(book);
     }
 
-    /**
-     * @notice Withdraws tokens from the contract.
-     * @param tokens the tokens to withdraw.
-     */
-    function batchWithdraw(address[] calldata tokens) external onlyOwner divertCallback {
-        uint256 length = tokens.length;
-        for (uint256 i = 0; i < length;) {
-            address token = tokens[i];
+    function enableBook(address book) external onlyOwner {
+        _books[book] = true;
 
-            if (token == address(0)) {
-                payable(msg.sender).sendValue(address(this).balance);
+        emit BookEnabled(book);
+    }
+
+    function batchWithdraw(IFloodPlain.Item[] calldata items) external onlyOwner {
+        uint256 length = items.length;
+        IFloodPlain.Item calldata item;
+
+        for (uint256 i = 0; i < length;) {
+            item = items[i];
+
+            if (item.token == address(0)) {
+                payable(msg.sender).sendValue(item.amount);
             } else {
-                IERC20(token).safeTransfer(msg.sender, IERC20(token).balanceOf(address(this)));
+                IERC20(item.token).safeTransfer(msg.sender, item.amount);
             }
 
             unchecked {
@@ -107,33 +109,40 @@ contract Fulfiller is IFulfiller, Ownable2Step, Pausable {
         }
     }
 
+    function pay() external payable onlyOwner {}
+
     function sourceConsideration(
         IFloodPlain.Order calldata order,
-        IFloodPlain.ConsiderationItem[] calldata requestedItems,
+        IFloodPlain.Item[] calldata requestedItems,
         address, /* caller */
         bytes calldata /* context */
-    ) external whenNotPaused divertCallback {
+    ) external whenNotPaused nonReentrant {
         if (!_books[msg.sender]) {
             revert InvalidBook();
         }
-        if (order.zone != _zone) {
+        if (order.zone != ZONE) {
             revert InvalidZone();
         }
 
-        // EXECUTE SWAPS HERE
-        // for each swap set and unset active executor before and after
-        // Ideally add a check that Fulfiller only swaps out the offer items received from the book, otherwsie fulfiller could be in loss.
+        // Book must have sent offer items prior to this call. The swap data is ought to use the
+        // received offer items. However, this fulfiller will not have any checks to ensure not
+        // more than the received offer items are spent. It will therefore trust `caller` to supply
+        // honest swap data. The caller is a trusted address and the access control is enforced
+        // through the zone.
 
-        // SEND REQUESTED ITEMS TO ORDER.OFFERER HERE
-        // Ideally add a check that Fulfiller made the requested amounts during the above swaps, otherwise fulfiller would be in loss.
+        // EXECUTE SWAPS HERE
+        {
+        }
+
+        // Send requested items to the offerer.
         {
             uint256 itemsLength = requestedItems.length;
             address to = order.offerer;
-            IFloodPlain.ConsiderationItem calldata item;
+            IFloodPlain.Item calldata item;
             for (uint256 i = 0; i < itemsLength;) {
                 item = requestedItems[i];
 
-                if (item.isNative) {
+                if (item.token == address(0)) {
                     payable(to).sendValue(item.amount);
                 } else {
                     IERC20(item.token).safeTransfer(to, item.amount);
@@ -146,10 +155,27 @@ contract Fulfiller is IFulfiller, Ownable2Step, Pausable {
         }
     }
 
-    function _fallback(address executor) private {
+    fallback() external payable {
+        _fallback();
+    }
+
+    receive() external payable {
+        _fallback();
+    }
+
+    function _fallback() private {
+        address executor = activeExecutor;
         if (executor == _LOGICAL_ZERO_ADDRESS) {
             revert FallbackNotThroughExecutor();
         } else {
+            // When a swap is going through the executor, a call made the Fulfiller is actually
+            // a callback to the executor. So we delegatecall to the active executor to continue
+            // completing the swap. Note that if a callback function has a signature clash with an
+            // existing function in this contract, the fallback will not be reached. Instead of
+            // having a custom function dispatcher to prevent this issue, we have accepted the risk
+            // of potentially having an incompatible pool with this fulfiller. If we encounter such
+            // a pool, we can then think of writing another fulfiller with a workaround. As long as
+            // there is no security risks currently, then it should be fine.
             assembly {
                 // Copy msg.data. We take full control of memory in this inline assembly
                 // block because it will not return to Solidity code. We overwrite the
@@ -169,13 +195,5 @@ contract Fulfiller is IFulfiller, Ownable2Step, Pausable {
                 default { return(0, returndatasize()) }
             }
         }
-    }
-
-    fallback() external payable {
-        _fallback(_activeExecutor);
-    }
-
-    receive() external payable {
-        _fallback(_activeExecutor);
     }
 }
