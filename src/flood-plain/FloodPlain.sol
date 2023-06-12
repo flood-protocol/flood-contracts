@@ -4,7 +4,6 @@ pragma solidity 0.8.17;
 // Inheritances
 import {IFloodPlain} from "./IFloodPlain.sol";
 import {ReentrancyGuard} from "@openzeppelin/security/ReentrancyGuard.sol";
-import {Ownable2Step} from "@openzeppelin/access/Ownable2Step.sol";
 
 // Libraries
 import {OrderHash} from "./libraries/OrderHash.sol";
@@ -15,14 +14,12 @@ import {IZone} from "../zone/IZone.sol";
 import {IERC20} from "@openzeppelin/token/ERC20/IERC20.sol";
 import {ISignatureTransfer} from "permit2/src/interfaces/ISignatureTransfer.sol";
 
-contract FloodPlain is IFloodPlain, ReentrancyGuard, Ownable2Step {
+contract FloodPlain is IFloodPlain, ReentrancyGuard {
     using OrderHash for Order;
 
     ISignatureTransfer public immutable PERMIT2;
 
     OrderWithSignature[] internal _etchedOrders;
-
-    address[] internal _decoders;
 
     constructor(address permit2) {
         if (permit2.code.length == 0) {
@@ -32,22 +29,8 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard, Ownable2Step {
         PERMIT2 = ISignatureTransfer(permit2);
     }
 
-    function getDecoder(uint256 decoderId) external view returns (address /* decoder */ ) {
-        return _decoders[decoderId];
-    }
-
     function getEtchedOrder(uint256 etchedOrderId) external view returns (OrderWithSignature memory /* etchedOrder */ ) {
         return _etchedOrders[etchedOrderId];
-    }
-
-    function addDecoder(address decoder) external onlyOwner returns (uint256 decoderId) {
-        if (decoder.code.length == 0) {
-            revert NotAContract();
-        }
-
-        decoderId = _decoders.length;
-        _decoders.push(decoder);
-        emit DecoderAdded(decoderId, decoder);
     }
 
     function fulfillOrder(Order calldata order, bytes calldata signature, address fulfiller, bytes calldata extraData)
@@ -291,50 +274,6 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard, Ownable2Step {
             unchecked {
                 ++i;
             }
-        }
-    }
-
-    fallback() external {
-        // The first byte is ignored. It should not match the first byte of any other function
-        // selector in the contract to guarantee the fallback is executed. The second byte is the
-        // decoder ID. A decoder can employ any decoding scheme.
-        uint256 decoderId;
-        assembly {
-            // Get the decoder identifier from the second byte of calldata.
-            decoderId := shr(248, calldataload(0x01))
-        }
-
-        // Get the decoder address by its identifier from the decoders mapping.
-        address decoder = _decoders[decoderId];
-
-        assembly {
-            // Move the effective calldata size to stack.
-            let trimmedCalldataSize := sub(calldatasize(), 0x02)
-
-            // Copy calldata starting from third byte to the memory.
-            calldatacopy(0x00, 0x02, trimmedCalldataSize)
-
-            // Staticcall the decoder to get the decoded data.
-            let result := staticcall(gas(), decoder, 0, trimmedCalldataSize, 0, 0)
-
-            // Copy the returned data.
-            returndatacopy(0, 0, returndatasize())
-
-            // Revert with return data if the call failed.
-            if iszero(result) {
-                revert(0, returndatasize())
-            }
-
-            // Delegatecall to this address with the decoded data.
-            result := delegatecall(gas(), address(), 0, returndatasize(), 0, 0)
-
-            // Copy the returned data.
-            returndatacopy(0, 0, returndatasize())
-
-            switch result
-            // delegatecall returns 0 on error.
-            case 0 { revert(0, returndatasize()) }
-            default { return(0, returndatasize()) }
         }
     }
 }

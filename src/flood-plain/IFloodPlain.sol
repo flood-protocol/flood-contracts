@@ -14,8 +14,6 @@ interface IFloodPlain {
 
     event OrderEtched(uint256 indexed orderId, bytes32 indexed orderHash, Order order, bytes signature);
 
-    event DecoderAdded(uint256 indexed decoderId, address indexed decoder);
-
     struct Order {
         address offerer;
         address zone;
@@ -48,37 +46,6 @@ interface IFloodPlain {
      * @return order All the details of the order, including its signature.
      */
     function getEtchedOrder(uint256 etchedOrderId) external view returns (OrderWithSignature memory order);
-
-    /**
-     * @notice Get the decoder address corresponding to an identifier.
-     *
-     * @param decoderId The identifier of the decoder.
-     *
-     * @return decoder The address of the decoder.
-     */
-    function getDecoder(uint256 decoderId) external view returns (address decoder);
-
-    /**
-     * @notice Add a decoder address to the decoders array.
-     *
-     * @dev Decoders above identifier 255 will not be accessible. Be mindful when adding decoders.
-     *
-     * @param decoder The address of the decoder.
-     *
-     * @return decoderId The identifier of the new decoder added.
-     */
-    function addDecoder(address decoder) external returns (uint256 decoderId);
-
-    /**
-     * @notice Decode an arbitrarily encoded calldata to have reduced calldata length in L2s.
-     *
-     * @dev The first byte of the calldata is not used. The first byte should be any byte that has
-     *      no match with the first byte of a function selector in the contract. It is guaranteed
-     *      that such a unique byte exists for a contract with less than 257 external functions.
-     *      The second byte should be the identifier of the decoder to decode any arbitrary bytes
-     *      passed after the second byte.
-     */
-    fallback() external;
 
     /**
      * @notice Fulfill an order with an arbitrary number of items for offer and consideration.
