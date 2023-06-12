@@ -6,6 +6,6 @@ import {FloodPlain} from "./FloodPlain.sol";
 import {FloodPlainOnChainOrders} from "./extensions/FloodPlainOnChainOrders.sol";
 import {FloodPlainEncodedCalls} from "./extensions/FloodPlainEncodedCalls.sol";
 
-contract FloodPlainL2 is FloodPlainOnChainOrders, FloodPlainEncodedCalls {
+contract FloodPlainL2 is FloodPlain, FloodPlainOnChainOrders, FloodPlainEncodedCalls {
     constructor(address permit2) FloodPlain(permit2) {}
 }
