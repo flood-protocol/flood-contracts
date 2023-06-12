@@ -6,10 +6,8 @@ import {FloodPlain} from "../FloodPlain.sol";
 import {IFloodPlainEncodedCalls} from "./IFloodPlainEncodedCalls.sol";
 import {Ownable2Step} from "@openzeppelin/access/Ownable2Step.sol";
 
-contract FloodPlainEncodedCalls is FloodPlain, IFloodPlainEncodedCalls, Ownable2Step {
+abstract contract FloodPlainEncodedCalls is FloodPlain, IFloodPlainEncodedCalls, Ownable2Step {
     address[] internal _decoders;
-
-    constructor(address permit2) FloodPlain(permit2) {}
 
     function getDecoder(uint256 decoderId) external view returns (address /* decoder */ ) {
         return _decoders[decoderId];

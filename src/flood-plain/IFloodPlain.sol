@@ -12,8 +12,6 @@ interface IFloodPlain {
 
     event OrderFulfilled(bytes32 indexed orderHash, address indexed offerer, address indexed fulfiller);
 
-    event OrderEtched(uint256 indexed orderId, bytes32 indexed orderHash, Order order, bytes signature);
-
     struct Order {
         address offerer;
         address zone;
@@ -21,11 +19,6 @@ interface IFloodPlain {
         Item[] consideration;
         uint256 deadline;
         uint256 nonce;
-    }
-
-    struct OrderWithSignature {
-        Order order;
-        bytes signature;
     }
 
     struct Item {
@@ -39,15 +32,6 @@ interface IFloodPlain {
     function PERMIT2() external view returns (ISignatureTransfer);
 
     /**
-     * @notice Get all the details of the etched order corresponding to an order identifier.
-     *
-     * @param etchedOrderId The identifier of the etched order.
-     *
-     * @return order All the details of the order, including its signature.
-     */
-    function getEtchedOrder(uint256 etchedOrderId) external view returns (OrderWithSignature memory order);
-
-    /**
      * @notice Fulfill an order with an arbitrary number of items for offer and consideration.
      *
      * @param order     The order to fulfill. Note that the offerer must first approve Permit2
@@ -59,25 +43,6 @@ interface IFloodPlain {
      */
     function fulfillOrder(Order calldata order, bytes calldata signature, address fulfiller, bytes calldata extraData)
         external;
-
-    /**
-     * @notice Fulfill an order with an arbitrary number of items for offer and consideration.
-     *
-     * @param orderId   The identifier of the etched order to fulfill.
-     * @param fulfiller The address that will receive offer items, then source consideration items
-     *                  for the offerer.
-     * @param extraData Extra bytes passed to the Zone and Fulfiller.
-     */
-    function fulfillEtchedOrder(uint256 orderId, address fulfiller, bytes calldata extraData) external;
-
-    /**
-     * @notice Record an order on-chain for ease of use by other contracts.
-     *
-     * @param orderWithSignature The order and its signature to record.
-     *
-     * @return orderId Extra bytes passed to the Zone and Fulfiller.
-     */
-    function etchOrder(OrderWithSignature calldata orderWithSignature) external returns (uint256 orderId);
 
     /**
      * @notice Retrieve the permit2 hash for a given order.

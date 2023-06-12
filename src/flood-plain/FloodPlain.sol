@@ -19,18 +19,12 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
 
     ISignatureTransfer public immutable PERMIT2;
 
-    OrderWithSignature[] internal _etchedOrders;
-
     constructor(address permit2) {
         if (permit2.code.length == 0) {
             revert NotAContract();
         }
 
         PERMIT2 = ISignatureTransfer(permit2);
-    }
-
-    function getEtchedOrder(uint256 etchedOrderId) external view returns (OrderWithSignature memory /* etchedOrder */ ) {
-        return _etchedOrders[etchedOrderId];
     }
 
     function fulfillOrder(Order calldata order, bytes calldata signature, address fulfiller, bytes calldata extraData)
@@ -61,41 +55,6 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
 
         // Emit an event signifying that the order has been fulfilled.
         emit OrderFulfilled(orderHash, order.offerer, fulfiller);
-    }
-
-    function fulfillEtchedOrder(uint256 orderId, address fulfiller, bytes calldata extraData) external {
-        OrderWithSignature memory orderWithSignature = _etchedOrders[orderId];
-
-        // Fulfill the etched order using the standard fulfillment function.
-        bytes memory data = abi.encodeWithSelector(
-            this.fulfillOrder.selector, orderWithSignature.order, orderWithSignature.signature, fulfiller, extraData
-        );
-        assembly {
-            let result := delegatecall(gas(), address(), add(data, 0x20), mload(data), 0, 0)
-
-            // Copy the returned data.
-            returndatacopy(0, 0, returndatasize())
-
-            switch result
-            // delegatecall returns 0 on error.
-            case 0 { revert(0, returndatasize()) }
-            default { return(0, returndatasize()) }
-        }
-    }
-
-    function etchOrder(OrderWithSignature calldata orderWithSignature)
-        external
-        nonReentrant
-        returns (uint256 orderId)
-    {
-        orderId = _etchedOrders.length;
-        _etchedOrders.push(orderWithSignature);
-        emit OrderEtched({
-            orderId: orderId,
-            orderHash: orderWithSignature.order.hash(),
-            order: orderWithSignature.order,
-            signature: orderWithSignature.signature
-        });
     }
 
     function getPermitHash(Order calldata order) external pure returns (bytes32 /* permitHash */ ) {
