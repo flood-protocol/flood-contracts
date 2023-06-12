@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import {IFloodPlain} from "../interfaces/IFloodPlain.sol";
+import {IFloodPlain} from "../IFloodPlain.sol";
 import {ISignatureTransfer, PermitHash} from "permit2/src/libraries/PermitHash.sol";
 
 library OrderHash {

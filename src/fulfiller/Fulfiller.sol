@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 // Inheritances
-import {IFulfiller} from "./interfaces/IFulfiller.sol";
+import {IFulfiller} from "./IFulfiller.sol";
 import {Ownable2Step} from "@openzeppelin/access/Ownable2Step.sol";
 import {Pausable} from "@openzeppelin/security/Pausable.sol";
 import {ReentrancyGuard} from "@openzeppelin/security/ReentrancyGuard.sol";
@@ -12,8 +12,8 @@ import {SafeERC20} from "@openzeppelin/token/ERC20/utils/SafeERC20.sol";
 import {Address} from "@openzeppelin/utils/Address.sol";
 
 // Interfaces
-import {IFloodPlain} from "./interfaces/IFloodPlain.sol";
-import {IExecutor} from "./interfaces/IExecutor.sol";
+import {IFloodPlain} from "../flood-plain/IFloodPlain.sol";
+import {IExecutor} from "../executors/IExecutor.sol";
 import {IERC20} from "@openzeppelin/token/ERC20/IERC20.sol";
 
 contract Fulfiller is IFulfiller, Ownable2Step, Pausable, ReentrancyGuard {

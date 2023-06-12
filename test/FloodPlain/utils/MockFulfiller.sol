@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import {IFulfiller} from "src/interfaces/IFulfiller.sol";
-import {IFloodPlain} from "src/interfaces/IFloodPlain.sol";
+import {IFulfiller} from "src/fulfiller/IFulfiller.sol";
+import {IFloodPlain} from "src/flood-plain/IFloodPlain.sol";
 import {IERC20, SafeERC20} from "@openzeppelin/token/ERC20/utils/SafeERC20.sol";
 import {Address} from "@openzeppelin/utils/Address.sol";
 

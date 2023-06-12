@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import {IFloodPlain} from "../interfaces/IFloodPlain.sol";
+import {IFloodPlain} from "../flood-plain/IFloodPlain.sol";
 
 interface IFulfiller {
     error FallbackNotThroughExecutor();

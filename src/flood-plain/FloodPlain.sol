@@ -2,16 +2,16 @@
 pragma solidity 0.8.17;
 
 // Inheritances
+import {IFloodPlain} from "./IFloodPlain.sol";
 import {ReentrancyGuard} from "@openzeppelin/security/ReentrancyGuard.sol";
-import {IFloodPlain} from "./interfaces/IFloodPlain.sol";
 import {Ownable2Step} from "@openzeppelin/access/Ownable2Step.sol";
 
 // Libraries
 import {OrderHash} from "./libraries/OrderHash.sol";
 
 // Interfaces
-import {IFulfiller} from "./interfaces/IFulfiller.sol";
-import {IZone} from "./interfaces/IZone.sol";
+import {IFulfiller} from "../fulfiller/IFulfiller.sol";
+import {IZone} from "../zone/IZone.sol";
 import {IERC20} from "@openzeppelin/token/ERC20/IERC20.sol";
 import {ISignatureTransfer} from "permit2/src/interfaces/ISignatureTransfer.sol";
 

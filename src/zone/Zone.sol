@@ -2,12 +2,12 @@
 pragma solidity 0.8.17;
 
 // Inheritances
-import {IMainZone} from "./interfaces/IMainZone.sol";
+import {IMainZone} from "./IMainZone.sol";
 import {AccessControl} from "@openzeppelin/access/AccessControl.sol";
 import {Pausable} from "@openzeppelin/security/Pausable.sol";
 
 // Interfaces
-import {IFloodPlain} from "./interfaces/IFloodPlain.sol";
+import {IFloodPlain} from "../flood-plain/IFloodPlain.sol";
 
 contract Zone is IMainZone, AccessControl, Pausable {
     bytes32 public constant CALLER_ROLE = keccak256("CALLER_ROLE");
