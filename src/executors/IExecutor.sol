@@ -20,8 +20,8 @@ interface IExecutor {
      *
      * @param swap The details of the swap that will be made.
      *
-     * @dev If zero address is returned no callback is expected. If address(type(uint160).max)) is
-     *      returned, then callbacks from any address can be accepted (dangerous).
+     * @dev There must only one valid callback source for a given swap info.
+     * @dev If the executor does not have any callbacks, this function must revert.
      *
      * @return callbackSource The address that might do a callback.
      */
