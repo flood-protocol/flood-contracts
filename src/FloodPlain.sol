@@ -62,6 +62,7 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard, Ownable2Step {
         if (zone != address(0)) {
             IZone(zone).validateOrder({
                 order: order,
+                book: address(this),
                 fulfiller: fulfiller,
                 caller: msg.sender,
                 orderHash: orderHash,
@@ -137,6 +138,7 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard, Ownable2Step {
             return true;
         } else {
             try IZone(order.zone).validateOrder({
+                book: address(this),
                 order: order,
                 fulfiller: fulfiller,
                 caller: caller,
