@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import {IZone} from "./IZone.sol";
-
-interface IMainZone is IZone {
+interface IMainZone {
     error CancelledOrder(bytes32 orderHash);
 
     /**
