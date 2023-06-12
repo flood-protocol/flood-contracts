@@ -40,6 +40,11 @@ abstract contract FloodPlainEncodedCalls is FloodPlain, IFloodPlainEncodedCalls,
             // Move the effective calldata size to stack.
             let trimmedCalldataSize := sub(calldatasize(), 0x02)
 
+            // Check for underflow.
+            if gt(trimmedCalldataSize, calldatasize()) {
+                revert(0, 0)
+            }
+
             // Copy calldata starting from third byte to the memory.
             calldatacopy(0x00, 0x02, trimmedCalldataSize)
 
