@@ -5,7 +5,7 @@ import "forge-std/Test.sol";
 import {IERC20} from "@openzeppelin/token/ERC20/IERC20.sol";
 import {ERC20} from "@openzeppelin/token/ERC20/ERC20.sol";
 
-import {IWETH9} from "src/interfaces/IWETH9.sol";
+import {IWETH9} from "./IWETH9.sol";
 
 address constant ARBITRUM_USDC = 0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8;
 address constant ARBITRUM_WETH = 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1;
