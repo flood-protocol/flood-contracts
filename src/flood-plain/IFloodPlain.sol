@@ -91,6 +91,21 @@ interface IFloodPlain {
         returns (bool isValid);
 
     /**
+     * @notice Check if the order can be directly fulfilled. This does not check signature validity
+     *         and token approvals.
+     *
+     * @param order     The components of the order.
+     * @param caller    The address that will call `fulfillOrder`.
+     *
+     * @return isValid A boolean guaranteeing the order cannot be fulfilled with supplied
+     *                 parameters if false.
+     */
+    function getOrderValidity(Order calldata order, address caller)
+        external
+        view
+        returns (bool isValid);
+
+    /**
      * @notice Check if the order deadline has passed or its nonce has been cancelled or used.
      *
      * @param order The components of the order.

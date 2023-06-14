@@ -98,6 +98,31 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
         return order.hash();
     }
 
+    function getOrderValidity(Order calldata order, address caller)
+        external
+        view
+        returns (bool /* isValid */ )
+    {
+        if (!getOrderStatus({order: order})) {
+            return false;
+        }
+
+        if (order.zone == address(0)) {
+            return true;
+        } else {
+            try IZone(order.zone).validateOrder({
+                book: address(this),
+                order: order,
+                caller: caller,
+                orderHash: order.hash()
+            }) {
+                return true;
+            } catch {
+                return false;
+            }
+        }
+    }
+
     function getOrderValidity(Order calldata order, address fulfiller, address caller, bytes calldata extraData)
         external
         view
