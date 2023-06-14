@@ -46,7 +46,7 @@ library ItemDeduplicator {
         }
 
         assembly {
-            // Trim the array to its actual size. TODO: Test to ensure it works.
+            // Trim the array to its actual size.
             mstore(deduplicatedItems, dedupCount)
         }
 
