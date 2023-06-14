@@ -5,6 +5,24 @@ import {IFloodPlain} from "../flood-plain/IFloodPlain.sol";
 
 interface IZone {
     /**
+     * @notice Check if a direct fill order is valid.
+     *
+     * @dev Reverts if not valid.
+     *
+     * @param order     The components of an order, excluding its signature.
+     * @param book      The address of the book where the order is created (e.g.: FloodPlain).
+     * @param caller    The address that is fulfilling the order by calling the book and supplying
+     *                  all the fulfillment parameters.
+     * @param orderHash The EIP712 hash of the order components.
+     */
+    function validateOrder(
+        IFloodPlain.Order calldata order,
+        address book,
+        address caller,
+        bytes32 orderHash
+    ) external view;
+
+    /**
      * @notice Check if an order with specific fulfillment parameters is valid.
      *
      * @dev Reverts if not valid.

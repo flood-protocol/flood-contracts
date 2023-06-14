@@ -41,6 +41,24 @@ contract MainZone is Zone, IMainZone, AccessControl, Pausable {
     function validateOrder(
         IFloodPlain.Order calldata, /* order */
         address book,
+        address caller,
+        bytes32 orderHash
+    ) external override view whenNotPaused {
+        // Always do basic built-in access control checks.
+        _checkRole(CALLER_ROLE, caller);
+        _checkRole(BOOK_ROLE, book);
+
+        // Check if an order is manually cancelled.
+        if (hasRole(CANCELLED_ORDERS, address(uint160(uint256(orderHash))))) {
+            revert CancelledOrder(orderHash);
+        }
+
+        _checkSecondaryZone();
+    }
+
+    function validateOrder(
+        IFloodPlain.Order calldata, /* order */
+        address book,
         address fulfiller,
         address caller,
         bytes32 orderHash,
@@ -56,6 +74,10 @@ contract MainZone is Zone, IMainZone, AccessControl, Pausable {
             revert CancelledOrder(orderHash);
         }
 
+        _checkSecondaryZone();
+    }
+
+    function _checkSecondaryZone() internal view {
         // Check if an extra zone is set to do additional checks.
         address _secondaryZone = secondaryZone;
         assembly {

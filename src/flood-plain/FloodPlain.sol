@@ -7,6 +7,9 @@ import {ReentrancyGuard} from "@openzeppelin/security/ReentrancyGuard.sol";
 
 // Libraries
 import {OrderHash} from "./libraries/OrderHash.sol";
+import {ItemDeduplicator} from "./libraries/ItemDeduplicator.sol";
+import {Address} from "@openzeppelin/utils/Address.sol";
+import {SafeERC20} from "@openzeppelin/token/ERC20/utils/SafeERC20.sol";
 
 // Interfaces
 import {IFulfiller} from "../fulfiller/IFulfiller.sol";
@@ -15,7 +18,10 @@ import {IERC20} from "@openzeppelin/token/ERC20/IERC20.sol";
 import {ISignatureTransfer} from "permit2/src/interfaces/ISignatureTransfer.sol";
 
 contract FloodPlain is IFloodPlain, ReentrancyGuard {
+    using Address for address payable;
+    using SafeERC20 for IERC20;
     using OrderHash for Order;
+    using ItemDeduplicator for Item[];
 
     ISignatureTransfer public immutable PERMIT2;
 
@@ -55,6 +61,31 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
 
         // Emit an event signifying that the order has been fulfilled.
         emit OrderFulfilled(orderHash, order.offerer, fulfiller);
+    }
+
+    function directFulfillOrder(Order calldata order, bytes calldata signature) external payable nonReentrant {
+        // Retrieve the order hash for order.
+        bytes32 orderHash = order.hash();
+
+        // Check zone restrictions.
+        address zone = order.zone;
+        if (zone != address(0)) {
+            IZone(zone).validateOrder({
+                order: order,
+                book: address(this),
+                caller: msg.sender,
+                orderHash: orderHash
+            });
+        }
+
+        // Transfer each offer item to msg.sender using Permit2.
+        _permitTransferOffer({order: order, signature: signature, orderHash: orderHash, to: msg.sender});
+
+        // Transfer consideration items from fulfiller to offerer.
+        _directTransferConsideration({order: order, fulfiller: msg.sender});
+
+        // Emit an event signifying that the order has been fulfilled.
+        emit OrderFulfilled(orderHash, order.offerer, msg.sender);
     }
 
     function getPermitHash(Order calldata order) external pure returns (bytes32 /* permitHash */ ) {
@@ -153,43 +184,12 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
     }
 
     function _transferConsideration(Order calldata order, address fulfiller, bytes calldata extraData) internal {
-        Item[] calldata items = order.consideration;
-        Item calldata item;
+        // Define deduplicatedItems pointer once outside the loops.
         Item memory deduplicatedItem;
-        uint256 itemsLength = items.length;
 
-        Item[] memory deduplicatedItems = new Item[](itemsLength);
-        uint256 dedupCount;
-        // For each consideration item...
-        for (uint256 i = 0; i < itemsLength;) {
-            item = items[i];
-            bool isFound;
-            // Check if it is the same as a previous consideration item in the array.
-            for (uint256 j = 0; j < dedupCount;) {
-                deduplicatedItem = deduplicatedItems[j];
-                if (deduplicatedItem.token == item.token) {
-                    // And add the amounts of the two consideration items with identical tokens.
-                    deduplicatedItem.amount += item.amount;
-                    isFound = true;
-                    break;
-                }
-
-                unchecked {
-                    ++j;
-                }
-            }
-
-            // If the consideration item is encountered the first time...
-            if (!isFound) {
-                // Add it to the deduplicated consideration items array.
-                deduplicatedItems[dedupCount] = item;
-
-                // And increase the actual length of the array.
-                unchecked {
-                    ++dedupCount;
-                }
-            }
-        }
+        // Deduplicate consideration items, and move the length to stack.
+        Item[] memory deduplicatedItems = order.consideration.deduplicate();
+        uint256 dedupCount = deduplicatedItems.length;
 
         // Get the minimum required final balances of the consideration items.
         uint256[] memory requiredAmounts = new uint256[](dedupCount);
@@ -204,11 +204,6 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
             unchecked {
                 ++i;
             }
-        }
-
-        assembly {
-            // Trim the array to its actual size. TODO: Test to ensure it works.
-            mstore(deduplicatedItems, dedupCount)
         }
 
         // Call fulfiller with order data and the caller address to source consideration items.
@@ -228,6 +223,50 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
             newBalance = deduplicatedItem.token == address(0) ? to.balance : IERC20(deduplicatedItem.token).balanceOf(to);
             if (newBalance < requiredAmounts[i]) {
                 revert InsufficientAmountPulled();
+            }
+
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
+    function _directTransferConsideration(Order calldata order, address fulfiller) internal {
+        // Define pointers once outside the loops.
+        Item memory item;
+        uint256 requiredAmount;
+        uint256 amount;
+        address token;
+
+        // Deduplicate consideration items, and move the length to stack.
+        Item[] memory deduplicatedItems = order.consideration.deduplicate();
+        uint256 dedupCount = deduplicatedItems.length;
+
+        address to = order.offerer;
+        for (uint256 i = 0; i < dedupCount;) {
+            item = deduplicatedItems[i];
+            token = item.token;
+            amount = item.amount;
+            if (token == address(0)) {
+                requiredAmount = amount + to.balance;
+
+                if (msg.value != amount) {
+                    revert IncorrectValueReceived();
+                }
+
+                payable(to).sendValue(amount);
+
+                if (to.balance < requiredAmount) {
+                    revert InsufficientAmountPulled();
+                }
+            } else {
+                requiredAmount = amount + IERC20(token).balanceOf(to);
+
+                IERC20(token).safeTransferFrom(fulfiller, to, amount);
+
+                if (IERC20(token).balanceOf(to) < requiredAmount) {
+                    revert InsufficientAmountPulled();
+                }
             }
 
             unchecked {

@@ -10,6 +10,8 @@ interface IFloodPlain {
 
     error InvalidNativeTokenAddress();
 
+    error IncorrectValueReceived();
+
     event OrderFulfilled(bytes32 indexed orderHash, address indexed offerer, address indexed fulfiller);
 
     struct Order {
@@ -43,6 +45,15 @@ interface IFloodPlain {
      */
     function fulfillOrder(Order calldata order, bytes calldata signature, address fulfiller, bytes calldata extraData)
         external;
+
+    /**
+     * @notice Fulfill an order directly by transferring consideration from caller to offerer.
+     *
+     * @param order     The order to fulfill. Note that the offerer must first approve Permit2
+     *                  contract to transfer any relevant tokens on their behalf.
+     * @param signature The permit2 signature with the order as the witness.
+     */
+    function directFulfillOrder(Order calldata order, bytes calldata signature) external payable;
 
     /**
      * @notice Retrieve the permit2 hash for a given order.

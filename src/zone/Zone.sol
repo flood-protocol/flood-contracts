@@ -11,6 +11,13 @@ abstract contract Zone is IZone {
     function validateOrder(
         IFloodPlain.Order calldata order,
         address book,
+        address caller,
+        bytes32 orderHash
+    ) external view virtual {}
+
+    function validateOrder(
+        IFloodPlain.Order calldata order,
+        address book,
         address fulfiller,
         address caller,
         bytes32 orderHash,
