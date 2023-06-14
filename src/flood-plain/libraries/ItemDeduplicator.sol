@@ -39,6 +39,10 @@ library ItemDeduplicator {
                     ++dedupCount;
                 }
             }
+
+            unchecked {
+                ++i;
+            }
         }
 
         assembly {
