@@ -69,6 +69,10 @@ This extension adds an owner to the FloodPlain contract. The owner can add 256 d
 
 `FloodPlainOnChainOrders` extension allows recording ("etching") a signature order on chain. This could make it easier for contracts to integrate. An etched order is not checked for any type of validity. The validity of an order is always checked during the fulfillment. Fulfilling an etched order reuses the fulfillOrder function by delegatecalling itself with the recorded on chain order data. So to fulfill an order, a user would only need to pass the order identifier, which is then used to construct fulfillOrder parameter. It is also possible to use encoded calls to etch an order to reduce calldata size. There would be a separate encoder for this purpose.
 
+### FloodPlainDirectFulfiller
+
+This extension adds a new function to fulfill orders. This function simply transfers consideration items from the caller to the offerer. It requires that the caller approves consideration items to FloodPlain. Then, offer items are simply transferred to the caller, and the consideration items are transferred to the offerer.
+
 ## Known Issues
 
 ### Fee-on-tranfer Tokens
