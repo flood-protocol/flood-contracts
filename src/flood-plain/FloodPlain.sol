@@ -8,8 +8,6 @@ import {ReentrancyGuard} from "@openzeppelin/security/ReentrancyGuard.sol";
 // Libraries
 import {OrderHash} from "./libraries/OrderHash.sol";
 import {ItemDeduplicator} from "./libraries/ItemDeduplicator.sol";
-import {Address} from "@openzeppelin/utils/Address.sol";
-import {SafeERC20} from "@openzeppelin/token/ERC20/utils/SafeERC20.sol";
 
 // Interfaces
 import {IFulfiller} from "../fulfiller/IFulfiller.sol";
@@ -18,8 +16,6 @@ import {IERC20} from "@openzeppelin/token/ERC20/IERC20.sol";
 import {ISignatureTransfer} from "permit2/src/interfaces/ISignatureTransfer.sol";
 
 contract FloodPlain is IFloodPlain, ReentrancyGuard {
-    using Address for address payable;
-    using SafeERC20 for IERC20;
     using OrderHash for Order;
     using ItemDeduplicator for Item[];
 
@@ -63,31 +59,6 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
         emit OrderFulfilled(orderHash, order.offerer, fulfiller);
     }
 
-    function directFulfillOrder(Order calldata order, bytes calldata signature) external payable nonReentrant {
-        // Retrieve the order hash for order.
-        bytes32 orderHash = order.hash();
-
-        // Check zone restrictions.
-        address zone = order.zone;
-        if (zone != address(0)) {
-            IZone(zone).validateOrder({
-                order: order,
-                book: address(this),
-                caller: msg.sender,
-                orderHash: orderHash
-            });
-        }
-
-        // Transfer each offer item to msg.sender using Permit2.
-        _permitTransferOffer({order: order, signature: signature, orderHash: orderHash, to: msg.sender});
-
-        // Transfer consideration items from fulfiller to offerer.
-        _directTransferConsideration({order: order, fulfiller: msg.sender});
-
-        // Emit an event signifying that the order has been fulfilled.
-        emit OrderFulfilled(orderHash, order.offerer, msg.sender);
-    }
-
     function getPermitHash(Order calldata order) external pure returns (bytes32 /* permitHash */ ) {
         // Derive permit2 hash with order hash as witness by supplying order parameters.
         return order.hashAsWitness();
@@ -96,31 +67,6 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
     function getOrderHash(Order calldata order) external pure returns (bytes32 /* orderHash */ ) {
         // Derive order hash by supplying order parameters.
         return order.hash();
-    }
-
-    function getOrderValidity(Order calldata order, address caller)
-        external
-        view
-        returns (bool /* isValid */ )
-    {
-        if (!getOrderStatus({order: order})) {
-            return false;
-        }
-
-        if (order.zone == address(0)) {
-            return true;
-        } else {
-            try IZone(order.zone).validateOrder({
-                book: address(this),
-                order: order,
-                caller: caller,
-                orderHash: order.hash()
-            }) {
-                return true;
-            } catch {
-                return false;
-            }
-        }
     }
 
     function getOrderValidity(Order calldata order, address fulfiller, address caller, bytes calldata extraData)
@@ -248,50 +194,6 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
             newBalance = deduplicatedItem.token == address(0) ? to.balance : IERC20(deduplicatedItem.token).balanceOf(to);
             if (newBalance < requiredAmounts[i]) {
                 revert InsufficientAmountPulled();
-            }
-
-            unchecked {
-                ++i;
-            }
-        }
-    }
-
-    function _directTransferConsideration(Order calldata order, address fulfiller) internal {
-        // Define pointers once outside the loops.
-        Item memory item;
-        uint256 requiredAmount;
-        uint256 amount;
-        address token;
-
-        // Deduplicate consideration items, and move the length to stack.
-        Item[] memory deduplicatedItems = order.consideration.deduplicate();
-        uint256 dedupCount = deduplicatedItems.length;
-
-        address to = order.offerer;
-        for (uint256 i = 0; i < dedupCount;) {
-            item = deduplicatedItems[i];
-            token = item.token;
-            amount = item.amount;
-            if (token == address(0)) {
-                requiredAmount = amount + to.balance;
-
-                if (msg.value != amount) {
-                    revert IncorrectValueReceived();
-                }
-
-                payable(to).sendValue(amount);
-
-                if (to.balance < requiredAmount) {
-                    revert InsufficientAmountPulled();
-                }
-            } else {
-                requiredAmount = amount + IERC20(token).balanceOf(to);
-
-                IERC20(token).safeTransferFrom(fulfiller, to, amount);
-
-                if (IERC20(token).balanceOf(to) < requiredAmount) {
-                    revert InsufficientAmountPulled();
-                }
             }
 
             unchecked {
