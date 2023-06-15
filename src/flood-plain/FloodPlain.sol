@@ -59,9 +59,9 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
         emit OrderFulfilled(orderHash, order.offerer, fulfiller);
     }
 
-    function getPermitHash(Order calldata order) external pure returns (bytes32 /* permitHash */ ) {
+    function getPermitHash(Order calldata order) external view returns (bytes32 /* permitHash */ ) {
         // Derive permit2 hash with order hash as witness by supplying order parameters.
-        return order.hashAsWitness();
+        return order.hashAsWitness(address(this));
     }
 
     function getOrderHash(Order calldata order) external pure returns (bytes32 /* orderHash */ ) {

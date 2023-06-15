@@ -64,7 +64,7 @@ library OrderHash {
         );
     }
 
-    function hashAsWitness(IFloodPlain.Order calldata order) internal pure returns (bytes32) {
+    function hashAsWitness(IFloodPlain.Order calldata order, address spender) internal pure returns (bytes32) {
         IFloodPlain.Item[] calldata offer = order.offer;
         uint256 itemsLength = offer.length;
 
@@ -89,7 +89,7 @@ library OrderHash {
             abi.encode(
                 _PERMIT_TYPEHASH,
                 keccak256(abi.encodePacked(tokenPermissionHashes)),
-                order.offerer,
+                spender,
                 order.nonce,
                 order.deadline,
                 order.hash()
