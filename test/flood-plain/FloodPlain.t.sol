@@ -50,7 +50,7 @@ contract MyTest is Test, DeployPermit2 {
         account3 = makeAccount("d");
     }
 
-    function test_fulfillBasicOrder() public {
+    function setup_mostBasicOrder() internal returns (IFloodPlain.Order memory order, bytes memory sig) {
         deal(address(token0), address(account0.addr), 500);
         deal(address(token1), address(fulfiller), 500);
 
@@ -69,7 +69,7 @@ contract MyTest is Test, DeployPermit2 {
         consideration[0].amount = 500;
 
         // Construct order.
-        IFloodPlain.Order memory order = IFloodPlain.Order({
+        order = IFloodPlain.Order({
             offerer: address(account0.addr),
             zone: address(0),
             offer: offer,
@@ -79,7 +79,13 @@ contract MyTest is Test, DeployPermit2 {
         });
 
         // Sign the order.
-        bytes memory sig = orderSignature.getSignature(order, account0.key, EIP712(address(permit2)).DOMAIN_SEPARATOR(), address(book));
+        sig = orderSignature.getSignature(order, account0.key, EIP712(address(permit2)).DOMAIN_SEPARATOR(), address(book));
+
+        return (order, sig);
+    }
+
+    function test_fulfillBasicOrder() public {
+        (IFloodPlain.Order memory order, bytes memory sig) = setup_mostBasicOrder();
 
         // Fill the order.
         book.fulfillOrder(order, sig, address(fulfiller), "");
@@ -89,5 +95,34 @@ contract MyTest is Test, DeployPermit2 {
         assertEq(token1.balanceOf(address(account0.addr)), 500);
         assertEq(token0.balanceOf(address(fulfiller)), 500);
         assertEq(token1.balanceOf(address(fulfiller)), 0);
+    }
+
+    function test_NonceValidity() public {
+        (IFloodPlain.Order memory order, bytes memory sig) = setup_mostBasicOrder();
+
+        assertTrue(book.getNonceStatus(account0.addr, 0));
+
+        // Fill the order.
+        book.fulfillOrder(order, sig, address(fulfiller), "");
+
+        assertFalse(book.getNonceStatus(account0.addr, 0));
+    }
+
+    function test_RevertWhenNonceReuse() public {
+        (IFloodPlain.Order memory order, bytes memory sig) = setup_mostBasicOrder();
+
+        // Fill the order.
+        book.fulfillOrder(order, sig, address(fulfiller), "");
+
+        deal(address(token0), address(account0.addr), 500);
+        deal(address(token1), address(fulfiller), 500);
+
+        // Approve permit2 spending.
+        vm.prank(account0.addr);
+        token0.approve(address(permit2), 500);
+
+        // Revert due to nonce reuse.
+        vm.expectRevert();
+        book.fulfillOrder(order, sig, address(fulfiller), "");
     }
 }
