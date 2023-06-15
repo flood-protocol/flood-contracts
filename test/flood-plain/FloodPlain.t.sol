@@ -2,51 +2,18 @@
 pragma solidity ^0.8.17;
 
 import {Test} from "forge-std/Test.sol";
+import {DeployPermit2} from "permit2/test/utils/DeployPermit2.sol";
+
 import {OrderHash} from "src/flood-plain/libraries/OrderHash.sol";
 import {FloodPlain} from "src/flood-plain/FloodPlain.sol";
 import {IFloodPlain} from "src/flood-plain/IFloodPlain.sol";
-import {MockERC20} from "test/FloodPlain/utils/MockERC20.sol";
-import {MockFulfiller} from "test/FloodPlain/utils/MockFulfiller.sol";
-import {DeployPermit2} from "permit2/test/utils/DeployPermit2.sol";
+import {MockERC20} from "test/flood-plain/utils/MockERC20.sol";
+import {MockFulfiller} from "test/flood-plain/utils/MockFulfiller.sol";
+import {OrderSignature} from "test/flood-plain/utils/OrderSignature.sol";
 import {ISignatureTransfer} from "permit2/src/interfaces/ISignatureTransfer.sol";
 import {EIP712} from "permit2/src/EIP712.sol";
 
-import {SignatureVerification} from "permit2/src/libraries/SignatureVerification.sol";
 import {PermitHash} from "permit2/src/libraries/PermitHash.sol";
-
-contract OrderSignature is Test {
-    using OrderHash for IFloodPlain.Order;
-    using SignatureVerification for bytes;
-
-    function hash(IFloodPlain.Order calldata order) public pure returns (bytes32) {
-        return order.hash();
-    }
-
-    function hashAsWitness(IFloodPlain.Order calldata order, address spender) public pure returns (bytes32) {
-        return order.hashAsWitness(spender);
-    }
-
-    function hashAsMessage(IFloodPlain.Order calldata order, bytes32 domainSeparator, address spender) public pure returns (bytes32) {
-        return keccak256(
-            abi.encodePacked(
-                "\x19\x01",
-                domainSeparator,
-                order.hashAsWitness(spender)
-            )
-        );
-    }
-
-    function getSignature(IFloodPlain.Order calldata order, uint256 privateKey, bytes32 domainSeparator, address spender) public pure returns (bytes memory) {
-        bytes32 msgHash = hashAsMessage(order, domainSeparator, spender);
-
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, msgHash);
-        return bytes.concat(r, s, bytes1(v));
-    }
-
-    function verifySignature(bytes calldata signature, bytes32 sigHash, address claimedSigner) public view {
-        signature.verify(sigHash, claimedSigner);
-    }
-}
 
 contract MyTest is Test, DeployPermit2 {
     ISignatureTransfer permit2;
