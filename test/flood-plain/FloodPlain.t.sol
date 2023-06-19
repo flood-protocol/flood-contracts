@@ -241,4 +241,107 @@ contract MyTest is Test, DeployPermit2 {
         vm.expectRevert("Pausable: paused");
         book.fulfillOrder(order, sig, address(fulfiller), "");
     }
+
+    function test_OrderStatus() public {
+        (IFloodPlain.Order memory order, bytes memory sig) = setup_mostBasicOrder();
+
+        // Nonce available and deadline not passed.
+        assertTrue(book.getOrderStatus(order));
+
+        // Nonce available but deadline passed.
+        order.deadline = block.timestamp - 1;
+        assertFalse(book.getOrderStatus(order));
+        order.deadline = type(uint256).max;
+
+        // Fill the order, disables nonce.
+        book.fulfillOrder(order, sig, address(fulfiller), "");
+
+        // Deadline not passed but nonce not available.
+        assertFalse(book.getOrderStatus(order));
+
+        // Deadline passed and nonce not available.
+        order.deadline = block.timestamp - 1;
+        assertFalse(book.getOrderStatus(order));
+    }
+
+    function test_OrderValidityWithoutZone() public {
+        (IFloodPlain.Order memory order, bytes memory sig) = setup_mostBasicOrder();
+
+        // Zone is not set.
+
+        // Nonce available and deadline not passed.
+        assertTrue(book.getOrderValidity(order, address(0), address(0), ""));
+
+        // Nonce available but deadline passed.
+        order.deadline = block.timestamp - 1;
+        assertFalse(book.getOrderValidity(order, address(0), address(0), ""));
+        order.deadline = type(uint256).max;
+
+        // Fill the order, disables nonce.
+        book.fulfillOrder(order, sig, address(fulfiller), "");
+
+        // Deadline not passed but nonce not available.
+        assertFalse(book.getOrderValidity(order, address(0), address(0), ""));
+
+        // Deadline passed and nonce not available.
+        order.deadline = block.timestamp - 1;
+        assertFalse(book.getOrderValidity(order, address(0), address(0), ""));
+    }
+
+    function test_OrderValidityWithUnpausedZone() public {
+        (IFloodPlain.Order memory order, bytes memory sig) = setup_mostBasicOrder();
+
+        // Zone is set but does not revert.
+
+        order.zone = address(zone);
+        sig = getSignature(order, account0);
+
+        // Nonce available and deadline not passed.
+        assertTrue(book.getOrderValidity(order, address(0), address(0), ""));
+
+        // Nonce available but deadline passed.
+        order.deadline = block.timestamp - 1;
+        assertFalse(book.getOrderValidity(order, address(0), address(0), ""));
+        order.deadline = type(uint256).max;
+
+        // Fill the order, disables nonce.
+        book.fulfillOrder(order, sig, address(fulfiller), "");
+
+        // Deadline not passed but nonce not available.
+        assertFalse(book.getOrderValidity(order, address(0), address(0), ""));
+
+        // Deadline passed and nonce not available.
+        order.deadline = block.timestamp - 1;
+        assertFalse(book.getOrderValidity(order, address(0), address(0), ""));
+    }
+
+    function test_OrderValidityWithPausedZone() public {
+        (IFloodPlain.Order memory order, bytes memory sig) = setup_mostBasicOrder();
+
+        // Zone is set and reverts. Must always fail.
+
+        order.zone = address(zone);
+        sig = getSignature(order, account0);
+        zone.pause();
+
+        // Nonce available and deadline not passed.
+        assertFalse(book.getOrderValidity(order, address(0), address(0), ""));
+
+        // Nonce available but deadline passed.
+        order.deadline = block.timestamp - 1;
+        assertFalse(book.getOrderValidity(order, address(0), address(0), ""));
+        order.deadline = type(uint256).max;
+
+        // Fill the order, disables nonce.
+        zone.unpause();
+        book.fulfillOrder(order, sig, address(fulfiller), "");
+        zone.pause();
+
+        // Deadline not passed but nonce not available.
+        assertFalse(book.getOrderValidity(order, address(0), address(0), ""));
+
+        // Deadline passed and nonce not available.
+        order.deadline = block.timestamp - 1;
+        assertFalse(book.getOrderValidity(order, address(0), address(0), ""));
+    }
 }
