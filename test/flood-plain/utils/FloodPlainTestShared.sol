@@ -15,7 +15,7 @@ import {OrderSignature} from "test/flood-plain/utils/OrderSignature.sol";
 import {ISignatureTransfer} from "permit2/src/interfaces/ISignatureTransfer.sol";
 import {EIP712} from "permit2/src/EIP712.sol";
 
-contract FloodPlainTestShared is Test, DeployPermit2 {
+abstract contract FloodPlainTestShared is Test, DeployPermit2 {
     ISignatureTransfer permit2;
     FloodPlainL2 book;
     MockZone zone;
