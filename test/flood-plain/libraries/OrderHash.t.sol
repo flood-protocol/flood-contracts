@@ -224,7 +224,7 @@ contract OrderHashTest is Test {
     //
     // const permit = {
     //   permitted: [item],
-    //   spender: ethers.ZeroAddress,
+    //   spender: ethers.getAddress('0x0000000000000000000000000000000000000001'),
     //   nonce: 0,
     //   deadline: 0,
     //   witness: order
@@ -257,9 +257,9 @@ contract OrderHashTest is Test {
             nonce: 0
         });
 
-        bytes32 permitHash = orderSignature.hashAsWitness(order, address(0));
+        bytes32 permitHash = orderSignature.hashAsWitness(order, address(0x1));
 
-        assertEq(permitHash, 0x12b6c3cf69316a407fa20840f35ba9ea057af1d127c948bdf4ee7368b4d7360b);
+        assertEq(permitHash, 0x374fc27db7eb383f2dae14bfde20441cd0dd5c9d45ba10b826c03d978d5472f3);
     }
 
     // `test_permitHash` checks the whole PermitBatchWitnessTransferFrom struct typehash, but
