@@ -6,6 +6,8 @@ import {IFloodPlain} from "../IFloodPlain.sol";
 interface IFloodPlainDirectFulfiller {
     error IncorrectValueReceived();
 
+    error InsufficientAmountPulled();
+
     /**
      * @notice Fulfill an order directly by transferring consideration from caller to offerer.
      *

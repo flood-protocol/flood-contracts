@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import {ISignatureTransfer} from "permit2/src/interfaces/ISignatureTransfer.sol";
 
 interface IFloodPlain {
-    error InsufficientAmountPulled();
+    error InsufficientAmountReceived();
 
     error NotAContract();
 

@@ -97,7 +97,7 @@ abstract contract FloodPlainDirectFulfiller is FloodPlain, IFloodPlainDirectFulf
                 payable(to).sendValue(amount);
 
                 if (to.balance < requiredAmount) {
-                    revert InsufficientAmountPulled();
+                    revert InsufficientAmountReceived();
                 }
             } else {
                 requiredAmount = amount + IERC20(token).balanceOf(to);

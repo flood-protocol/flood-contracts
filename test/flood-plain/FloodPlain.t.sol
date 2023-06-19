@@ -9,6 +9,7 @@ import {FloodPlainL2} from "src/flood-plain/FloodPlainL2.sol";
 import {IFloodPlain} from "src/flood-plain/IFloodPlain.sol";
 import {MockERC20} from "test/flood-plain/utils/MockERC20.sol";
 import {MockFulfiller} from "test/flood-plain/utils/MockFulfiller.sol";
+import {MaliciousFulfiller} from "test/flood-plain/utils/MaliciousFulfiller.sol";
 import {MockZone} from "test/flood-plain/utils/MockZone.sol";
 import {OrderSignature} from "test/flood-plain/utils/OrderSignature.sol";
 import {ISignatureTransfer} from "permit2/src/interfaces/ISignatureTransfer.sol";
@@ -21,6 +22,7 @@ contract MyTest is Test, DeployPermit2 {
     FloodPlainL2 book;
     MockZone zone;
     MockFulfiller fulfiller;
+    MaliciousFulfiller maliciousFulfiller;
     OrderSignature orderSignature;
     MockERC20 token0;
     MockERC20 token1;
@@ -38,6 +40,7 @@ contract MyTest is Test, DeployPermit2 {
         permit2 = ISignatureTransfer(deployPermit2());
         book = new FloodPlainL2(address(permit2));
         fulfiller = new MockFulfiller();
+        maliciousFulfiller = new MaliciousFulfiller();
         zone = new MockZone();
         orderSignature = new OrderSignature();
         token0 = new MockERC20();
@@ -154,6 +157,24 @@ contract MyTest is Test, DeployPermit2 {
         assertEq(token1.balanceOf(address(fulfiller)), 0);
     }
 
+    function test_fulfillEthOrder() public {
+        (IFloodPlain.Order memory order, ) = setup_mostBasicOrder();
+
+        order.consideration[0].token = address(0);
+        deal(address(fulfiller), 500);
+
+        bytes memory sig = getSignature(order, account0);
+
+        // Fill the order.
+        book.fulfillOrder(order, sig, address(fulfiller), "");
+
+        // Assertions.
+        assertEq(token0.balanceOf(address(account0.addr)), 0);
+        assertEq(address(account0.addr).balance, 500);
+        assertEq(token0.balanceOf(address(fulfiller)), 500);
+        assertEq(address(fulfiller).balance, 0);
+    }
+
     function test_fulfillMultiItemOrder() public {
         (IFloodPlain.Order memory order, bytes memory sig) = setup_multiItemOrder();
 
@@ -174,6 +195,30 @@ contract MyTest is Test, DeployPermit2 {
         assertEq(token4.balanceOf(address(fulfiller)), 0);
         assertEq(token5.balanceOf(address(fulfiller)), 0);
     }
+
+    function test_RevertWhenInsufficientConsiderationReceived() public {
+        (IFloodPlain.Order memory order, bytes memory sig) = setup_mostBasicOrder();
+
+        deal(address(token1), address(maliciousFulfiller), 500);
+
+        // Filling order fails.
+        vm.expectRevert(bytes4(keccak256("InsufficientAmountReceived()")));
+        book.fulfillOrder(order, sig, address(maliciousFulfiller), "");
+    }
+
+    function test_RevertWhenInsufficientEthConsiderationReceived() public {
+        (IFloodPlain.Order memory order, ) = setup_mostBasicOrder();
+
+        order.consideration[0].token = address(0);
+        deal(address(maliciousFulfiller), 500);
+
+        bytes memory sig = getSignature(order, account0);
+
+        // Filling order fails.
+        vm.expectRevert(bytes4(keccak256("InsufficientAmountReceived()")));
+        book.fulfillOrder(order, sig, address(maliciousFulfiller), "");
+    }
+
 
     function test_NonceValidity() public {
         (IFloodPlain.Order memory order, bytes memory sig) = setup_mostBasicOrder();
@@ -343,5 +388,220 @@ contract MyTest is Test, DeployPermit2 {
         // Deadline passed and nonce not available.
         order.deadline = block.timestamp - 1;
         assertFalse(book.getOrderValidity(order, address(0), address(0), ""));
+    }
+
+    function test_RevertWhenDeployedWithInvalidPermit2Contract() public {
+        vm.expectRevert(bytes4(keccak256("NotAContract()")));
+        new FloodPlainL2(address(0xd00d));
+    }
+
+    // Testing against following ethers v6 script output:
+    //
+    // ```
+    // const ethers = require('ethers');
+    //
+    // const ORDER = {
+    //   Order: [{
+    //     name: 'offerer',
+    //     type: 'address'
+    //     },
+    //     {
+    //     name: 'zone',
+    //     type: 'address'
+    //     },
+    //     {
+    //     name: 'offer',
+    //     type: 'Item[]'
+    //     },
+    //     {
+    //     name: 'consideration',
+    //     type: 'Item[]'
+    //     },
+    //     {
+    //     name: 'deadline',
+    //     type: 'uint256'
+    //     },
+    //     {
+    //     name: 'nonce',
+    //     type: 'uint256'
+    //     }],
+    //   Item: [{
+    //     name: 'token',
+    //     type: 'address'
+    //     },
+    //     {
+    //     name: 'amount',
+    //     type: 'uint256'
+    //     }]
+    // }
+    //
+    // const item = {
+    //   token: ethers.ZeroAddress,
+    //   amount: 0
+    // }
+    //
+    // const order = {
+    //   offerer: ethers.ZeroAddress,
+    //   zone: ethers.ZeroAddress,
+    //   offer: [item],
+    //   consideration: [item, item, item],
+    //   deadline: 0,
+    //   nonce: 0
+    // }
+    //
+    //
+    // const orderHash = ethers.TypedDataEncoder.hashStruct("Order", ORDER, order)
+    //
+    // console.log(orderHash);
+    // ```
+    function test_OrderHash() public {
+        IFloodPlain.Item memory item = IFloodPlain.Item({
+            token: address(0),
+            amount: 0
+        });
+
+        IFloodPlain.Item[] memory offer = new IFloodPlain.Item[](1);
+        offer[0] = item;
+
+        IFloodPlain.Item[] memory consideration = new IFloodPlain.Item[](3);
+        consideration[0] = item;
+        consideration[1] = item;
+        consideration[2] = item;
+
+        IFloodPlain.Order memory order = IFloodPlain.Order({
+            offerer: address(0),
+            zone: address(0),
+            offer: offer,
+            consideration: consideration,
+            deadline: 0,
+            nonce: 0
+        });
+
+        bytes32 orderHash = book.getOrderHash(order);
+
+        // Confirmed through EthersV6. See OrderHash.t.sol for details.
+        assertEq(orderHash, 0x7c035b41df11b270e3f066ebabf4714b283035deadec175a375ee86e1304a31b);
+    }
+
+    // Testing against following ethers v6 script output:
+    //
+    // ```
+    // const ethers = require('ethers');
+    //
+    // const PERMIT = {
+    //   PermitBatchWitnessTransferFrom: [{
+    //     name: 'permitted',
+    //     type: 'TokenPermissions[]'
+    //     },
+    //     {
+    //     name: 'spender',
+    //     type: 'address'
+    //     },
+    //     {
+    //     name: 'nonce',
+    //     type: 'uint256'
+    //     },
+    //     {
+    //     name: 'deadline',
+    //     type: 'uint256'
+    //     },
+    //     {
+    //     name: 'witness',
+    //     type: 'Order'
+    //   }],
+    //   TokenPermissions: [{
+    //     name: 'token',
+    //     type: 'address'
+    //     },
+    //     {
+    //     name: 'amount',
+    //     type: 'uint256'
+    //   }],
+    //   Item: [{
+    //     name: 'token',
+    //     type: 'address'
+    //     },
+    //     {
+    //     name: 'amount',
+    //     type: 'uint256'
+    //   }],
+    //   Order: [{
+    //     name: 'offerer',
+    //     type: 'address'
+    //     },
+    //     {
+    //     name: 'zone',
+    //     type: 'address'
+    //     },
+    //     {
+    //     name: 'offer',
+    //     type: 'Item[]'
+    //     },
+    //     {
+    //     name: 'consideration',
+    //     type: 'Item[]'
+    //     },
+    //     {
+    //     name: 'deadline',
+    //     type: 'uint256'
+    //     },
+    //     {
+    //     name: 'nonce',
+    //     type: 'uint256'
+    //   }]
+    // }
+    //
+    // const item = {
+    //   token: ethers.ZeroAddress,
+    //   amount: 0
+    // }
+    //
+    // const order = {
+    //   offerer: ethers.ZeroAddress,
+    //   zone: ethers.ZeroAddress,
+    //   offer: [item],
+    //   consideration: [item, item, item],
+    //   deadline: 0,
+    //   nonce: 0
+    // }
+    //
+    // const permit = {
+    //   permitted: [item],
+    //   spender: ethers.getAddress('0x5615deb798bb3e4dfa0139dfa1b3d433cc23b72f'),
+    //   nonce: 0,
+    //   deadline: 0,
+    //   witness: order
+    // }
+    //
+    // const permitHash = ethers.TypedDataEncoder.hashStruct("PermitBatchWitnessTransferFrom", PERMIT, permit)
+    //
+    // console.log(permitHash);
+    // ```
+    function test_PermitHash() public {
+        IFloodPlain.Item memory item = IFloodPlain.Item({
+            token: address(0),
+            amount: 0
+        });
+
+        IFloodPlain.Item[] memory offer = new IFloodPlain.Item[](1);
+        offer[0] = item;
+
+        IFloodPlain.Item[] memory consideration = new IFloodPlain.Item[](3);
+        consideration[0] = item;
+        consideration[1] = item;
+        consideration[2] = item;
+
+        IFloodPlain.Order memory order = IFloodPlain.Order({
+            offerer: address(0),
+            zone: address(0),
+            offer: offer,
+            consideration: consideration,
+            deadline: 0,
+            nonce: 0
+        });
+
+        bytes32 permitHash = book.getPermitHash(order);
+
+        assertEq(permitHash, 0xd42a97ef3ee49aedb736ce1ad96d68b14af54cbb77d5dfd676bcc90e7f3e25a8);
     }
 }
