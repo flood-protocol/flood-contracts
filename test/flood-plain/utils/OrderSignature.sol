@@ -7,6 +7,11 @@ import {IFloodPlain} from "src/flood-plain/IFloodPlain.sol";
 
 contract OrderSignature is Test {
     using OrderHash for IFloodPlain.Order;
+    using OrderHash for IFloodPlain.Item;
+
+    function hash(IFloodPlain.Item calldata item) public pure returns (bytes32) {
+        return item.hash();
+    }
 
     function hash(IFloodPlain.Order calldata order) public pure returns (bytes32) {
         return order.hash();
