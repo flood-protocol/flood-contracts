@@ -3,9 +3,6 @@ pragma solidity ^0.8.17;
 
 import "test/flood-plain/utils/FloodPlainTestShared.sol";
 
-import {PermitHash} from "permit2/src/libraries/PermitHash.sol";
-import {OrderHash} from "src/flood-plain/libraries/OrderHash.sol";
-
 contract FloodPlainDirectFulfillerTest is FloodPlainTestShared {
     function test_fulfillBasicOrder() public {
         (IFloodPlain.Order memory order, bytes memory sig) = setup_mostBasicOrder();
