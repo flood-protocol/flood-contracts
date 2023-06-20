@@ -21,7 +21,7 @@ contract FloodPlainDirectFulfillerTest is FloodPlainTestShared {
     }
 
     function test_fulfillEthOrder() public {
-        (IFloodPlain.Order memory order, ) = setup_mostBasicOrder();
+        (IFloodPlain.Order memory order,) = setup_mostBasicOrder();
 
         order.consideration[0].token = address(0);
 
@@ -30,7 +30,7 @@ contract FloodPlainDirectFulfillerTest is FloodPlainTestShared {
         uint256 balanceBefore = address(this).balance;
 
         // Fill the order.
-        book.fulfillOrder{ value: 500 }(order, sig);
+        book.fulfillOrder{value: 500}(order, sig);
 
         // Assertions.
         assertEq(token0.balanceOf(address(account0.addr)), 0);
@@ -90,7 +90,7 @@ contract FloodPlainDirectFulfillerTest is FloodPlainTestShared {
     }
 
     function test_RevertWhenInsufficientEthConsiderationReceived() public {
-        (IFloodPlain.Order memory order, ) = setup_mostBasicOrder();
+        (IFloodPlain.Order memory order,) = setup_mostBasicOrder();
 
         order.consideration[0].token = address(0);
 
@@ -98,11 +98,11 @@ contract FloodPlainDirectFulfillerTest is FloodPlainTestShared {
 
         // Filling order fails.
         vm.expectRevert(bytes4(keccak256("IncorrectValueReceived()")));
-        book.fulfillOrder{ value: 499 }(order, sig);
+        book.fulfillOrder{value: 499}(order, sig);
     }
 
     function test_RevertWhenTransferTaxTokens() public {
-        (IFloodPlain.Order memory order, ) = setup_mostBasicOrder();
+        (IFloodPlain.Order memory order,) = setup_mostBasicOrder();
 
         order.consideration[0].token = address(token6); // fee-on-transfer token
         bytes memory sig = getSignature(order, account0);
@@ -116,7 +116,7 @@ contract FloodPlainDirectFulfillerTest is FloodPlainTestShared {
     }
 
     function test_OrderPassingThroughZone() public {
-        (IFloodPlain.Order memory order, ) = setup_mostBasicOrder();
+        (IFloodPlain.Order memory order,) = setup_mostBasicOrder();
 
         deal(address(token1), address(this), 500);
         token1.approve(address(book), 500);
@@ -130,7 +130,7 @@ contract FloodPlainDirectFulfillerTest is FloodPlainTestShared {
     }
 
     function test_RevertWhenZoneReverts() public {
-        (IFloodPlain.Order memory order, ) = setup_mostBasicOrder();
+        (IFloodPlain.Order memory order,) = setup_mostBasicOrder();
 
         deal(address(token1), address(this), 500);
         token1.approve(address(book), 500);

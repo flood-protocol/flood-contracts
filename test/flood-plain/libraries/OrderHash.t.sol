@@ -43,10 +43,7 @@ contract OrderHashTest is Test {
     // console.log(itemHash);
     // ```
     function test_itemHash() public {
-        IFloodPlain.Item memory item = IFloodPlain.Item({
-            token: address(0),
-            amount: 0
-        });
+        IFloodPlain.Item memory item = IFloodPlain.Item({token: address(0), amount: 0});
 
         bytes32 itemHash = orderSignature.hash(item);
 
@@ -113,10 +110,7 @@ contract OrderHashTest is Test {
     // console.log(orderHash);
     // ```
     function test_orderHash() public {
-        IFloodPlain.Item memory item = IFloodPlain.Item({
-            token: address(0),
-            amount: 0
-        });
+        IFloodPlain.Item memory item = IFloodPlain.Item({token: address(0), amount: 0});
 
         IFloodPlain.Item[] memory offer = new IFloodPlain.Item[](1);
         offer[0] = item;
@@ -235,10 +229,7 @@ contract OrderHashTest is Test {
     // console.log(permitHash);
     // ```
     function test_permitHash() public {
-        IFloodPlain.Item memory item = IFloodPlain.Item({
-            token: address(0),
-            amount: 0
-        });
+        IFloodPlain.Item memory item = IFloodPlain.Item({token: address(0), amount: 0});
 
         IFloodPlain.Item[] memory offer = new IFloodPlain.Item[](1);
         offer[0] = item;
@@ -267,10 +258,13 @@ contract OrderHashTest is Test {
     // typestring against the whole typestring, which was implicitly checked to be true in the
     // previous `test_permitHash` test.
     function test_witnessTypeString() public {
-        bytes32 permitTypeHash = keccak256(bytes(string.concat(
-            PermitHash._PERMIT_BATCH_WITNESS_TRANSFER_FROM_TYPEHASH_STUB,
-            OrderHash._WITNESS_TYPESTRING
-        )));
+        bytes32 permitTypeHash = keccak256(
+            bytes(
+                string.concat(
+                    PermitHash._PERMIT_BATCH_WITNESS_TRANSFER_FROM_TYPEHASH_STUB, OrderHash._WITNESS_TYPESTRING
+                )
+            )
+        );
         assertEq(permitTypeHash, OrderHash._PERMIT_TYPEHASH);
     }
 }

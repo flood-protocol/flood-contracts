@@ -191,7 +191,8 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
         uint256 newBalance;
         for (uint256 i = 0; i < dedupCount;) {
             deduplicatedItem = deduplicatedItems[i];
-            newBalance = deduplicatedItem.token == address(0) ? to.balance : IERC20(deduplicatedItem.token).balanceOf(to);
+            newBalance =
+                deduplicatedItem.token == address(0) ? to.balance : IERC20(deduplicatedItem.token).balanceOf(to);
             if (newBalance < requiredAmounts[i]) {
                 revert InsufficientAmountReceived();
             }

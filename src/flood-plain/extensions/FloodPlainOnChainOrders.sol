@@ -16,7 +16,11 @@ abstract contract FloodPlainOnChainOrders is FloodPlain, IFloodPlainOnChainOrder
 
     OrderWithSignature[] internal _etchedOrders;
 
-    function getEtchedOrder(uint256 etchedOrderId) external view returns (OrderWithSignature memory /* etchedOrder */ ) {
+    function getEtchedOrder(uint256 etchedOrderId)
+        external
+        view
+        returns (OrderWithSignature memory /* etchedOrder */ )
+    {
         return _etchedOrders[etchedOrderId];
     }
 

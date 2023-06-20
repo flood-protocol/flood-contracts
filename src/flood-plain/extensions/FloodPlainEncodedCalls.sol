@@ -64,9 +64,7 @@ abstract contract FloodPlainEncodedCalls is FloodPlain, IFloodPlainEncodedCalls,
             let trimmedCalldataSize := sub(calldatasize(), 0x02)
 
             // Check for underflow.
-            if gt(trimmedCalldataSize, calldatasize()) {
-                revert(0, 0)
-            }
+            if gt(trimmedCalldataSize, calldatasize()) { revert(0, 0) }
 
             // Copy calldata starting from third byte to the memory.
             calldatacopy(0x00, 0x02, trimmedCalldataSize)
@@ -78,9 +76,7 @@ abstract contract FloodPlainEncodedCalls is FloodPlain, IFloodPlainEncodedCalls,
             returndatacopy(0, 0, returndatasize())
 
             // Revert with return data if the call failed.
-            if iszero(result) {
-                revert(0, returndatasize())
-            }
+            if iszero(result) { revert(0, returndatasize()) }
 
             // Delegatecall to this address with the decoded data.
             result := delegatecall(gas(), address(), 0, returndatasize(), 0, 0)

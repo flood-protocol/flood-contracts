@@ -11,7 +11,6 @@ contract MockDecoder is IDecoder {
         // signatures. However, this is a simple decoder with only a fallback, so we can start from
         // the first byte.
 
-
         // A decoder should have a single feature. This decoder is for decoding to
         // `FloodPlain.fulfillOrder`, to reduce the calldata size. Note, this is not an optimal
         // decoder, but just something to portray the idea.

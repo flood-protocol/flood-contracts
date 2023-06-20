@@ -21,7 +21,7 @@ contract FloodPlainTest is FloodPlainTestShared {
     }
 
     function test_fulfillEthOrder() public {
-        (IFloodPlain.Order memory order, ) = setup_mostBasicOrder();
+        (IFloodPlain.Order memory order,) = setup_mostBasicOrder();
 
         order.consideration[0].token = address(0);
         deal(address(fulfiller), 500);
@@ -70,7 +70,7 @@ contract FloodPlainTest is FloodPlainTestShared {
     }
 
     function test_RevertWhenInsufficientEthConsiderationReceived() public {
-        (IFloodPlain.Order memory order, ) = setup_mostBasicOrder();
+        (IFloodPlain.Order memory order,) = setup_mostBasicOrder();
 
         order.consideration[0].token = address(0);
         deal(address(maliciousFulfiller), 500);
@@ -112,7 +112,7 @@ contract FloodPlainTest is FloodPlainTestShared {
     }
 
     function test_RevertWhenDeadlineExpire() public {
-        (IFloodPlain.Order memory order, ) = setup_mostBasicOrder();
+        (IFloodPlain.Order memory order,) = setup_mostBasicOrder();
 
         // Set deadline to one second ago, and sign it.
         order.deadline = block.timestamp - 1;
@@ -124,7 +124,7 @@ contract FloodPlainTest is FloodPlainTestShared {
     }
 
     function test_OrderPassingThroughZone() public {
-        (IFloodPlain.Order memory order, ) = setup_mostBasicOrder();
+        (IFloodPlain.Order memory order,) = setup_mostBasicOrder();
 
         // Set zone to pre deployed zone, and sign the order.
         order.zone = address(zone);
@@ -135,7 +135,7 @@ contract FloodPlainTest is FloodPlainTestShared {
     }
 
     function test_RevertWhenZoneReverts() public {
-        (IFloodPlain.Order memory order, ) = setup_mostBasicOrder();
+        (IFloodPlain.Order memory order,) = setup_mostBasicOrder();
 
         // Set zone to pre deployed zone, and sign the order.
         order.zone = address(zone);
@@ -317,10 +317,7 @@ contract FloodPlainTest is FloodPlainTestShared {
     // console.log(orderHash);
     // ```
     function test_OrderHash() public {
-        IFloodPlain.Item memory item = IFloodPlain.Item({
-            token: address(0),
-            amount: 0
-        });
+        IFloodPlain.Item memory item = IFloodPlain.Item({token: address(0), amount: 0});
 
         IFloodPlain.Item[] memory offer = new IFloodPlain.Item[](1);
         offer[0] = item;
@@ -440,10 +437,7 @@ contract FloodPlainTest is FloodPlainTestShared {
     // console.log(permitHash);
     // ```
     function test_PermitHash() public {
-        IFloodPlain.Item memory item = IFloodPlain.Item({
-            token: address(0),
-            amount: 0
-        });
+        IFloodPlain.Item memory item = IFloodPlain.Item({token: address(0), amount: 0});
 
         IFloodPlain.Item[] memory offer = new IFloodPlain.Item[](1);
         offer[0] = item;

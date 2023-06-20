@@ -9,10 +9,8 @@ contract FloodPlainOnChainOrdersTest is FloodPlainTestShared {
     function test_fulfillEthOrder() public {
         (IFloodPlain.Order memory order, bytes memory sig) = setup_mostBasicOrder();
 
-        IFloodPlainOnChainOrders.OrderWithSignature memory orderWithSig = IFloodPlainOnChainOrders.OrderWithSignature({
-            order: order,
-            signature: sig
-        });
+        IFloodPlainOnChainOrders.OrderWithSignature memory orderWithSig =
+            IFloodPlainOnChainOrders.OrderWithSignature({order: order, signature: sig});
 
         // Etch order.
         book.etchOrder(orderWithSig);
@@ -32,10 +30,8 @@ contract FloodPlainOnChainOrdersTest is FloodPlainTestShared {
     function test_etchingIncrementsOrderIds() public {
         (IFloodPlain.Order memory order, bytes memory sig) = setup_mostBasicOrder();
 
-        IFloodPlainOnChainOrders.OrderWithSignature memory orderWithSig = IFloodPlainOnChainOrders.OrderWithSignature({
-            order: order,
-            signature: sig
-        });
+        IFloodPlainOnChainOrders.OrderWithSignature memory orderWithSig =
+            IFloodPlainOnChainOrders.OrderWithSignature({order: order, signature: sig});
 
         uint256 order1 = book.etchOrder(orderWithSig);
         assertEq(order1, 0);
@@ -50,10 +46,8 @@ contract FloodPlainOnChainOrdersTest is FloodPlainTestShared {
     function test_getEtchedOrderDetails() public {
         (IFloodPlain.Order memory order, bytes memory sig) = setup_mostBasicOrder();
 
-        IFloodPlainOnChainOrders.OrderWithSignature memory orderWithSig = IFloodPlainOnChainOrders.OrderWithSignature({
-            order: order,
-            signature: sig
-        });
+        IFloodPlainOnChainOrders.OrderWithSignature memory orderWithSig =
+            IFloodPlainOnChainOrders.OrderWithSignature({order: order, signature: sig});
 
         // Etch order.
         book.etchOrder(orderWithSig);

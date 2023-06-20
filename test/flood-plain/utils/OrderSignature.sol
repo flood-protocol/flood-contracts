@@ -21,17 +21,20 @@ contract OrderSignature is Test {
         return order.hashAsWitness(spender);
     }
 
-    function hashAsMessage(IFloodPlain.Order calldata order, bytes32 domainSeparator, address spender) public pure returns (bytes32) {
-        return keccak256(
-            abi.encodePacked(
-                "\x19\x01",
-                domainSeparator,
-                order.hashAsWitness(spender)
-            )
-        );
+    function hashAsMessage(IFloodPlain.Order calldata order, bytes32 domainSeparator, address spender)
+        public
+        pure
+        returns (bytes32)
+    {
+        return keccak256(abi.encodePacked("\x19\x01", domainSeparator, order.hashAsWitness(spender)));
     }
 
-    function getSignature(IFloodPlain.Order calldata order, uint256 privateKey, bytes32 domainSeparator, address spender) public pure returns (bytes memory) {
+    function getSignature(
+        IFloodPlain.Order calldata order,
+        uint256 privateKey,
+        bytes32 domainSeparator,
+        address spender
+    ) public pure returns (bytes memory) {
         bytes32 msgHash = hashAsMessage(order, domainSeparator, spender);
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, msgHash);

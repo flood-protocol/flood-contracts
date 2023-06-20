@@ -9,5 +9,5 @@ interface IDecoder {
      * @dev If there are any other external functions in Decoder, a unique first byte of calldata
      *      must be used for triggering fallback.
      */
-    fallback() external /* view */;
+    fallback() external; /* view */
 }

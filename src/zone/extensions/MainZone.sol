@@ -38,12 +38,12 @@ contract MainZone is Zone, IMainZone, AccessControl, Pausable {
         secondaryZone = newSecondaryZone; // Zero address is to unset.
     }
 
-    function validateOrder(
-        IFloodPlain.Order calldata, /* order */
-        address book,
-        address caller,
-        bytes32 orderHash
-    ) external override view whenNotPaused {
+    function validateOrder(IFloodPlain.Order calldata, /* order */ address book, address caller, bytes32 orderHash)
+        external
+        view
+        override
+        whenNotPaused
+    {
         // Always do basic built-in access control checks.
         _checkRole(CALLER_ROLE, caller);
         _checkRole(BOOK_ROLE, book);
@@ -63,7 +63,7 @@ contract MainZone is Zone, IMainZone, AccessControl, Pausable {
         address caller,
         bytes32 orderHash,
         bytes calldata /* context */
-    ) external override view whenNotPaused {
+    ) external view override whenNotPaused {
         // Always do basic built-in access control checks.
         _checkRole(CALLER_ROLE, caller);
         _checkRole(FULFILLER_ROLE, fulfiller);

@@ -15,12 +15,9 @@ interface IZone {
      *                  all the fulfillment parameters.
      * @param orderHash The EIP712 hash of the order components.
      */
-    function validateOrder(
-        IFloodPlain.Order calldata order,
-        address book,
-        address caller,
-        bytes32 orderHash
-    ) external view;
+    function validateOrder(IFloodPlain.Order calldata order, address book, address caller, bytes32 orderHash)
+        external
+        view;
 
     /**
      * @notice Check if an order with specific fulfillment parameters is valid.

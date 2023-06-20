@@ -14,19 +14,11 @@ contract MockZone is IZone, Pausable {
         _unpause();
     }
 
-    function validateOrder(
-        IFloodPlain.Order calldata,
-        address,
-        address,
-        bytes32
-    ) external view whenNotPaused {}
+    function validateOrder(IFloodPlain.Order calldata, address, address, bytes32) external view whenNotPaused {}
 
-    function validateOrder(
-        IFloodPlain.Order calldata,
-        address,
-        address,
-        address,
-        bytes32,
-        bytes calldata
-    ) external view whenNotPaused {}
+    function validateOrder(IFloodPlain.Order calldata, address, address, address, bytes32, bytes calldata)
+        external
+        view
+        whenNotPaused
+    {}
 }

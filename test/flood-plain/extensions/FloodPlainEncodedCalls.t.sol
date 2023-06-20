@@ -39,7 +39,7 @@ contract FloodPlainEncodedCalls is FloodPlainTestShared {
     function test_fufillThroughDecoder() public {
         book.addDecoder(address(decoder));
 
-        (IFloodPlain.Order memory order, ) = setup_mostBasicOrder();
+        (IFloodPlain.Order memory order,) = setup_mostBasicOrder();
         order.deadline = type(uint32).max;
         bytes memory sig = getSignature(order, account0);
 

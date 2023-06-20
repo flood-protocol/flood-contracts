@@ -56,11 +56,8 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
     }
 
     function addExecutor(address executor) external onlyOwner returns (uint256 executorId) {
-        ExecutorInfo memory executorInfo = ExecutorInfo({
-            executor: executor,
-            hasCallback: IExecutor(executor).hasCallback(),
-            isEnabled: true
-        });
+        ExecutorInfo memory executorInfo =
+            ExecutorInfo({executor: executor, hasCallback: IExecutor(executor).hasCallback(), isEnabled: true});
 
         executorId = _executors.length;
         _executors.push(executorInfo);
@@ -179,7 +176,7 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
         bool hasCallback;
 
         // Execute a swap with each iteration.
-        while(end) {
+        while (end) {
             // Decode first swap instructions from ptr, ensuring executor is not disabled.
             (ptr, executorId, swap) = _decodeSwap(ptr, swaps);
 
@@ -210,9 +207,7 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
                 // Copy the returned data.
                 returndatacopy(0, 0, returndatasize())
 
-                if iszero(result) {
-                    revert(0, returndatasize())
-                }
+                if iszero(result) { revert(0, returndatasize()) }
 
                 // Break the loop if next word is empty.
                 end := iszero(calldataload(ptr))
@@ -244,7 +239,11 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
     // Caveat: Token indices in a pool can change when tokens are added or removed from a
     //         multi-token pool. This can theoretically be abused by the pool owner to steal funds
     //         from the fulfiller by frontrunning a swap. This is an accepted risk.
-    function _decodeSwap(uint256 ptr, bytes calldata swaps) internal pure returns (uint256 endPtr, uint64 executorId, IExecutor.Swap memory swap) {
+    function _decodeSwap(uint256 ptr, bytes calldata swaps)
+        internal
+        pure
+        returns (uint256 endPtr, uint64 executorId, IExecutor.Swap memory swap)
+    {
         unchecked {
             // Decode instructions based on the above-described scheme.
             // TODO: This decoding doesn't work! Will be replaced with assembly.

@@ -57,7 +57,11 @@ abstract contract FloodPlainTestShared is Test, DeployPermit2 {
         account3 = makeAccount("d");
     }
 
-    function getSignature(IFloodPlain.Order memory order, Account memory signer) internal view returns (bytes memory sig) {
+    function getSignature(IFloodPlain.Order memory order, Account memory signer)
+        internal
+        view
+        returns (bytes memory sig)
+    {
         sig = orderSignature.getSignature(order, signer.key, EIP712(address(permit2)).DOMAIN_SEPARATOR(), address(book));
     }
 

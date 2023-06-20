@@ -27,8 +27,5 @@ interface IFloodPlainDirectFulfiller {
      * @return isValid A boolean guaranteeing the order cannot be fulfilled with supplied
      *                 parameters if false.
      */
-    function getOrderValidity(IFloodPlain.Order calldata order, address caller)
-        external
-        view
-        returns (bool isValid);
+    function getOrderValidity(IFloodPlain.Order calldata order, address caller) external view returns (bool isValid);
 }
