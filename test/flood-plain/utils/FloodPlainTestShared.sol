@@ -9,6 +9,7 @@ import {IFloodPlain} from "src/flood-plain/IFloodPlain.sol";
 import {MockERC20} from "test/flood-plain/utils/MockERC20.sol";
 import {MockFeeOnTransferERC20} from "test/flood-plain/utils/MockFeeOnTransferERC20.sol";
 import {MockFulfiller} from "test/flood-plain/utils/MockFulfiller.sol";
+import {MockDecoder} from "test/flood-plain/utils/MockDecoder.sol";
 import {MaliciousFulfiller} from "test/flood-plain/utils/MaliciousFulfiller.sol";
 import {MockZone} from "test/flood-plain/utils/MockZone.sol";
 import {OrderSignature} from "test/flood-plain/utils/OrderSignature.sol";
@@ -20,6 +21,7 @@ abstract contract FloodPlainTestShared is Test, DeployPermit2 {
     FloodPlainL2 book;
     MockZone zone;
     MockFulfiller fulfiller;
+    MockDecoder decoder;
     MaliciousFulfiller maliciousFulfiller;
     OrderSignature orderSignature;
     MockERC20 token0;
@@ -38,6 +40,7 @@ abstract contract FloodPlainTestShared is Test, DeployPermit2 {
         permit2 = ISignatureTransfer(deployPermit2());
         book = new FloodPlainL2(address(permit2));
         fulfiller = new MockFulfiller();
+        decoder = new MockDecoder();
         maliciousFulfiller = new MaliciousFulfiller();
         zone = new MockZone();
         orderSignature = new OrderSignature();

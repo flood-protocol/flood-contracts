@@ -27,6 +27,8 @@ contract FloodPlainOnChainOrdersTest is FloodPlainTestShared {
         assertEq(token1.balanceOf(address(fulfiller)), 0);
     }
 
+    // TODO: Revert works properly, relaying the same error message.
+
     function test_etchingIncrementsOrderIds() public {
         (IFloodPlain.Order memory order, bytes memory sig) = setup_mostBasicOrder();
 

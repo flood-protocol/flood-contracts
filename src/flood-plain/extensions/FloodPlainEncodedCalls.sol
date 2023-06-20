@@ -24,9 +24,32 @@ abstract contract FloodPlainEncodedCalls is FloodPlain, IFloodPlainEncodedCalls,
     }
 
     fallback() external {
-        // The first byte is ignored. It should not match the first byte of any other function
-        // selector in the contract to guarantee the fallback is executed. The second byte is the
-        // decoder ID. A decoder can employ any decoding scheme.
+        // First byte of the calldata is not used. Any first byte that does not clash with other
+        // function signatures can be used to enter fallback. From the `forge inspect FloodPlainL2
+        // methodIdentifiers`, we see that `0x00` is available. We suggest using that since zeroes
+        // in calldata is cheaper.
+        //
+        // "PERMIT2()": "6afdd850",
+        // "acceptOwnership()": "79ba5097",
+        // "addDecoder(address)": "9d481b66",
+        // "etchOrder(((address,address,(address,uint256)[],(address,uint256)[],uint256,uint256),bytes))": "1d5473a2",
+        // "fulfillEtchedOrder(uint256,address,bytes)": "a15e7907",
+        // "fulfillOrder((address,address,(address,uint256)[],(address,uint256)[],uint256,uint256),bytes)": "6f01c5e2",
+        // "fulfillOrder((address,address,(address,uint256)[],(address,uint256)[],uint256,uint256),bytes,address,bytes)": "064d5bc3",
+        // "getDecoder(uint256)": "e77876cc",
+        // "getEtchedOrder(uint256)": "4d599400",
+        // "getNonceStatus(address,uint256)": "e9ba1e97",
+        // "getOrderHash((address,address,(address,uint256)[],(address,uint256)[],uint256,uint256))": "1b8b792c",
+        // "getOrderStatus((address,address,(address,uint256)[],(address,uint256)[],uint256,uint256))": "093de1d2",
+        // "getOrderValidity((address,address,(address,uint256)[],(address,uint256)[],uint256,uint256),address)": "fcb0caf2",
+        // "getOrderValidity((address,address,(address,uint256)[],(address,uint256)[],uint256,uint256),address,address,bytes)": "a77dd3e4",
+        // "getPermitHash((address,address,(address,uint256)[],(address,uint256)[],uint256,uint256))": "729d540d",
+        // "owner()": "8da5cb5b",
+        // "pendingOwner()": "e30c3978",
+        // "renounceOwnership()": "715018a6",
+        // "transferOwnership(address)": "f2fde38b"
+
+        // The second byte is the decoder ID. A decoder can employ any decoding scheme.
         uint256 decoderId;
         assembly {
             // Get the decoder identifier from the second byte of calldata.
