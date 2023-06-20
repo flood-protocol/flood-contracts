@@ -36,22 +36,38 @@ contract MockDecoder is IDecoder {
 
         uint256 ptr = 0;
 
-        // TODO: This decoding doesn't work! Will be replaced with assembly.
+        // Decode instructions based on the above-described scheme.
+
         unchecked {
-            // Decode instructions based on the above-described scheme.
-            order.offerer = abi.decode(data[ptr:ptr += 20], (address));
-            order.zone = abi.decode(data[ptr:ptr += 20], (address));
-            order.nonce = uint256(abi.decode(data[ptr:ptr += 3], (uint24)));
-            order.deadline = uint256(abi.decode(data[ptr:ptr += 4], (uint32)));
-            fulfiller = abi.decode(data[ptr:ptr += 20], (address));
-            bytes1 v = abi.decode(data[ptr:++ptr], (bytes1));
+            order.offerer = address(bytes20(abi.decode(data[ptr:], (bytes32))));
+            ptr += 20;
+
+            order.zone = address(bytes20(abi.decode(data[ptr:], (bytes32))));
+            ptr += 20;
+
+            order.nonce = uint256(uint24(bytes3(abi.decode(data[ptr:], (bytes32)))));
+            ptr += 3;
+
+            order.deadline = uint256(uint32(bytes4(abi.decode(data[ptr:], (bytes32)))));
+            ptr += 4;
+
+            fulfiller = address(bytes20(abi.decode(data[ptr:], (bytes32))));
+            ptr += 20;
+
+            bytes1 v = bytes1(abi.decode(data[ptr:], (bytes32)));
+            ++ptr;
+
             bytes32 r = abi.decode(data[ptr:ptr += 32], (bytes32));
+
             bytes32 s = abi.decode(data[ptr:ptr += 32], (bytes32));
+
             signature = bytes.concat(r, s, v);
         }
 
         unchecked {
-            uint256 itemCounts = abi.decode(data[ptr:++ptr], (uint256));
+            uint256 itemCounts = uint8(bytes1(abi.decode(data[ptr:], (bytes32))));
+            ++ptr;
+
             uint256 offerCount = (itemCounts >> 4);
             uint256 considerationCount = (itemCounts & 0x0f);
 
@@ -59,12 +75,18 @@ contract MockDecoder is IDecoder {
             IFloodPlain.Item[] memory consideration = new IFloodPlain.Item[](considerationCount);
 
             for (uint256 i = 0; i < offerCount; ++i) {
-                offer[i].token = abi.decode(data[ptr:ptr += 20], (address));
-                offer[i].amount = uint256(abi.decode(data[ptr:ptr += 14], (uint112)));
+                offer[i].token = address(bytes20(abi.decode(data[ptr:], (bytes32))));
+                ptr += 20;
+
+                offer[i].amount = uint112(bytes14(abi.decode(data[ptr:], (bytes32))));
+                ptr += 14;
             }
             for (uint256 i = 0; i < considerationCount; ++i) {
-                consideration[i].token = abi.decode(data[ptr:ptr += 20], (address));
-                consideration[i].amount = uint256(abi.decode(data[ptr:ptr += 14], (uint112)));
+                consideration[i].token = address(bytes20(abi.decode(data[ptr:], (bytes32))));
+                ptr += 20;
+
+                consideration[i].amount = uint112(bytes14(abi.decode(data[ptr:], (bytes32))));
+                ptr += 14;
             }
 
             order.offer = offer;

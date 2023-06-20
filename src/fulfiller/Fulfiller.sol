@@ -247,6 +247,7 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
     function _decodeSwap(uint256 ptr, bytes calldata swaps) internal pure returns (uint256 endPtr, uint64 executorId, IExecutor.Swap memory swap) {
         unchecked {
             // Decode instructions based on the above-described scheme.
+            // TODO: This decoding doesn't work! Will be replaced with assembly.
             executorId = abi.decode(swaps[ptr:++ptr], (uint64));
             uint256 amountsSizes = abi.decode(swaps[ptr:++ptr], (uint256));
             uint256 amountInSize = (amountsSizes >> 4) + 1;

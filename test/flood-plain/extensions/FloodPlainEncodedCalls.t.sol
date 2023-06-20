@@ -39,7 +39,9 @@ contract FloodPlainEncodedCalls is FloodPlainTestShared {
     function test_fufillThroughDecoder() public {
         book.addDecoder(address(decoder));
 
-        (IFloodPlain.Order memory order, bytes memory sig) = setup_mostBasicOrder();
+        (IFloodPlain.Order memory order, ) = setup_mostBasicOrder();
+        order.deadline = type(uint32).max;
+        bytes memory sig = getSignature(order, account0);
 
         (bytes32 r, bytes32 s) = abi.decode(sig, (bytes32, bytes32));
         bytes1 v = sig[64];
@@ -59,25 +61,27 @@ contract FloodPlainEncodedCalls is FloodPlainTestShared {
 
         bytes memory encodedDataEnd = abi.encodePacked(
             bytes1(0x11), // (0001, 0001)
-            address(0),
-            uint112(0),
-            address(0),
-            uint112(0)
+            address(address(token0)),
+            uint112(500),
+            address(address(token1)),
+            uint112(500)
         );
 
         bytes memory encodedData = bytes.concat(encodedDataBegin, encodedDataEnd);
 
         address bookAddress = address(book);
 
+        bool result;
         assembly {
-            let result := call(gas(), bookAddress, 0, add(encodedData, 0x20), encodedData, 0, 0)
-
-            returndatacopy(0, 0, returndatasize())
-
-            switch result
-            case 0 { revert(0, returndatasize()) }
-            default { return(0, returndatasize()) }
+            result := call(gas(), bookAddress, 0, add(encodedData, 0x20), encodedData, 0, 0)
         }
+        assertTrue(result);
+
+        // Assertions.
+        assertEq(token0.balanceOf(address(account0.addr)), 0);
+        assertEq(token1.balanceOf(address(account0.addr)), 500);
+        assertEq(token0.balanceOf(address(fulfiller)), 500);
+        assertEq(token1.balanceOf(address(fulfiller)), 0);
     }
 
     function test_RevertWhenAddInvalidDecoder() public {
