@@ -115,7 +115,7 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
         IFloodPlain.Item[] calldata requestedItems,
         address, /* caller */
         bytes calldata context
-    ) external whenNotPaused nonReentrant {
+    ) external whenNotPaused nonReentrant returns (uint256[] memory) {
         if (!_books[msg.sender]) {
             revert InvalidBook();
         }
@@ -123,32 +123,57 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
             revert InvalidZone();
         }
 
+        uint256 itemsLength = requestedItems.length;
+        uint256[] memory gatheredAmounts = new uint256[](itemsLength);
+
         // Book must have sent offer items prior to this call. The swap data is ought to use the
         // received offer items. However, this fulfiller will not have any checks to ensure not
         // more than the received offer items are spent. It will therefore trust `caller` to supply
         // honest swap data. The caller is a trusted address and the access control is enforced
         // through the zone.
 
-        // Execute swaps based on the swap instructions provided.
-        _executeSwaps(context);
-
-        // Send requested items to the offerer.
-        uint256 itemsLength = requestedItems.length;
-        address to = order.offerer;
-        IFloodPlain.Item calldata item;
+        // Record requested item balances before the swaps.
+        address token;
         for (uint256 i = 0; i < itemsLength;) {
-            item = requestedItems[i];
+            token = requestedItems[i].token;
 
-            if (item.token == address(0)) {
-                payable(to).sendValue(item.amount);
+            if (token == address(0)) {
+                gatheredAmounts[i] = address(this).balance;
             } else {
-                IERC20(item.token).safeTransfer(to, item.amount);
+                gatheredAmounts[i] = IERC20(token).balanceOf(address(this));
             }
 
             unchecked {
                 ++i;
             }
         }
+
+        // Execute swaps based on the swap instructions provided.
+        _executeSwaps(context);
+
+        // Get the gathered amounts, and approve book to spend them.
+        uint256 gatheredAmount;
+        for (uint256 i = 0; i < itemsLength;) {
+            token = requestedItems[i].token;
+
+            if (token == address(0)) {
+                gatheredAmount = address(this).balance - gatheredAmounts[i];
+                payable(msg.sender).sendValue(gatheredAmount);
+            } else {
+                gatheredAmount = IERC20(token).balanceOf(address(this)) - gatheredAmounts[i];
+                IERC20(token).safeIncreaseAllowance(msg.sender, gatheredAmount);
+            }
+
+            gatheredAmounts[i] = gatheredAmount;
+
+            unchecked {
+                ++i;
+            }
+        }
+
+        // Let Book pull the tokens and send to offerer. Book checks if gathered amounts cover
+        // requested amounts.
+        return gatheredAmounts;
     }
 
     fallback() external payable {
@@ -163,8 +188,8 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
         // Pointer is incremented with each loop.
         uint256 ptr = 0;
 
-        // End is the condition set at end of each iteration to break the loop.
-        bool end = false;
+        // loop is the condition set at end of each iteration to break the loop.
+        bool loop = true;
 
         // Variables reset at each iteration, defined outside the loop to save gas.
         IExecutor.Swap memory swap;
@@ -176,7 +201,7 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
         bool hasCallback;
 
         // Execute a swap with each iteration.
-        while (end) {
+        while (loop) {
             // Decode first swap instructions from ptr, ensuring executor is not disabled.
             (ptr, executorId, swap) = _decodeSwap(ptr, swaps);
 
@@ -210,7 +235,7 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
                 if iszero(result) { revert(0, returndatasize()) }
 
                 // Break the loop if next word is empty.
-                end := iszero(calldataload(ptr))
+                loop := calldataload(ptr)
             }
 
             // If executor had a callback...
@@ -244,17 +269,29 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
         pure
         returns (uint256 endPtr, uint64 executorId, IExecutor.Swap memory swap)
     {
+        // Decode instructions based on the above-described scheme.
         unchecked {
-            // Decode instructions based on the above-described scheme.
-            // TODO: This decoding doesn't work! Will be replaced with assembly.
-            executorId = abi.decode(swaps[ptr:++ptr], (uint64));
-            uint256 amountsSizes = abi.decode(swaps[ptr:++ptr], (uint256));
+            executorId = uint64(abi.decode(swaps[ptr:], (uint256)) >> 248);
+            ++ptr;
+
+            uint256 amountsSizes = abi.decode(swaps[ptr:], (uint256)) >> 248;
+            ++ptr;
+
             uint256 amountInSize = (amountsSizes >> 4) + 1;
             uint256 amountOutSize = (amountsSizes & 0x0f) + 1;
-            swap.amountIn = abi.decode(swaps[ptr:ptr += amountInSize], (uint256));
-            swap.amountOut = abi.decode(swaps[ptr:ptr += amountOutSize], (uint256));
-            swap.pool = abi.decode(swaps[ptr:ptr += 20], (address));
-            uint256 tokenIndices = abi.decode(swaps[ptr:endPtr = ptr + 1], (uint256));
+
+            swap.amountIn = abi.decode(swaps[ptr:], (uint256)) >> (256 - amountInSize * 8);
+            ptr += amountInSize;
+
+            swap.amountOut = abi.decode(swaps[ptr:], (uint256)) >> (256 - amountOutSize * 8);
+            ptr += amountOutSize;
+
+            swap.pool = address(uint160(abi.decode(swaps[ptr:], (uint256)) >> 96));
+            ptr += 20;
+
+            uint256 tokenIndices = abi.decode(swaps[ptr:], (uint256)) >> 248;
+            endPtr = ptr + 1;
+
             swap.tokenInIndex = tokenIndices >> 4;
             swap.tokenOutIndex = amountsSizes & 0x0f;
         }

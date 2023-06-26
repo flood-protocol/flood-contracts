@@ -11,11 +11,14 @@ interface IFulfiller {
      * @param requestedItems Deduplicated consideration items in an order.
      * @param caller The address that called the book.
      * @param context All the swap data, or any other arbitrary data.
+     *
+     * @return The amount of consideration items that were sourced and approved for Book to
+     *         transfer. These amounts might be higher than requested amounts.
      */
     function sourceConsideration(
         IFloodPlain.Order calldata order,
         IFloodPlain.Item[] calldata requestedItems,
         address caller,
         bytes calldata context
-    ) external;
+    ) external returns (uint256[] memory);
 }

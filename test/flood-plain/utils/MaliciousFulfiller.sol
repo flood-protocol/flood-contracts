@@ -11,13 +11,13 @@ contract MaliciousFulfiller {
     using Address for address payable;
 
     function sourceConsideration(
-        IFloodPlain.Order calldata order,
+        IFloodPlain.Order calldata, /* order */
         IFloodPlain.Item[] calldata requestedItems,
         address, /* caller */
         bytes calldata /* context */
-    ) external {
+    ) external returns (uint256[] memory) {
         uint256 length = requestedItems.length;
-        address to = order.offerer;
+        uint256[] memory amounts = new uint256[](length);
         IFloodPlain.Item calldata item;
         for (uint256 i = 0; i < length;) {
             item = requestedItems[i];
@@ -26,14 +26,18 @@ contract MaliciousFulfiller {
             uint256 amount = i == 0 ? item.amount - 1 : item.amount;
 
             if (item.token == address(0)) {
-                payable(to).sendValue(amount);
+                payable(msg.sender).sendValue(amount);
             } else {
-                IERC20(item.token).safeTransfer(to, amount);
+                IERC20(item.token).safeIncreaseAllowance(msg.sender, amount);
             }
+
+            amounts[i] = item.amount;
 
             unchecked {
                 ++i;
             }
         }
+
+        return amounts;
     }
 }

@@ -65,7 +65,7 @@ contract FloodPlainTest is FloodPlainTestShared {
         deal(address(token1), address(maliciousFulfiller), 500);
 
         // Filling order fails.
-        vm.expectRevert(bytes4(keccak256("InsufficientAmountReceived()")));
+        vm.expectRevert("ERC20: insufficient allowance");
         book.fulfillOrder(order, sig, address(maliciousFulfiller), "");
     }
 
@@ -78,8 +78,18 @@ contract FloodPlainTest is FloodPlainTestShared {
         bytes memory sig = getSignature(order, account0);
 
         // Filling order fails.
-        vm.expectRevert(bytes4(keccak256("InsufficientAmountReceived()")));
+        vm.expectRevert("Address: insufficient balance");
         book.fulfillOrder(order, sig, address(maliciousFulfiller), "");
+    }
+
+    function test_RevertWhenInsufficientConsiderationIndicated() public {
+        (IFloodPlain.Order memory order, bytes memory sig) = setup_mostBasicOrder();
+
+        deal(address(token1), address(maliciousFulfiller2), 500);
+
+        // Filling order fails.
+        vm.expectRevert(bytes4(keccak256("InsufficientAmountReceived()")));
+        book.fulfillOrder(order, sig, address(maliciousFulfiller2), "");
     }
 
     function test_NonceValidity() public {

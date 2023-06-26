@@ -8,6 +8,8 @@ import {ReentrancyGuard} from "@openzeppelin/security/ReentrancyGuard.sol";
 // Libraries
 import {OrderHash} from "./libraries/OrderHash.sol";
 import {ItemDeduplicator} from "./libraries/ItemDeduplicator.sol";
+import {SafeERC20} from "@openzeppelin/token/ERC20/utils/SafeERC20.sol";
+import {Address} from "@openzeppelin/utils/Address.sol";
 
 // Interfaces
 import {IFulfiller} from "../fulfiller/IFulfiller.sol";
@@ -16,6 +18,8 @@ import {IERC20} from "@openzeppelin/token/ERC20/IERC20.sol";
 import {ISignatureTransfer} from "permit2/src/interfaces/ISignatureTransfer.sol";
 
 contract FloodPlain is IFloodPlain, ReentrancyGuard {
+    using SafeERC20 for IERC20;
+    using Address for address payable;
     using OrderHash for Order;
     using ItemDeduplicator for Item[];
 
@@ -155,46 +159,44 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
     }
 
     function _transferConsideration(Order calldata order, address fulfiller, bytes calldata extraData) internal {
-        // Define deduplicatedItems pointer once outside the loops.
-        Item memory deduplicatedItem;
-
         // Deduplicate consideration items, and move the length to stack.
         Item[] memory deduplicatedItems = order.consideration.deduplicate();
-        uint256 dedupCount = deduplicatedItems.length;
-
-        // Get the minimum required final balances of the consideration items.
-        uint256[] memory requiredAmounts = new uint256[](dedupCount);
-        address to = order.offerer;
-        for (uint256 i = 0; i < dedupCount;) {
-            deduplicatedItem = deduplicatedItems[i];
-
-            requiredAmounts[i] = deduplicatedItem.token == address(0)
-                ? deduplicatedItem.amount + to.balance
-                : deduplicatedItem.amount + IERC20(deduplicatedItem.token).balanceOf(to);
-
-            unchecked {
-                ++i;
-            }
-        }
 
         // Call fulfiller with order data and the caller address to source consideration items.
         // Contracts implementing Fulfiller interface could get all their tokens drained, hence
         // they should restrict who can call them directly or indirectly.
-        IFulfiller(payable(fulfiller)).sourceConsideration({
+        uint256[] memory returnedAmounts = IFulfiller(payable(fulfiller)).sourceConsideration({
             order: order,
             requestedItems: deduplicatedItems,
             caller: msg.sender,
             context: extraData
         });
 
-        // Check the offerer has received necessary amounts of all the consideration items.
-        uint256 newBalance;
+        // Define deduplicatedItems pointer once outside the loops.
+        Item memory deduplicatedItem;
+
+        // Pull the returned amounts from the fulfiller.
+        uint256 dedupCount = deduplicatedItems.length;
+        address to = order.offerer;
+        uint256 returnedAmount;
+        address token;
         for (uint256 i = 0; i < dedupCount;) {
             deduplicatedItem = deduplicatedItems[i];
-            newBalance =
-                deduplicatedItem.token == address(0) ? to.balance : IERC20(deduplicatedItem.token).balanceOf(to);
-            if (newBalance < requiredAmounts[i]) {
+            token = deduplicatedItem.token;
+            returnedAmount = returnedAmounts[i];
+
+            if (returnedAmount < deduplicatedItem.amount) {
                 revert InsufficientAmountReceived();
+            }
+
+            if (token == address(0)) {
+                // Expect Fulfiller to have sent Ether when sourceConsideration was called. No
+                // check is made that Fulfiller sent correct amount. Because FloodPlain is not
+                // supposed to hold any Ether, and if less than the returnedAmount indicated by
+                // Fulfiller is received, below transfer will revert.
+                payable(to).sendValue(returnedAmount);
+            } else {
+                IERC20(token).safeTransferFrom(fulfiller, to, returnedAmount);
             }
 
             unchecked {
@@ -202,4 +204,6 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
             }
         }
     }
+
+    receive() external payable {}
 }

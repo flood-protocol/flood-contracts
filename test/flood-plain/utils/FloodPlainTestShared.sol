@@ -11,6 +11,7 @@ import {MockFeeOnTransferERC20} from "test/flood-plain/utils/MockFeeOnTransferER
 import {MockFulfiller} from "test/flood-plain/utils/MockFulfiller.sol";
 import {MockDecoder} from "test/flood-plain/utils/MockDecoder.sol";
 import {MaliciousFulfiller} from "test/flood-plain/utils/MaliciousFulfiller.sol";
+import {MaliciousFulfiller2} from "test/flood-plain/utils/MaliciousFulfiller2.sol";
 import {MockZone} from "test/flood-plain/utils/MockZone.sol";
 import {OrderSignature} from "test/flood-plain/utils/OrderSignature.sol";
 import {ISignatureTransfer} from "permit2/src/interfaces/ISignatureTransfer.sol";
@@ -23,6 +24,7 @@ abstract contract FloodPlainTestShared is Test, DeployPermit2 {
     MockFulfiller fulfiller;
     MockDecoder decoder;
     MaliciousFulfiller maliciousFulfiller;
+    MaliciousFulfiller2 maliciousFulfiller2;
     OrderSignature orderSignature;
     MockERC20 token0;
     MockERC20 token1;
@@ -42,6 +44,7 @@ abstract contract FloodPlainTestShared is Test, DeployPermit2 {
         fulfiller = new MockFulfiller();
         decoder = new MockDecoder();
         maliciousFulfiller = new MaliciousFulfiller();
+        maliciousFulfiller2 = new MaliciousFulfiller2();
         zone = new MockZone();
         orderSignature = new OrderSignature();
         token0 = new MockERC20();

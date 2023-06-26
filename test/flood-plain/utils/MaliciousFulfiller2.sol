@@ -6,7 +6,7 @@ import {IFloodPlain} from "src/flood-plain/IFloodPlain.sol";
 import {IERC20, SafeERC20} from "@openzeppelin/token/ERC20/utils/SafeERC20.sol";
 import {Address} from "@openzeppelin/utils/Address.sol";
 
-contract MockFulfiller {
+contract MaliciousFulfiller2 {
     using SafeERC20 for IERC20;
     using Address for address payable;
 
@@ -16,8 +16,6 @@ contract MockFulfiller {
         address, /* caller */
         bytes calldata /* context */
     ) external returns (uint256[] memory) {
-        // do nothing. test should just send tokens to this contract
-
         uint256 length = requestedItems.length;
         uint256[] memory amounts = new uint256[](length);
         IFloodPlain.Item calldata item;
@@ -30,7 +28,8 @@ contract MockFulfiller {
                 IERC20(item.token).safeIncreaseAllowance(msg.sender, item.amount);
             }
 
-            amounts[i] = item.amount;
+            // indicate one wei less for the first item to try trick the book.
+            amounts[i] = i == 0 ? item.amount - 1 : item.amount;
 
             unchecked {
                 ++i;
@@ -40,3 +39,4 @@ contract MockFulfiller {
         return amounts;
     }
 }
+

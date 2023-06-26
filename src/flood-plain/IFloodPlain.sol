@@ -95,4 +95,10 @@ interface IFloodPlain {
      * @return isValid A boolean returning true if the nonce is not flipped.
      */
     function getNonceStatus(address user, uint256 nonce) external view returns (bool isValid);
+
+    /**
+     * @notice Allow receiving ether from Fulfiller. No checks are made to ensure the ether is
+     *         sent from a Fulfiller. If you send ether directly, someone else can steal it.
+     */
+    receive() external payable;
 }
