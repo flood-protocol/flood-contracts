@@ -11,11 +11,11 @@ library ItemDeduplicator {
         IFloodPlain.Item[] memory deduplicatedItems = new IFloodPlain.Item[](itemsLength);
         uint256 dedupCount;
         // For each item...
-        for (uint256 i = 0; i < itemsLength;) {
+        for (uint256 i; i < itemsLength;) {
             item = items[i];
             bool isFound;
             // Check if it is the same as a previous consideration item in the array.
-            for (uint256 j = 0; j < dedupCount;) {
+            for (uint256 j; j < dedupCount;) {
                 deduplicatedItem = deduplicatedItems[j];
                 if (deduplicatedItem.token == item.token) {
                     // And add the amounts of the two consideration items with identical tokens.

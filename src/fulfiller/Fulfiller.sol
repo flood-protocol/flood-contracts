@@ -93,7 +93,7 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
         uint256 length = items.length;
         IFloodPlain.Item calldata item;
 
-        for (uint256 i = 0; i < length;) {
+        for (uint256 i; i < length;) {
             item = items[i];
 
             if (item.token == address(0)) {
@@ -134,7 +134,7 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
 
         // Record requested item balances before the swaps.
         address token;
-        for (uint256 i = 0; i < itemsLength;) {
+        for (uint256 i; i < itemsLength;) {
             token = requestedItems[i].token;
 
             if (token == address(0)) {
@@ -153,7 +153,7 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
 
         // Get the gathered amounts, and approve book to spend them.
         uint256 gatheredAmount;
-        for (uint256 i = 0; i < itemsLength;) {
+        for (uint256 i; i < itemsLength;) {
             token = requestedItems[i].token;
 
             if (token == address(0)) {

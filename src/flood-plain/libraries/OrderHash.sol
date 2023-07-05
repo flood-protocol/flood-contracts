@@ -31,7 +31,7 @@ library OrderHash {
         bytes32[] memory considerationHashes = new bytes32[](considerationLength);
 
         // Iterate over each offer on the order.
-        for (uint256 i = 0; i < offerLength;) {
+        for (uint256 i; i < offerLength;) {
             // Hash the offer and place the result into memory.
             offerHashes[i] = hash(order.offer[i]);
 
@@ -41,7 +41,7 @@ library OrderHash {
         }
 
         // Iterate over each consideration on the order.
-        for (uint256 i = 0; i < considerationLength;) {
+        for (uint256 i; i < considerationLength;) {
             // Hash the consideration and place the result into memory.
             considerationHashes[i] = hash(order.consideration[i]);
 
@@ -70,7 +70,7 @@ library OrderHash {
 
         IFloodPlain.Item calldata item;
         bytes32[] memory tokenPermissionHashes = new bytes32[](itemsLength);
-        for (uint256 i = 0; i < itemsLength;) {
+        for (uint256 i; i < itemsLength;) {
             item = offer[i];
 
             tokenPermissionHashes[i] = keccak256(
