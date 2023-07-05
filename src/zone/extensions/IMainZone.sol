@@ -4,6 +4,8 @@ pragma solidity ^0.8.13;
 interface IMainZone {
     error CancelledOrder(bytes32 orderHash);
 
+    event SecondaryZoneSet(address indexed newSecondayZone);
+
     /**
      * @notice Get the secondary zone address that performs additional validation for this zone.
      *
