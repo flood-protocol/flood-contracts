@@ -1,37 +1,33 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
+import {ISignatureTransfer} from "permit2/src/interfaces/ISignatureTransfer.sol";
+
 interface IFloodPlain {
-    error InsufficientAmountPulled();
+    error InsufficientAmountReceived();
+
+    error NotAContract();
 
     event OrderFulfilled(bytes32 indexed orderHash, address indexed offerer, address indexed fulfiller);
-
-    event OrderEtched(uint256 indexed orderId, bytes32 indexed orderHash, Order order, bytes signature);
 
     struct Order {
         address offerer;
         address zone;
-        OfferItem[] offer;
-        ConsiderationItem[] consideration;
+        Item[] offer;
+        Item[] consideration;
         uint256 deadline;
         uint256 nonce;
     }
 
-    struct OrderWithSignature {
-        Order order;
-        bytes signature;
-    }
-
-    struct OfferItem {
+    struct Item {
         address token;
         uint256 amount;
     }
 
-    struct ConsiderationItem {
-        bool isNative;
-        address token;
-        uint256 amount;
-    }
+    /**
+     * @notice Get Permit2 SignatureTransfer contract that is used in verifying orders.
+     */
+    function PERMIT2() external view returns (ISignatureTransfer);
 
     /**
      * @notice Fulfill an order with an arbitrary number of items for offer and consideration.
@@ -45,25 +41,6 @@ interface IFloodPlain {
      */
     function fulfillOrder(Order calldata order, bytes calldata signature, address fulfiller, bytes calldata extraData)
         external;
-
-    /**
-     * @notice Fulfill an order with an arbitrary number of items for offer and consideration.
-     *
-     * @param orderId   The order to fulfill.
-     * @param fulfiller The address that will receive offer items, then source consideration items
-     *                  for the offerer.
-     * @param extraData Extra bytes passed to the Zone and Fulfiller.
-     */
-    function fulfillEtchedOrder(uint256 orderId, address fulfiller, bytes calldata extraData) external;
-
-    /**
-     * @notice Record an order on-chain to allow ease of use by other contracts.
-     *
-     * @param orderWithSignature The order and its signature to record.
-     *
-     * @return orderId Extra bytes passed to the Zone and Fulfiller.
-     */
-    function etchOrder(OrderWithSignature calldata orderWithSignature) external returns (uint256 orderId);
 
     /**
      * @notice Retrieve the permit2 hash for a given order.
@@ -118,4 +95,10 @@ interface IFloodPlain {
      * @return isValid A boolean returning true if the nonce is not flipped.
      */
     function getNonceStatus(address user, uint256 nonce) external view returns (bool isValid);
+
+    /**
+     * @notice Allow receiving ether from Fulfiller. No checks are made to ensure the ether is
+     *         sent from a Fulfiller. If you send ether directly, someone else can steal it.
+     */
+    receive() external payable;
 }
