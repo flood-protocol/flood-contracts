@@ -2,6 +2,8 @@
 pragma solidity ^0.8.13;
 
 interface IFloodPlainEncodedCalls {
+    error TooManyDecoders();
+
     event DecoderAdded(uint256 indexed decoderId, address indexed decoder);
 
     /**
@@ -22,7 +24,7 @@ interface IFloodPlainEncodedCalls {
      *
      * @return decoderId The identifier of the new decoder added.
      */
-    function addDecoder(address decoder) external returns (uint256 decoderId);
+    function addDecoder(address decoder) external returns (uint8 decoderId);
 
     /**
      * @notice Decode an arbitrarily encoded calldata to have reduced calldata length in L2s.

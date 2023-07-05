@@ -13,12 +13,16 @@ abstract contract FloodPlainEncodedCalls is FloodPlain, IFloodPlainEncodedCalls,
         return _decoders[decoderId];
     }
 
-    function addDecoder(address decoder) external onlyOwner returns (uint256 decoderId) {
+    function addDecoder(address decoder) external onlyOwner returns (uint8 decoderId) {
         if (decoder.code.length == 0) {
             revert NotAContract();
         }
 
-        decoderId = _decoders.length;
+        uint256 id = _decoders.length;
+        if (id > 255) {
+            revert TooManyDecoders();
+        }
+        decoderId = uint8(id);
         _decoders.push(decoder);
         emit DecoderAdded(decoderId, decoder);
     }
