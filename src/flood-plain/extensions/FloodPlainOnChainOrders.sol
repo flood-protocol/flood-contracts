@@ -44,11 +44,7 @@ abstract contract FloodPlainOnChainOrders is FloodPlain, IFloodPlainOnChainOrder
         }
     }
 
-    function etchOrder(OrderWithSignature calldata orderWithSignature)
-        external
-        nonReentrant
-        returns (uint256 orderId)
-    {
+    function etchOrder(OrderWithSignature calldata orderWithSignature) external returns (uint256 orderId) {
         orderId = _etchedOrders.length;
         _etchedOrders.push(orderWithSignature);
         emit OrderEtched({
