@@ -16,7 +16,7 @@ contract MockDecoder is IDecoder {
         // decoder, but just something to portray the idea.
 
         // Scheme:
-        // 20 bytes - offerer address (this could be retrieved from signature in production decoder, so it could be skipped)
+        // 20 bytes - offerer address
         // 20 bytes - zone address (this would be retrieved with a single byte in a production decoder)
         // 3 bytes - nonce (technically permit2 nonce can be anything, but let UI do not use nonce words larger than 2^16)
         // 4 bytes - deadline (this decoder does not need to be functional for more than a century)

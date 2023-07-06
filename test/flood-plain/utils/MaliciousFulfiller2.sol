@@ -39,4 +39,3 @@ contract MaliciousFulfiller2 {
         return amounts;
     }
 }
-
