@@ -36,6 +36,8 @@ contract MainZone is Zone, IMainZone, AccessControl, Pausable {
         }
 
         secondaryZone = newSecondaryZone; // Zero address is to unset.
+
+        emit SecondaryZoneSet(newSecondaryZone);
     }
 
     function validateOrder(IFloodPlain.Order calldata, /* order */ address book, address caller, bytes32 orderHash)
