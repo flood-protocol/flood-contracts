@@ -79,8 +79,6 @@ abstract contract FloodPlainDirectFulfiller is FloodPlain, IFloodPlainDirectFulf
             token = item.token;
             amount = item.amount;
             if (token == address(0)) {
-                requiredAmount = amount + to.balance;
-
                 if (msg.value != amount) {
                     revert IncorrectValueReceived();
                 }
