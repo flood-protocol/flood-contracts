@@ -111,8 +111,10 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
     }
 
     function getNonceStatus(address user, uint256 nonce) public view returns (bool /* isValid */ ) {
+        // Derive the word and bit position within the word from the nonce.
         uint256 wordPos = uint248(nonce >> 8);
         uint256 bitPos = uint8(nonce);
+        // Check if the bit is set by ANDing the word with a bit mask.
         return PERMIT2.nonceBitmap(user, wordPos) & (1 << bitPos) == 0;
     }
 
