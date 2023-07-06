@@ -139,13 +139,14 @@ contract DecoderWithRegistry is IDecoder, Ownable2Step {
 
             uint8 nonceDeadlineSize = _decodeUint8(ptr);
             ++ptr;
+
             uint256 nonceSize = (nonceDeadlineSize >> 4) + 1;
             order.nonce = _variableLengthDecoding(nonceSize, ptr);
             ptr += nonceSize;
 
             uint256 deadlineSize = (nonceDeadlineSize & 0x0f) + 1;
-            order.deadline = _variableLengthDecoding(deadlineSize * 2, ptr);
-            ptr += deadlineSize * 2;
+            order.deadline = _variableLengthDecoding(deadlineSize, ptr);
+            ptr += deadlineSize;
 
             fulfiller = _fulfillers.get(_decodeUint8(ptr));
             ++ptr;
