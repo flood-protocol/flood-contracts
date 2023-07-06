@@ -187,6 +187,7 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
     function _executeSwaps(bytes calldata swaps) internal {
         // Pointer is incremented with each loop.
         uint256 ptr = 0;
+        uint256 swapsLength = swaps.length;
 
         // loop is the condition set at end of each iteration to break the loop.
         bool loop = true;
@@ -233,9 +234,11 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
                 returndatacopy(0, 0, returndatasize())
 
                 if iszero(result) { revert(0, returndatasize()) }
+            }
 
+            if (ptr + 1 >= swapsLength) {
                 // Break the loop if next word is empty.
-                loop := calldataload(ptr)
+                loop = false;
             }
 
             // If executor had a callback...
