@@ -38,7 +38,7 @@ abstract contract FloodPlainTestShared is Test, DeployPermit2 {
     Account account2;
     Account account3;
 
-    function setUp() public {
+    function setUp() public virtual {
         permit2 = ISignatureTransfer(deployPermit2());
         book = new FloodPlainL2(address(permit2));
         fulfiller = new MockFulfiller();
