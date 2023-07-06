@@ -74,7 +74,7 @@ abstract contract FloodPlainDirectFulfiller is FloodPlain, IFloodPlainDirectFulf
         uint256 dedupCount = deduplicatedItems.length;
 
         address to = order.offerer;
-        for (uint256 i = 0; i < dedupCount;) {
+        for (uint256 i; i < dedupCount;) {
             item = deduplicatedItems[i];
             token = item.token;
             amount = item.amount;

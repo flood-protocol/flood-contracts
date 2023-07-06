@@ -131,7 +131,7 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
         {
             Item calldata item;
             uint256 amount;
-            for (uint256 i = 0; i < itemsLength;) {
+            for (uint256 i; i < itemsLength;) {
                 item = offer[i];
                 amount = item.amount;
 
@@ -180,7 +180,7 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
         address to = order.offerer;
         uint256 returnedAmount;
         address token;
-        for (uint256 i = 0; i < dedupCount;) {
+        for (uint256 i; i < dedupCount;) {
             deduplicatedItem = deduplicatedItems[i];
             token = deduplicatedItem.token;
             returnedAmount = returnedAmounts[i];
