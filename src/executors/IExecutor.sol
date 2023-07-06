@@ -1,6 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
+/**
+ * @title IExecutor
+ * @notice A generic contract executing swaps.
+ *
+ * @dev This contract is used to execute swaps in the Fulfiller contract.
+ * As each executor is called by the Fulfiller in delegatecall, a few invariants must be respected:
+ * 1. The executor must not have any storage variables, and must be stateless. If storage is needed, consider using immutable variables instead.
+ * 2. Callback signatures MUST be reviewed for collisions. This is especially important when dealing with forks.
+ * 3. Fee on transfer tokens MUST not be send by the Fulfiller.
+ * 4. Use slither upgradeability checks (even if the executor is not a proxy)
+ */
 interface IExecutor {
     struct Swap {
         address pool;
