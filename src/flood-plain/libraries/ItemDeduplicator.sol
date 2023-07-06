@@ -45,7 +45,7 @@ library ItemDeduplicator {
             }
         }
 
-        assembly {
+        assembly ("memory-safe") {
             // Trim the array to its actual size.
             mstore(deduplicatedItems, dedupCount)
         }
