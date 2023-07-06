@@ -293,7 +293,7 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
             endPtr = ptr + 1;
 
             swap.tokenInIndex = tokenIndices >> 4;
-            swap.tokenOutIndex = amountsSizes & 0x0f;
+            swap.tokenOutIndex = tokenIndices & 0x0f;
         }
     }
 
