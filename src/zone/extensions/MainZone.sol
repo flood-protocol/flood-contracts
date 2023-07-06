@@ -4,13 +4,13 @@ pragma solidity 0.8.17;
 // Inheritances
 import {IMainZone} from "./IMainZone.sol";
 import {Zone} from "../Zone.sol";
-import {AccessControl} from "@openzeppelin/access/AccessControl.sol";
+import {AccessControlDefaultAdminRules} from "@openzeppelin/access/AccessControlDefaultAdminRules.sol";
 import {Pausable} from "@openzeppelin/security/Pausable.sol";
 
 // Interfaces
 import {IFloodPlain} from "../../flood-plain/IFloodPlain.sol";
 
-contract MainZone is Zone, IMainZone, AccessControl, Pausable {
+contract MainZone is Zone, IMainZone, AccessControlDefaultAdminRules, Pausable {
     bytes32 public constant CALLER_ROLE = keccak256("CALLER_ROLE");
     bytes32 public constant FULFILLER_ROLE = keccak256("FULFILLER_ROLE");
     bytes32 public constant BOOK_ROLE = keccak256("BOOK_ROLE");
@@ -18,9 +18,7 @@ contract MainZone is Zone, IMainZone, AccessControl, Pausable {
 
     address public secondaryZone;
 
-    constructor(address admin) {
-        _grantRole(DEFAULT_ADMIN_ROLE, admin);
-    }
+    constructor(address admin) AccessControlDefaultAdminRules(0, admin) {}
 
     function pause() external onlyRole(DEFAULT_ADMIN_ROLE) {
         _pause();
