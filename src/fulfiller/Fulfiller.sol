@@ -203,7 +203,51 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
         // Execute a swap with each iteration.
         while (loop) {
             // Decode first swap instructions from ptr, ensuring executor is not disabled.
-            (ptr, executorId, swap) = _decodeSwap(ptr, swaps);
+            //
+            // Swaps are series of packets which follow the following scheme:
+            //
+            // * 1 byte - executor Id
+            // * 1 byte - bytes required for amountIn and amountOut
+            //       1 nibble - bytes required for amountIn, subtracted by one
+            //       1 nibble - bytes required for amountOut, subtracted by one
+            // * n bytes - amount in (this fulfiller uses max-in-exact-out slippage control scheme)
+            // * m bytes - amount out
+            // * 20 bytes - pool address to perform the swap
+            // * 1 byte - indices of token in & token out in the pool
+            //       1 nibble - index of token in
+            //       1 nibble - index of token out
+            //
+            // Caveat: Token indices in a pool can change when tokens are added or removed from a
+            //         multi-token pool. This can theoretically be abused by the pool owner to
+            //         steal funds from the fulfiller by frontrunning a swap. This is an accepted
+            //         risk.
+            //
+            // Decode instructions based on the above-described scheme.
+            unchecked {
+                executorId = uint64(abi.decode(swaps[ptr:], (uint256)) >> 248);
+                ++ptr;
+
+                uint256 amountsSizes = abi.decode(swaps[ptr:], (uint256)) >> 248;
+                ++ptr;
+
+                uint256 amountInSize = (amountsSizes >> 4) + 1;
+                uint256 amountOutSize = (amountsSizes & 0x0f) + 1;
+
+                swap.amountIn = abi.decode(swaps[ptr:], (uint256)) >> (256 - amountInSize * 8);
+                ptr += amountInSize;
+
+                swap.amountOut = abi.decode(swaps[ptr:], (uint256)) >> (256 - amountOutSize * 8);
+                ptr += amountOutSize;
+
+                swap.pool = address(uint160(abi.decode(swaps[ptr:], (uint256)) >> 96));
+                ptr += 20;
+
+                uint256 tokenIndices = abi.decode(swaps[ptr:], (uint256)) >> 248;
+                ++ptr;
+
+                swap.tokenInIndex = tokenIndices >> 4;
+                swap.tokenOutIndex = tokenIndices & 0x0f;
+            }
 
             // Get executor details.
             executorInfo = _executors[executorId];
@@ -245,55 +289,6 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
                 callbackInfo.activeExecutorId = 0;
                 callbackInfo.callbackSource = address(0);
             }
-        }
-    }
-
-    // Swaps are series of packets which follow the following scheme:
-    //
-    // * 1 byte - executor Id
-    // * 1 byte - bytes required for amountIn and amountOut
-    //       1 nibble - bytes required for amountIn, subtracted by one
-    //       1 nibble - bytes required for amountOut, subtracted by one
-    // * n bytes - amount in (this fulfiller uses max-in-exact-out slippage control scheme)
-    // * m bytes - amount out
-    // * 20 bytes - pool address to perform the swap
-    // * 1 byte - indices of token in & token out in the pool
-    //       1 nibble - index of token in
-    //       1 nibble - index of token out
-    //
-    // Caveat: Token indices in a pool can change when tokens are added or removed from a
-    //         multi-token pool. This can theoretically be abused by the pool owner to steal funds
-    //         from the fulfiller by frontrunning a swap. This is an accepted risk.
-    function _decodeSwap(uint256 ptr, bytes calldata swaps)
-        internal
-        pure
-        returns (uint256 endPtr, uint64 executorId, IExecutor.Swap memory swap)
-    {
-        // Decode instructions based on the above-described scheme.
-        unchecked {
-            executorId = uint64(abi.decode(swaps[ptr:], (uint256)) >> 248);
-            ++ptr;
-
-            uint256 amountsSizes = abi.decode(swaps[ptr:], (uint256)) >> 248;
-            ++ptr;
-
-            uint256 amountInSize = (amountsSizes >> 4) + 1;
-            uint256 amountOutSize = (amountsSizes & 0x0f) + 1;
-
-            swap.amountIn = abi.decode(swaps[ptr:], (uint256)) >> (256 - amountInSize * 8);
-            ptr += amountInSize;
-
-            swap.amountOut = abi.decode(swaps[ptr:], (uint256)) >> (256 - amountOutSize * 8);
-            ptr += amountOutSize;
-
-            swap.pool = address(uint160(abi.decode(swaps[ptr:], (uint256)) >> 96));
-            ptr += 20;
-
-            uint256 tokenIndices = abi.decode(swaps[ptr:], (uint256)) >> 248;
-            endPtr = ptr + 1;
-
-            swap.tokenInIndex = tokenIndices >> 4;
-            swap.tokenOutIndex = tokenIndices & 0x0f;
         }
     }
 
