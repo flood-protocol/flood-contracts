@@ -187,10 +187,9 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
     function _executeSwaps(bytes calldata swaps) internal {
         // Pointer is incremented with each loop.
         uint256 ptr = 0;
-        uint256 swapsLength = swaps.length;
-
-        // loop is the condition set at end of each iteration to break the loop.
-        bool loop = true;
+        assembly {
+            ptr := swaps.offset
+        }
 
         // Variables reset at each iteration, defined outside the loop to save gas.
         IExecutor.Swap memory swap;
@@ -202,9 +201,9 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
         bool hasCallback;
 
         // Execute a swap with each iteration.
-        while (loop) {
+        while (msg.data.length > ptr) {
             // Decode first swap instructions from ptr, ensuring executor is not disabled.
-            (ptr, executorId, swap) = _decodeSwap(ptr, swaps);
+            (ptr, executorId, swap) = _decodeSwap(ptr);
 
             // Get executor details.
             executorInfo = _executors[executorId];
@@ -236,11 +235,6 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
                 if iszero(result) { revert(0, returndatasize()) }
             }
 
-            if (ptr + 1 >= swapsLength) {
-                // Break the loop if next word is empty.
-                loop = false;
-            }
-
             // If executor had a callback...
             if (hasCallback) {
                 // Unset callback info pseudo-transient storage after the swap is completed.
@@ -267,37 +261,51 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
     // Caveat: Token indices in a pool can change when tokens are added or removed from a
     //         multi-token pool. This can theoretically be abused by the pool owner to steal funds
     //         from the fulfiller by frontrunning a swap. This is an accepted risk.
-    function _decodeSwap(uint256 ptr, bytes calldata swaps)
+    function _decodeSwap(uint256 ptr)
         internal
         pure
         returns (uint256 endPtr, uint64 executorId, IExecutor.Swap memory swap)
     {
+        address pool;
+        uint256 tokenInIndex;
+        uint256 tokenOutIndex;
+        uint256 amountIn;
+        uint256 amountOut;
+
         // Decode instructions based on the above-described scheme.
-        unchecked {
-            executorId = uint64(abi.decode(swaps[ptr:], (uint256)) >> 248);
-            ++ptr;
+        assembly {
+            executorId := shr(248, calldataload(ptr))
+            ptr := add(ptr, 1)
 
-            uint256 amountsSizes = abi.decode(swaps[ptr:], (uint256)) >> 248;
-            ++ptr;
+            let amountsSizes := calldataload(ptr)
+            ptr := add(ptr, 1)
 
-            uint256 amountInSize = (amountsSizes >> 4) + 1;
-            uint256 amountOutSize = (amountsSizes & 0x0f) + 1;
+            let amountInSize := add(shr(252, amountsSizes), 1)
+            let amountOutSize := add(and(shr(248, amountsSizes), 0x0f), 1)
 
-            swap.amountIn = abi.decode(swaps[ptr:], (uint256)) >> (256 - amountInSize * 8);
-            ptr += amountInSize;
+            amountIn := shr(sub(256, shl(3, amountInSize)), calldataload(ptr))
+            ptr := add(ptr, amountInSize)
 
-            swap.amountOut = abi.decode(swaps[ptr:], (uint256)) >> (256 - amountOutSize * 8);
-            ptr += amountOutSize;
+            amountOut := shr(sub(256, shl(3, amountOutSize)), calldataload(ptr))
+            ptr := add(ptr, amountOutSize)
 
-            swap.pool = address(uint160(abi.decode(swaps[ptr:], (uint256)) >> 96));
-            ptr += 20;
+            pool := shr(96, calldataload(ptr))
+            ptr := add(ptr, 20)
 
-            uint256 tokenIndices = abi.decode(swaps[ptr:], (uint256)) >> 248;
-            endPtr = ptr + 1;
+            let tokenIndices := calldataload(ptr)
+            endPtr := add(ptr, 1)
 
-            swap.tokenInIndex = tokenIndices >> 4;
-            swap.tokenOutIndex = tokenIndices & 0x0f;
+            tokenInIndex := shr(252, tokenIndices)
+            tokenOutIndex := and(shr(248, tokenIndices), 0x0f)
         }
+
+        swap = IExecutor.Swap({
+            pool: pool,
+            tokenInIndex: tokenInIndex,
+            tokenOutIndex: tokenOutIndex,
+            amountIn: amountIn,
+            amountOut: amountOut
+        });
     }
 
     function _fallback() internal {
