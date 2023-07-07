@@ -7,7 +7,7 @@
     Debug,
     PartialEq,
     Eq,
-    Hash
+    Hash,
 )]
 pub struct Item {
     pub token: ::ethers::core::types::Address,
@@ -22,7 +22,7 @@ pub struct Item {
     Debug,
     PartialEq,
     Eq,
-    Hash
+    Hash,
 )]
 pub struct Order {
     pub offerer: ::ethers::core::types::Address,
@@ -41,20 +41,9 @@ pub struct Order {
     Debug,
     PartialEq,
     Eq,
-    Hash
+    Hash,
 )]
 pub struct OrderWithSignature {
     pub order: Order,
     pub signature: ::ethers::core::types::Bytes,
 }
-///`ExecutorInfo(address,bool,bool)`
-#[derive(
-    Clone,
-    ::ethers::contract::EthAbiType,
-    ::ethers::contract::EthAbiCodec,
-    Default,
-    Debug,
-    PartialEq,
-    Eq,
-    Hash
-)]
