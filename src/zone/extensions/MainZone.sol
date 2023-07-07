@@ -18,7 +18,7 @@ contract MainZone is Zone, IMainZone, AccessControlDefaultAdminRules, Pausable {
 
     address public secondaryZone;
 
-    constructor(address admin) AccessControlDefaultAdminRules(0, admin) {}
+    constructor(address admin) AccessControlDefaultAdminRules(2 days, admin) {}
 
     function pause() external onlyRole(DEFAULT_ADMIN_ROLE) {
         _pause();
