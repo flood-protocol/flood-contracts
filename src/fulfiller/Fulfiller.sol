@@ -229,10 +229,11 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
                 // Delegate swap execution to the executor.
                 let result := delegatecall(gas(), executor, add(swapData, 0x20), mload(swapData), 0, 0)
 
-                // Copy the returned data.
-                returndatacopy(0, 0, returndatasize())
-
-                if iszero(result) { revert(0, returndatasize()) }
+                if iszero(result) {
+                    // Copy the returned data.
+                    returndatacopy(0, 0, returndatasize())
+                    revert(0, returndatasize())
+                }
             }
 
             // If executor had a callback...
@@ -339,13 +340,12 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
                 // out and outsize are 0 because we don't know the size yet.
                 let result := delegatecall(gas(), executor, 0, calldatasize(), 0, 0)
 
+                // Copy the returned data.
+                returndatacopy(0, 0, returndatasize())
+
                 switch result
                 // delegatecall returns 0 on error.
-                case 0 {
-                    // Copy the returned data.
-                    returndatacopy(0, 0, returndatasize())
-                    revert(0, returndatasize())
-                }
+                case 0 { revert(0, returndatasize()) }
                 default { return(0, returndatasize()) }
             }
         }
