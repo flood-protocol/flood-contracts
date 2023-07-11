@@ -32,7 +32,7 @@ contract DecoderWithRegistry is IDecoder, Ownable2Step {
     }
 
     function setFulfiller(uint8 fulfillerId, address fulfiller) external onlyOwner {
-        if (fullfiller.code.length == 0) {
+        if (fulfiller.code.length == 0) {
             revert IFloodPlain.NotAContract();
         }
         _fulfillers.set(fulfillerId, fulfiller);
