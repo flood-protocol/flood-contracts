@@ -13,14 +13,14 @@ address constant ARBITRUM_DAI = 0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1;
 address constant ARBITRUM_USDT = 0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9;
 
 contract MockToken is ERC20 {
-    uint8 internal immutable privateDecimals;
+    uint8 internal immutable innerDecimals;
 
     constructor(string memory name, string memory symbol, uint8 _decimals) ERC20(name, symbol) {
-        privateDecimals = _decimals;
+        innerDecimals = _decimals;
     }
 
     function decimals() public view override returns (uint8) {
-        return privateDecimals;
+        return innerDecimals;
     }
 }
 
