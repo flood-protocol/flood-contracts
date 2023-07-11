@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import {EnumerableMap} from "@openzeppelin/utils/structs/EnumerableMap.sol";
 import {Ownable2Step} from "@openzeppelin/access/Ownable2Step.sol";
 import {IDecoder} from "../IDecoder.sol";
-import {IFloodPlain, NotAContract} from "../../flood-plain/IFloodPlain.sol";
+import {IFloodPlain} from "../../flood-plain/IFloodPlain.sol";
 
 struct IdToAddress {
     uint256 id;
@@ -26,21 +26,21 @@ contract DecoderWithRegistry is IDecoder, Ownable2Step {
 
     function setZone(uint8 zoneId, address zone) external onlyOwner {
         if (zone.code.length == 0) {
-            revert NotAContract();
+            revert IFloodPlain.NotAContract();
         }
         _zones.set(zoneId, zone);
     }
 
     function setFulfiller(uint8 fulfillerId, address fulfiller) external onlyOwner {
         if (fullfiller.code.length == 0) {
-            revert NotAContract();
+            revert IFloodPlain.NotAContract();
         }
         _fulfillers.set(fulfillerId, fulfiller);
     }
 
     function setToken(uint16 tokenId, address token) external onlyOwner {
         if (token.code.length == 0) {
-            revert NotAContract();
+            revert IFloodPlain.NotAContract();
         }
         _tokens.set(tokenId, token);
     }
