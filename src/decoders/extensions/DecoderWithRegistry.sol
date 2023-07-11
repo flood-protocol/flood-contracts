@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import {EnumerableMap} from "@openzeppelin/utils/structs/EnumerableMap.sol";
 import {Ownable2Step} from "@openzeppelin/access/Ownable2Step.sol";
 import {IDecoder} from "../IDecoder.sol";
-import {IFloodPlain} from "../../flood-plain/IFloodPlain.sol";
+import {IFloodPlain, NotAContract} from "../../flood-plain/IFloodPlain.sol";
 
 struct IdToAddress {
     uint256 id;
