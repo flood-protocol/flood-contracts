@@ -25,14 +25,23 @@ contract DecoderWithRegistry is IDecoder, Ownable2Step {
     constructor() Ownable2Step() {}
 
     function setZone(uint8 zoneId, address zone) external onlyOwner {
+        if (zone.code.length == 0) {
+            revert IFloodPlain.NotAContract();
+        }
         _zones.set(zoneId, zone);
     }
 
     function setFulfiller(uint8 fulfillerId, address fulfiller) external onlyOwner {
+        if (fulfiller.code.length == 0) {
+            revert IFloodPlain.NotAContract();
+        }
         _fulfillers.set(fulfillerId, fulfiller);
     }
 
     function setToken(uint16 tokenId, address token) external onlyOwner {
+        if (token.code.length == 0) {
+            revert IFloodPlain.NotAContract();
+        }
         _tokens.set(tokenId, token);
     }
 
