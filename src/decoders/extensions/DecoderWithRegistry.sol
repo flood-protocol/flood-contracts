@@ -25,7 +25,7 @@ contract DecoderWithRegistry is IDecoder, Ownable2Step {
     constructor() Ownable2Step() {}
 
     function setZone(uint8 zoneId, address zone) external onlyOwner {
-        if (zone.code.length == 0) {
+        if (zone.code.length == 0 && address(zone)!= address(0)) {
             revert IFloodPlain.NotAContract();
         }
         _zones.set(zoneId, zone);
