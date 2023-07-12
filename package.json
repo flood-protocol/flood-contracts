@@ -1,0 +1,15 @@
+{
+    "name": "flood-contracts",
+    "version": "1.0.0",
+    "description": "Flood contracts are the smart contracts that power Flood, the optimal routing protocol.",
+    "homepage": "https://flood.bid",
+    "bugs": "https://github.com/flood-protocol/flood-contracts/issues",
+    "license": "MIT",
+    "files": [
+      "src/**/*"
+    ],
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/flood-protocol/flood-contracts.git"
+    }
+  }
