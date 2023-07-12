@@ -4,20 +4,33 @@ pragma solidity 0.8.17;
 import {DecoderWithRegistryScript} from "script/DecoderWithRegistry.s.sol";
 import {Test} from "forge-std/Test.sol";
 import {DecoderWithRegistry} from "src/decoders/extensions/DecoderWithRegistry.sol";
-import {FloodPlainTestShared, IFloodPlain} from "../utils/FloodPlainTestShared.sol";
+import {MockZone} from "../utils/MockZone.sol";
+import {MockERC20} from "../utils/MockERC20.sol";
+import {MockFulfiller} from "../utils/MockFulfiller.sol";
+
 
 struct IdToAddress {
     uint256 id;
     address addr;
 }
 
-contract DecoderWithRegistryScriptTest is FloodPlainTestShared, DecoderWithRegistryScript {
+contract DecoderWithRegistryScriptTest is DecoderWithRegistryScript, Test {
     DecoderWithRegistry registryDecoder;
-
-    function setUp() public override {
-        super.setUp();
+    MockZone zone = new MockZone();
+    MockFulfiller fulfiller;
+    MockERC20 token0;
+    MockERC20 token1;
+    function setUp() public {
         vm.prank(msg.sender);
         registryDecoder = new DecoderWithRegistry();
+        zone = new MockZone();
+        fulfiller = new MockFulfiller();
+        token0 = new MockERC20();
+        token1 = new MockERC20();
+    }
+
+    function run() public override(DecoderWithRegistryScript) {
+        super.run();
     }
 
     function testAddTokens() public {

@@ -8,7 +8,7 @@ contract DecoderWithRegistryScript is Script {
 
     event Duplicated(uint256, address);
 
-    function run() public {
+    function run() public virtual {
         vm.broadcast();
         DecoderWithRegistry decoder = new DecoderWithRegistry();
         console.log("Deployed DecoderWithRegistry at", address(decoder));
