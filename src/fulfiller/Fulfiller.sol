@@ -202,6 +202,17 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
 
         // Execute a swap with each iteration.
         while (msg.data.length > ptr) {
+            // Break the loop if only padding is left.
+            unchecked {
+                if (msg.data.length - ptr < 32) {
+                    bool paddingRemainingOnly;
+                    assembly {
+                        paddingRemainingOnly := iszero(calldataload(ptr))
+                    }
+                    if (paddingRemainingOnly) break;
+                }
+            }
+
             // Decode first swap instructions from ptr, ensuring executor is not disabled.
             (ptr, executorId, swap) = _decodeSwap(ptr);
 
