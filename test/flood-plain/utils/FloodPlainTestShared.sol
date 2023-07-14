@@ -40,7 +40,7 @@ abstract contract FloodPlainTestShared is Test, DeployPermit2 {
 
     function setUp() public virtual {
         permit2 = ISignatureTransfer(deployPermit2());
-        book = new FloodPlainL2(address(permit2));
+        book = new FloodPlainL2(address(permit2), address(this));
         fulfiller = new MockFulfiller();
         decoder = new MockDecoder();
         maliciousFulfiller = new MaliciousFulfiller();

@@ -4,16 +4,18 @@ pragma solidity 0.8.17;
 // Inheritances
 import {FloodPlain} from "../FloodPlain.sol";
 import {IFloodPlainEncodedCalls} from "./IFloodPlainEncodedCalls.sol";
-import {Ownable2Step} from "@openzeppelin/access/Ownable2Step.sol";
+import {AccessControlDefaultAdminRules} from "@openzeppelin/access/AccessControlDefaultAdminRules.sol";
 
-abstract contract FloodPlainEncodedCalls is FloodPlain, IFloodPlainEncodedCalls, Ownable2Step {
+abstract contract FloodPlainEncodedCalls is FloodPlain, IFloodPlainEncodedCalls, AccessControlDefaultAdminRules {
     address[] internal _decoders;
+
+    constructor(address admin) AccessControlDefaultAdminRules(3 days, admin) {}
 
     function getDecoder(uint256 decoderId) external view returns (address /* decoder */ ) {
         return _decoders[decoderId];
     }
 
-    function addDecoder(address decoder) external onlyOwner returns (uint8 decoderId) {
+    function addDecoder(address decoder) external onlyRole(DEFAULT_ADMIN_ROLE) returns (uint8 decoderId) {
         if (decoder.code.length == 0) {
             revert NotAContract();
         }

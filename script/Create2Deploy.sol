@@ -8,6 +8,7 @@ interface Create2Factory {
 }
 
 contract Create2Deploy is Script {
+    bytes32 internal SALT;
     Create2Factory factory = Create2Factory(0x0000000000FFe8B47B3e2130213B802212439497);
 
     function deploy2(string memory name, bytes32 salt, bytes memory args) internal returns (address) {

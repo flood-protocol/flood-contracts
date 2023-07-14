@@ -6,16 +6,13 @@ import {DecoderWithRegistry, IdToAddress} from "src/decoders/extensions/DecoderW
 import {Create2Deploy} from "script/Create2Deploy.sol";
 
 contract DecoderWithRegistryScript is Script, Create2Deploy {
-    bytes32 SALT = 0x398f48f5ae577ed837a54bd998bb2e177dc98a037000000000000000000cac39;
-
     // We could use console.log here, but it won't be catched by expectEmit in tests
     event Duplicated(uint256, address);
 
     function run() public virtual {
         string memory profile = vm.envString("FOUNDRY_PROFILE");
-        require(
-            keccak256(bytes(profile)) == keccak256(bytes("deploy")), "DecoderWithRegistryScript: not deploy profile"
-        );
+        require(keccak256(bytes(profile)) == keccak256(bytes("deploy")), "not deploy profile");
+        SALT = 0x398f48f5ae577ed837a54bd998bb2e177dc98a037000000000000000000cac39;
         uint256 pk = vm.envUint("DECODER_ADMIN_KEY");
         address decoderAdmin = vm.addr(pk);
         vm.broadcast(pk);
