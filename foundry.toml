@@ -13,8 +13,13 @@ out = "out"
 fuzz_runs = 5000
 
 [profile.deploy]
-optmitizer = true
-optmitizer-runs = 10_000_000
+optimizer = true
+optimizer_runs = 10_000_000
 via_ir = true
+fs_permissions = [{ access = "read", path = "./out" }]
+
+[etherscan]
+mainnet = { key = "${ETHERSCAN_MAINNET}" }
+arbitrum = { key = "${ETHERSCAN_ARBITRUM}" }
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config

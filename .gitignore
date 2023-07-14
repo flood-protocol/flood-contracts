@@ -2,6 +2,7 @@
 !/broadcast
 contracts/broadcast/**/*
 /broadcast/**/dry-run/
+broadcast
 
 # env file
 .DS_Store

@@ -8,7 +8,6 @@ import {MockZone} from "../utils/MockZone.sol";
 import {MockERC20} from "../utils/MockERC20.sol";
 import {MockFulfiller} from "../utils/MockFulfiller.sol";
 
-
 struct IdToAddress {
     uint256 id;
     address addr;
@@ -20,9 +19,10 @@ contract DecoderWithRegistryScriptTest is DecoderWithRegistryScript, Test {
     MockFulfiller fulfiller;
     MockERC20 token0;
     MockERC20 token1;
+
     function setUp() public {
         vm.prank(msg.sender);
-        registryDecoder = new DecoderWithRegistry();
+        registryDecoder = new DecoderWithRegistry(address(this));
         zone = new MockZone();
         fulfiller = new MockFulfiller();
         token0 = new MockERC20();
@@ -102,8 +102,4 @@ contract DecoderWithRegistryScriptTest is DecoderWithRegistryScript, Test {
         assertEq(registryDecoder.fulfillers()[0].addr, address(fulfiller));
         assertEq(registryDecoder.fulfillers()[0].id, 0);
     }
-
-
-
-
-} 
+}

@@ -10,7 +10,7 @@ contract DecoderWithRegistryTest is FloodPlainTestShared {
 
     function setUp() public override {
         super.setUp();
-        registryDecoder = new DecoderWithRegistry();
+        registryDecoder = new DecoderWithRegistry(address(this));
         registryDecoder.setToken(0, address(token0));
         registryDecoder.setToken(1, address(token1));
         registryDecoder.setZone(0, address(0));

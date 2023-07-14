@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 import {EnumerableMap} from "@openzeppelin/utils/structs/EnumerableMap.sol";
-import {Ownable2Step} from "@openzeppelin/access/Ownable2Step.sol";
+import {AccessControlDefaultAdminRules} from "@openzeppelin/access/AccessControlDefaultAdminRules.sol";
 import {IDecoder} from "../IDecoder.sol";
 import {IFloodPlain} from "../../flood-plain/IFloodPlain.sol";
 
@@ -15,30 +15,30 @@ struct IdToAddress {
  * @title DecoderWithRegistry
  * @notice A decoder using an internal registry mapping addresses to indexes.
  */
-contract DecoderWithRegistry is IDecoder, Ownable2Step {
+contract DecoderWithRegistry is IDecoder, AccessControlDefaultAdminRules {
     using EnumerableMap for EnumerableMap.UintToAddressMap;
 
     EnumerableMap.UintToAddressMap internal _zones;
     EnumerableMap.UintToAddressMap internal _fulfillers;
     EnumerableMap.UintToAddressMap internal _tokens;
 
-    constructor() Ownable2Step() {}
+    constructor(address admin) AccessControlDefaultAdminRules(10 minutes, admin) {}
 
-    function setZone(uint8 zoneId, address zone) external onlyOwner {
-        if (zone.code.length == 0 && address(zone)!= address(0)) {
+    function setZone(uint8 zoneId, address zone) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (zone.code.length == 0 && address(zone) != address(0)) {
             revert IFloodPlain.NotAContract();
         }
         _zones.set(zoneId, zone);
     }
 
-    function setFulfiller(uint8 fulfillerId, address fulfiller) external onlyOwner {
+    function setFulfiller(uint8 fulfillerId, address fulfiller) external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (fulfiller.code.length == 0) {
             revert IFloodPlain.NotAContract();
         }
         _fulfillers.set(fulfillerId, fulfiller);
     }
 
-    function setToken(uint16 tokenId, address token) external onlyOwner {
+    function setToken(uint16 tokenId, address token) external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (token.code.length == 0) {
             revert IFloodPlain.NotAContract();
         }
