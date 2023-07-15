@@ -15,9 +15,9 @@ contract FloodPlainL2Script is Script, Create2Deploy {
         );
         string memory profile = vm.envString("FOUNDRY_PROFILE");
         require(keccak256(bytes(profile)) == keccak256(bytes("deploy")), " not deploy profile");
-        SALT = 0x45bddd7a4404868c5a41cb716e01a4006b38bab06c000000000000000001abdd;
+        SALT = 0x45bddd7a4404868c5a41cb716e01a4006b38bab02400000000000000020efcf5;
         vm.broadcast(floodPlainAdmin);
-        address floodPlain = deploy2("FloodPlainL2", SALT, abi.encode(floodPlainAdmin));
+        address floodPlain = deploy2("FloodPlainL2", SALT, abi.encode(PERMIT2, floodPlainAdmin));
 
         console.log("FloodPlain deployed at", floodPlain);
         require(FloodPlainL2(payable(floodPlain)).owner() == floodPlainAdmin, "FloodPlain: wrong owner");
