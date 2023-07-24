@@ -37,30 +37,13 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
         external
         nonReentrant
     {
-        // Retrieve the order hash for order.
-        bytes32 orderHash = order.hash();
-
-        // Check zone restrictions.
-        address zone = order.zone;
-        if (zone != address(0)) {
-            IZone(zone).validateOrder({
-                order: order,
-                book: address(this),
-                fulfiller: fulfiller,
-                caller: msg.sender,
-                orderHash: orderHash,
-                context: extraData
-            });
-        }
-
-        // Transfer each offer item to fulfiller using Permit2.
-        _permitTransferOffer({order: order, signature: signature, orderHash: orderHash, to: fulfiller});
-
-        // Transfer consideration items from fulfiller to offerer.
-        _transferConsideration({order: order, fulfiller: fulfiller, extraData: extraData});
-
-        // Emit an event signifying that the order has been fulfilled.
-        emit OrderFulfilled(orderHash, order.offerer, fulfiller);
+        // Fulfill using internal function.
+        _fulfillOrder({
+            order: order,
+            signature: signature,
+            fulfiller: fulfiller,
+            extraData: extraData
+        });
     }
 
     function getPermitHash(Order calldata order) external view returns (bytes32 /* permitHash */ ) {
@@ -116,6 +99,35 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
         uint256 bitPos = uint8(nonce);
         // Check if the bit is set by ANDing the word with a bit mask.
         return PERMIT2.nonceBitmap(user, wordPos) & (1 << bitPos) == 0;
+    }
+
+    function _fulfillOrder(Order calldata order, bytes calldata signature, address fulfiller, bytes calldata extraData)
+        internal
+    {
+        // Retrieve the order hash for order.
+        bytes32 orderHash = order.hash();
+
+        // Check zone restrictions.
+        address zone = order.zone;
+        if (zone != address(0)) {
+            IZone(zone).validateOrder({
+                order: order,
+                book: address(this),
+                fulfiller: fulfiller,
+                caller: msg.sender,
+                orderHash: orderHash,
+                context: extraData
+            });
+        }
+
+        // Transfer each offer item to fulfiller using Permit2.
+        _permitTransferOffer({order: order, signature: signature, orderHash: orderHash, to: fulfiller});
+
+        // Transfer consideration items from fulfiller to offerer.
+        _transferConsideration({order: order, fulfiller: fulfiller, extraData: extraData});
+
+        // Emit an event signifying that the order has been fulfilled.
+        emit OrderFulfilled(orderHash, order.offerer, fulfiller);
     }
 
     function _permitTransferOffer(Order calldata order, bytes calldata signature, bytes32 orderHash, address to)
