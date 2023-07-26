@@ -94,6 +94,9 @@ contract MockDecoder is IDecoder {
             context = data[ptr:];
         }
 
-        return abi.encodeWithSelector(IFloodPlain.fulfillOrder.selector, order, signature, fulfiller, context);
+        IFloodPlain.SignedOrder memory signedOrder =
+            IFloodPlain.SignedOrder({ order: order, signature: signature });
+
+        return abi.encodeWithSelector(IFloodPlain.fulfillOrder.selector, signedOrder, fulfiller, context);
     }
 }

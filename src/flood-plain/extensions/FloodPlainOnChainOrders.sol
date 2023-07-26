@@ -14,22 +14,22 @@ import {IFloodPlain} from "../IFloodPlain.sol";
 abstract contract FloodPlainOnChainOrders is FloodPlain, IFloodPlainOnChainOrders {
     using OrderHash for Order;
 
-    OrderWithSignature[] internal _etchedOrders;
+    SignedOrder[] internal _etchedOrders;
 
     function getEtchedOrder(uint256 etchedOrderId)
         external
         view
-        returns (OrderWithSignature memory /* etchedOrder */ )
+        returns (SignedOrder memory /* etchedOrder */ )
     {
         return _etchedOrders[etchedOrderId];
     }
 
     function fulfillEtchedOrder(uint256 orderId, address fulfiller, bytes calldata extraData) external {
-        OrderWithSignature memory orderWithSignature = _etchedOrders[orderId];
+        SignedOrder memory signedOrder = _etchedOrders[orderId];
 
         // Fulfill the etched order using the standard fulfillment function.
         bytes memory data = abi.encodeWithSelector(
-            this.fulfillOrder.selector, orderWithSignature.order, orderWithSignature.signature, fulfiller, extraData
+            this.fulfillOrder.selector, signedOrder, fulfiller, extraData
         );
         assembly {
             let result := delegatecall(gas(), address(), add(data, 0x20), mload(data), 0, 0)
@@ -44,14 +44,14 @@ abstract contract FloodPlainOnChainOrders is FloodPlain, IFloodPlainOnChainOrder
         }
     }
 
-    function etchOrder(OrderWithSignature calldata orderWithSignature) external returns (uint256 orderId) {
+    function etchOrder(SignedOrder calldata signedOrder) external returns (uint256 orderId) {
         orderId = _etchedOrders.length;
-        _etchedOrders.push(orderWithSignature);
+        _etchedOrders.push(signedOrder);
         emit OrderEtched({
             orderId: orderId,
-            orderHash: orderWithSignature.order.hash(),
-            order: orderWithSignature.order,
-            signature: orderWithSignature.signature
+            orderHash: signedOrder.order.hash(),
+            order: signedOrder.order,
+            signature: signedOrder.signature
         });
     }
 }

@@ -11,18 +11,18 @@ interface IFloodPlainDirectFulfiller {
     /**
      * @notice Fulfill an order directly by transferring consideration from caller to offerer.
      *
-     * @param order     The order to fulfill. Note that the offerer must first approve Permit2
-     *                  contract to transfer any relevant tokens on their behalf.
-     * @param signature The permit2 signature with the order as the witness.
+     * @param signedOrder The order to fulfill and the permit2 signature with the order
+     *                           as the witness. Note that the offerer must first approve Permit2
+     *                           contract to transfer any relevant tokens on their behalf.
      */
-    function fulfillOrder(IFloodPlain.Order calldata order, bytes calldata signature) external payable;
+    function fulfillOrder(IFloodPlain.SignedOrder calldata signedOrder) external payable;
 
     /**
      * @notice Check if the order can be directly fulfilled. This does not check signature validity
      *         and token approvals.
      *
-     * @param order     The components of the order.
-     * @param caller    The address that will call `fulfillOrder`.
+     * @param order  The components of the order.
+     * @param caller The address that will call `fulfillOrder`.
      *
      * @return isValid A boolean guaranteeing the order cannot be fulfilled with supplied
      *                 parameters if false.

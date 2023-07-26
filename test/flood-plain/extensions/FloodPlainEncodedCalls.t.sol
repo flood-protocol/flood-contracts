@@ -39,20 +39,20 @@ contract FloodPlainEncodedCalls is FloodPlainTestShared {
     function test_fufillThroughDecoder() public {
         book.addDecoder(address(decoder));
 
-        (IFloodPlain.Order memory order,) = setup_mostBasicOrder();
-        order.deadline = type(uint32).max;
-        bytes memory sig = getSignature(order, account0);
+        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
+        signedOrder.order.deadline = type(uint32).max;
+        signedOrder.signature = getSignature(signedOrder.order, account0);
 
-        (bytes32 r, bytes32 s) = abi.decode(sig, (bytes32, bytes32));
-        bytes1 v = sig[64];
+        (bytes32 r, bytes32 s) = abi.decode(signedOrder.signature, (bytes32, bytes32));
+        bytes1 v = signedOrder.signature[64];
 
         bytes memory encodedDataBegin = abi.encodePacked(
             bytes1(0x00), // fallback selector
             bytes1(0x00), // decoder id
-            order.offerer,
-            order.zone,
-            uint24(order.nonce),
-            uint32(order.deadline),
+            signedOrder.order.offerer,
+            signedOrder.order.zone,
+            uint24(signedOrder.order.nonce),
+            uint32(signedOrder.order.deadline),
             address(fulfiller),
             v,
             r,

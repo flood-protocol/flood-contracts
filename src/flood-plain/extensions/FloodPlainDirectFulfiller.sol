@@ -21,7 +21,10 @@ abstract contract FloodPlainDirectFulfiller is FloodPlain, IFloodPlainDirectFulf
     using OrderHash for Order;
     using ItemDeduplicator for Item[];
 
-    function fulfillOrder(Order calldata order, bytes calldata signature) external payable nonReentrant {
+    function fulfillOrder(SignedOrder calldata signedOrder) external payable nonReentrant {
+        // Get order component from calldata.
+        Order calldata order = signedOrder.order;
+
         // Retrieve the order hash for order.
         bytes32 orderHash = order.hash();
 
@@ -32,7 +35,7 @@ abstract contract FloodPlainDirectFulfiller is FloodPlain, IFloodPlainDirectFulf
         }
 
         // Transfer each offer item to msg.sender using Permit2.
-        _permitTransferOffer({order: order, signature: signature, orderHash: orderHash, to: msg.sender});
+        _permitTransferOffer({order: order, signature: signedOrder.signature, orderHash: orderHash, to: msg.sender});
 
         // Transfer consideration items from fulfiller to offerer.
         _transferConsideration({order: order, fulfiller: msg.sender});

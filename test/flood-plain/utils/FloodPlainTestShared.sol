@@ -68,7 +68,7 @@ abstract contract FloodPlainTestShared is Test, DeployPermit2 {
         sig = orderSignature.getSignature(order, signer.key, EIP712(address(permit2)).DOMAIN_SEPARATOR(), address(book));
     }
 
-    function setup_mostBasicOrder() internal returns (IFloodPlain.Order memory order, bytes memory sig) {
+    function setup_mostBasicOrder() internal returns (IFloodPlain.SignedOrder memory) {
         deal(address(token0), address(account0.addr), 500);
         deal(address(token1), address(fulfiller), 500);
 
@@ -87,7 +87,7 @@ abstract contract FloodPlainTestShared is Test, DeployPermit2 {
         consideration[0].amount = 500;
 
         // Construct order.
-        order = IFloodPlain.Order({
+        IFloodPlain.Order memory order = IFloodPlain.Order({
             offerer: address(account0.addr),
             zone: address(0),
             offer: offer,
@@ -97,12 +97,12 @@ abstract contract FloodPlainTestShared is Test, DeployPermit2 {
         });
 
         // Sign the order.
-        sig = getSignature(order, account0);
+        bytes memory sig = getSignature(order, account0);
 
-        return (order, sig);
+        return IFloodPlain.SignedOrder({ order: order, signature: sig});
     }
 
-    function setup_multiItemOrder() internal returns (IFloodPlain.Order memory order, bytes memory sig) {
+    function setup_multiItemOrder() internal returns (IFloodPlain.SignedOrder memory) {
         deal(address(token0), address(account0.addr), 100);
         deal(address(token1), address(account0.addr), 200);
         deal(address(token2), address(account0.addr), 300);
@@ -137,7 +137,7 @@ abstract contract FloodPlainTestShared is Test, DeployPermit2 {
         consideration[2].amount = 600;
 
         // Construct order.
-        order = IFloodPlain.Order({
+        IFloodPlain.Order memory order = IFloodPlain.Order({
             offerer: address(account0.addr),
             zone: address(0),
             offer: offer,
@@ -147,8 +147,8 @@ abstract contract FloodPlainTestShared is Test, DeployPermit2 {
         });
 
         // Sign the order.
-        sig = getSignature(order, account0);
+        bytes memory sig = getSignature(order, account0);
 
-        return (order, sig);
+        return IFloodPlain.SignedOrder({ order: order, signature: sig });
     }
 }

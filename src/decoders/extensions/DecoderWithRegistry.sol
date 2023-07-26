@@ -70,7 +70,7 @@ contract DecoderWithRegistry is IDecoder, AccessControlDefaultAdminRules {
     }
 
     /*
-        * @notice Decodes a uint in calldata encoded with variable length of `size` bytes. 
+        * @notice Decodes a uint in calldata encoded with variable length of `size` bytes.
         * @param size Size of the uint.
         * @param ptr Pointer to the start of the uint in calldata.
         * @return The decoded uint.
@@ -205,6 +205,9 @@ contract DecoderWithRegistry is IDecoder, AccessControlDefaultAdminRules {
             signature = bytes.concat(r, s, v);
         }
 
-        return abi.encodeWithSelector(IFloodPlain.fulfillOrder.selector, order, signature, fulfiller, data[ptr:]);
+        IFloodPlain.SignedOrder memory signedOrder =
+            IFloodPlain.SignedOrder({ order: order, signature: signature });
+
+        return abi.encodeWithSelector(IFloodPlain.fulfillOrder.selector, signedOrder, fulfiller, data[ptr:]);
     }
 }

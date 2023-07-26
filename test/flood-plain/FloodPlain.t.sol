@@ -8,10 +8,10 @@ import {OrderHash} from "src/flood-plain/libraries/OrderHash.sol";
 
 contract FloodPlainTest is FloodPlainTestShared {
     function test_fulfillBasicOrder() public {
-        (IFloodPlain.Order memory order, bytes memory sig) = setup_mostBasicOrder();
+        (IFloodPlain.SignedOrder memory signedOrder) = setup_mostBasicOrder();
 
         // Fill the order.
-        book.fulfillOrder(order, sig, address(fulfiller), "");
+        book.fulfillOrder(signedOrder, address(fulfiller), "");
 
         // Assertions.
         assertEq(token0.balanceOf(address(account0.addr)), 0);
@@ -21,15 +21,15 @@ contract FloodPlainTest is FloodPlainTestShared {
     }
 
     function test_fulfillEthOrder() public {
-        (IFloodPlain.Order memory order,) = setup_mostBasicOrder();
+        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
 
-        order.consideration[0].token = address(0);
+        signedOrder.order.consideration[0].token = address(0);
         deal(address(fulfiller), 500);
 
-        bytes memory sig = getSignature(order, account0);
+        signedOrder.signature = getSignature(signedOrder.order, account0);
 
         // Fill the order.
-        book.fulfillOrder(order, sig, address(fulfiller), "");
+        book.fulfillOrder(signedOrder, address(fulfiller), "");
 
         // Assertions.
         assertEq(token0.balanceOf(address(account0.addr)), 0);
@@ -39,10 +39,10 @@ contract FloodPlainTest is FloodPlainTestShared {
     }
 
     function test_fulfillMultiItemOrder() public {
-        (IFloodPlain.Order memory order, bytes memory sig) = setup_multiItemOrder();
+        IFloodPlain.SignedOrder memory signedOrder = setup_multiItemOrder();
 
         // Fill the order.
-        book.fulfillOrder(order, sig, address(fulfiller), "");
+        book.fulfillOrder(signedOrder, address(fulfiller), "");
 
         // Assertions.
         assertEq(token0.balanceOf(address(account0.addr)), 0);
@@ -60,54 +60,54 @@ contract FloodPlainTest is FloodPlainTestShared {
     }
 
     function test_RevertWhenInsufficientConsiderationReceived() public {
-        (IFloodPlain.Order memory order, bytes memory sig) = setup_mostBasicOrder();
+        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
 
         deal(address(token1), address(maliciousFulfiller), 500);
 
         // Filling order fails.
         vm.expectRevert("ERC20: insufficient allowance");
-        book.fulfillOrder(order, sig, address(maliciousFulfiller), "");
+        book.fulfillOrder(signedOrder, address(maliciousFulfiller), "");
     }
 
     function test_RevertWhenInsufficientEthConsiderationReceived() public {
-        (IFloodPlain.Order memory order,) = setup_mostBasicOrder();
+        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
 
-        order.consideration[0].token = address(0);
+        signedOrder.order.consideration[0].token = address(0);
         deal(address(maliciousFulfiller), 500);
 
-        bytes memory sig = getSignature(order, account0);
+        signedOrder.signature = getSignature(signedOrder.order, account0);
 
         // Filling order fails.
         vm.expectRevert("Address: insufficient balance");
-        book.fulfillOrder(order, sig, address(maliciousFulfiller), "");
+        book.fulfillOrder(signedOrder, address(maliciousFulfiller), "");
     }
 
     function test_RevertWhenInsufficientConsiderationIndicated() public {
-        (IFloodPlain.Order memory order, bytes memory sig) = setup_mostBasicOrder();
+        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
 
         deal(address(token1), address(maliciousFulfiller2), 500);
 
         // Filling order fails.
         vm.expectRevert(bytes4(keccak256("InsufficientAmountReceived()")));
-        book.fulfillOrder(order, sig, address(maliciousFulfiller2), "");
+        book.fulfillOrder(signedOrder, address(maliciousFulfiller2), "");
     }
 
     function test_NonceValidity() public {
-        (IFloodPlain.Order memory order, bytes memory sig) = setup_mostBasicOrder();
+        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
 
         assertTrue(book.getNonceStatus(account0.addr, 0));
 
         // Fill the order.
-        book.fulfillOrder(order, sig, address(fulfiller), "");
+        book.fulfillOrder(signedOrder, address(fulfiller), "");
 
         assertFalse(book.getNonceStatus(account0.addr, 0));
     }
 
     function test_RevertWhenNonceReuse() public {
-        (IFloodPlain.Order memory order, bytes memory sig) = setup_mostBasicOrder();
+        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
 
         // Fill the order.
-        book.fulfillOrder(order, sig, address(fulfiller), "");
+        book.fulfillOrder(signedOrder, address(fulfiller), "");
 
         deal(address(token0), address(account0.addr), 500);
         deal(address(token1), address(fulfiller), 500);
@@ -118,148 +118,148 @@ contract FloodPlainTest is FloodPlainTestShared {
 
         // Revert due to nonce reuse.
         vm.expectRevert(abi.encodePacked(bytes4(keccak256("InvalidNonce()"))));
-        book.fulfillOrder(order, sig, address(fulfiller), "");
+        book.fulfillOrder(signedOrder, address(fulfiller), "");
     }
 
     function test_RevertWhenDeadlineExpire() public {
-        (IFloodPlain.Order memory order,) = setup_mostBasicOrder();
+        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
 
         // Set deadline to one second ago, and sign it.
-        order.deadline = block.timestamp - 1;
-        bytes memory sig = getSignature(order, account0);
+        signedOrder.order.deadline = block.timestamp - 1;
+        signedOrder.signature = getSignature(signedOrder.order, account0);
 
         // Fill the order.
         vm.expectRevert(abi.encodePacked(bytes4(keccak256("SignatureExpired(uint256)")), bytes32(bytes20(address(0)))));
-        book.fulfillOrder(order, sig, address(fulfiller), "");
+        book.fulfillOrder(signedOrder, address(fulfiller), "");
     }
 
     function test_OrderPassingThroughZone() public {
-        (IFloodPlain.Order memory order,) = setup_mostBasicOrder();
+        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
 
         // Set zone to pre deployed zone, and sign the order.
-        order.zone = address(zone);
-        bytes memory sig = getSignature(order, account0);
+        signedOrder.order.zone = address(zone);
+        signedOrder.signature = getSignature(signedOrder.order, account0);
 
         // Fill the order without a problem.
-        book.fulfillOrder(order, sig, address(fulfiller), "");
+        book.fulfillOrder(signedOrder, address(fulfiller), "");
     }
 
     function test_RevertWhenZoneReverts() public {
-        (IFloodPlain.Order memory order,) = setup_mostBasicOrder();
+        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
 
         // Set zone to pre deployed zone, and sign the order.
-        order.zone = address(zone);
-        bytes memory sig = getSignature(order, account0);
+        signedOrder.order.zone = address(zone);
+        signedOrder.signature = getSignature(signedOrder.order, account0);
 
         // Make zone revert.
         zone.pause();
 
         // Fulfillment disabled by zone.
         vm.expectRevert("Pausable: paused");
-        book.fulfillOrder(order, sig, address(fulfiller), "");
+        book.fulfillOrder(signedOrder, address(fulfiller), "");
     }
 
     function test_OrderStatus() public {
-        (IFloodPlain.Order memory order, bytes memory sig) = setup_mostBasicOrder();
+        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
 
         // Nonce available and deadline not passed.
-        assertTrue(book.getOrderStatus(order));
+        assertTrue(book.getOrderStatus(signedOrder.order));
 
         // Nonce available but deadline passed.
-        order.deadline = block.timestamp - 1;
-        assertFalse(book.getOrderStatus(order));
-        order.deadline = type(uint256).max;
+        signedOrder.order.deadline = block.timestamp - 1;
+        assertFalse(book.getOrderStatus(signedOrder.order));
+        signedOrder.order.deadline = type(uint256).max;
 
         // Fill the order, disables nonce.
-        book.fulfillOrder(order, sig, address(fulfiller), "");
+        book.fulfillOrder(signedOrder, address(fulfiller), "");
 
         // Deadline not passed but nonce not available.
-        assertFalse(book.getOrderStatus(order));
+        assertFalse(book.getOrderStatus(signedOrder.order));
 
         // Deadline passed and nonce not available.
-        order.deadline = block.timestamp - 1;
-        assertFalse(book.getOrderStatus(order));
+        signedOrder.order.deadline = block.timestamp - 1;
+        assertFalse(book.getOrderStatus(signedOrder.order));
     }
 
     function test_OrderValidityWithoutZone() public {
-        (IFloodPlain.Order memory order, bytes memory sig) = setup_mostBasicOrder();
+        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
 
         // Zone is not set.
 
         // Nonce available and deadline not passed.
-        assertTrue(book.getOrderValidity(order, address(0), address(0), ""));
+        assertTrue(book.getOrderValidity(signedOrder.order, address(0), address(0), ""));
 
         // Nonce available but deadline passed.
-        order.deadline = block.timestamp - 1;
-        assertFalse(book.getOrderValidity(order, address(0), address(0), ""));
-        order.deadline = type(uint256).max;
+        signedOrder.order.deadline = block.timestamp - 1;
+        assertFalse(book.getOrderValidity(signedOrder.order, address(0), address(0), ""));
+        signedOrder.order.deadline = type(uint256).max;
 
         // Fill the order, disables nonce.
-        book.fulfillOrder(order, sig, address(fulfiller), "");
+        book.fulfillOrder(signedOrder, address(fulfiller), "");
 
         // Deadline not passed but nonce not available.
-        assertFalse(book.getOrderValidity(order, address(0), address(0), ""));
+        assertFalse(book.getOrderValidity(signedOrder.order, address(0), address(0), ""));
 
         // Deadline passed and nonce not available.
-        order.deadline = block.timestamp - 1;
-        assertFalse(book.getOrderValidity(order, address(0), address(0), ""));
+        signedOrder.order.deadline = block.timestamp - 1;
+        assertFalse(book.getOrderValidity(signedOrder.order, address(0), address(0), ""));
     }
 
     function test_OrderValidityWithUnpausedZone() public {
-        (IFloodPlain.Order memory order, bytes memory sig) = setup_mostBasicOrder();
+        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
 
         // Zone is set but does not revert.
 
-        order.zone = address(zone);
-        sig = getSignature(order, account0);
+        signedOrder.order.zone = address(zone);
+        signedOrder.signature = getSignature(signedOrder.order, account0);
 
         // Nonce available and deadline not passed.
-        assertTrue(book.getOrderValidity(order, address(0), address(0), ""));
+        assertTrue(book.getOrderValidity(signedOrder.order, address(0), address(0), ""));
 
         // Nonce available but deadline passed.
-        order.deadline = block.timestamp - 1;
-        assertFalse(book.getOrderValidity(order, address(0), address(0), ""));
-        order.deadline = type(uint256).max;
+        signedOrder.order.deadline = block.timestamp - 1;
+        assertFalse(book.getOrderValidity(signedOrder.order, address(0), address(0), ""));
+        signedOrder.order.deadline = type(uint256).max;
 
         // Fill the order, disables nonce.
-        book.fulfillOrder(order, sig, address(fulfiller), "");
+        book.fulfillOrder(signedOrder, address(fulfiller), "");
 
         // Deadline not passed but nonce not available.
-        assertFalse(book.getOrderValidity(order, address(0), address(0), ""));
+        assertFalse(book.getOrderValidity(signedOrder.order, address(0), address(0), ""));
 
         // Deadline passed and nonce not available.
-        order.deadline = block.timestamp - 1;
-        assertFalse(book.getOrderValidity(order, address(0), address(0), ""));
+        signedOrder.order.deadline = block.timestamp - 1;
+        assertFalse(book.getOrderValidity(signedOrder.order, address(0), address(0), ""));
     }
 
     function test_OrderValidityWithPausedZone() public {
-        (IFloodPlain.Order memory order, bytes memory sig) = setup_mostBasicOrder();
+        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
 
         // Zone is set and reverts. Must always fail.
 
-        order.zone = address(zone);
-        sig = getSignature(order, account0);
+        signedOrder.order.zone = address(zone);
+        signedOrder.signature = getSignature(signedOrder.order, account0);
         zone.pause();
 
         // Nonce available and deadline not passed.
-        assertFalse(book.getOrderValidity(order, address(0), address(0), ""));
+        assertFalse(book.getOrderValidity(signedOrder.order, address(0), address(0), ""));
 
         // Nonce available but deadline passed.
-        order.deadline = block.timestamp - 1;
-        assertFalse(book.getOrderValidity(order, address(0), address(0), ""));
-        order.deadline = type(uint256).max;
+        signedOrder.order.deadline = block.timestamp - 1;
+        assertFalse(book.getOrderValidity(signedOrder.order, address(0), address(0), ""));
+        signedOrder.order.deadline = type(uint256).max;
 
         // Fill the order, disables nonce.
         zone.unpause();
-        book.fulfillOrder(order, sig, address(fulfiller), "");
+        book.fulfillOrder(signedOrder, address(fulfiller), "");
         zone.pause();
 
         // Deadline not passed but nonce not available.
-        assertFalse(book.getOrderValidity(order, address(0), address(0), ""));
+        assertFalse(book.getOrderValidity(signedOrder.order, address(0), address(0), ""));
 
         // Deadline passed and nonce not available.
-        order.deadline = block.timestamp - 1;
-        assertFalse(book.getOrderValidity(order, address(0), address(0), ""));
+        signedOrder.order.deadline = block.timestamp - 1;
+        assertFalse(book.getOrderValidity(signedOrder.order, address(0), address(0), ""));
     }
 
     function test_RevertWhenDeployedWithInvalidPermit2Contract() public {

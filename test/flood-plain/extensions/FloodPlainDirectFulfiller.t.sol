@@ -5,13 +5,13 @@ import "test/flood-plain/utils/FloodPlainTestShared.sol";
 
 contract FloodPlainDirectFulfillerTest is FloodPlainTestShared {
     function test_fulfillBasicOrder() public {
-        (IFloodPlain.Order memory order, bytes memory sig) = setup_mostBasicOrder();
+        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
 
         deal(address(token1), address(this), 500);
         token1.approve(address(book), 500);
 
         // Fill the order.
-        book.fulfillOrder(order, sig);
+        book.fulfillOrder(signedOrder);
 
         // Assertions.
         assertEq(token0.balanceOf(address(account0.addr)), 0);
@@ -21,16 +21,16 @@ contract FloodPlainDirectFulfillerTest is FloodPlainTestShared {
     }
 
     function test_fulfillEthOrder() public {
-        (IFloodPlain.Order memory order,) = setup_mostBasicOrder();
+        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
 
-        order.consideration[0].token = address(0);
+        signedOrder.order.consideration[0].token = address(0);
 
-        bytes memory sig = getSignature(order, account0);
+        signedOrder.signature = getSignature(signedOrder.order, account0);
 
         uint256 balanceBefore = address(this).balance;
 
         // Fill the order.
-        book.fulfillOrder{value: 500}(order, sig);
+        book.fulfillOrder{value: 500}(signedOrder);
 
         // Assertions.
         assertEq(token0.balanceOf(address(account0.addr)), 0);
@@ -40,7 +40,7 @@ contract FloodPlainDirectFulfillerTest is FloodPlainTestShared {
     }
 
     function test_fulfillMultiItemOrder() public {
-        (IFloodPlain.Order memory order, bytes memory sig) = setup_multiItemOrder();
+        IFloodPlain.SignedOrder memory signedOrder = setup_multiItemOrder();
 
         deal(address(token3), address(this), 400);
         token3.approve(address(book), 400);
@@ -50,7 +50,7 @@ contract FloodPlainDirectFulfillerTest is FloodPlainTestShared {
         token5.approve(address(book), 600);
 
         // Fill the order.
-        book.fulfillOrder(order, sig);
+        book.fulfillOrder(signedOrder);
 
         // Assertions.
         assertEq(token0.balanceOf(address(account0.addr)), 0);
@@ -68,163 +68,163 @@ contract FloodPlainDirectFulfillerTest is FloodPlainTestShared {
     }
 
     function test_RevertWhenInsufficientConsiderationApproved() public {
-        (IFloodPlain.Order memory order, bytes memory sig) = setup_mostBasicOrder();
+        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
 
         deal(address(token1), address(this), 500);
         token1.approve(address(book), 499);
 
         // Filling order fails.
         vm.expectRevert("ERC20: insufficient allowance");
-        book.fulfillOrder(order, sig);
+        book.fulfillOrder(signedOrder);
     }
 
     function test_RevertWhenInsufficientConsiderationBalance() public {
-        (IFloodPlain.Order memory order, bytes memory sig) = setup_mostBasicOrder();
+        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
 
         deal(address(token1), address(this), 499);
         token1.approve(address(book), 500);
 
         // Filling order fails.
         vm.expectRevert("ERC20: transfer amount exceeds balance");
-        book.fulfillOrder(order, sig);
+        book.fulfillOrder(signedOrder);
     }
 
     function test_RevertWhenInsufficientEthConsiderationReceived() public {
-        (IFloodPlain.Order memory order,) = setup_mostBasicOrder();
+        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
 
-        order.consideration[0].token = address(0);
+        signedOrder.order.consideration[0].token = address(0);
 
-        bytes memory sig = getSignature(order, account0);
+        signedOrder.signature = getSignature(signedOrder.order, account0);
 
         // Filling order fails.
         vm.expectRevert(bytes4(keccak256("IncorrectValueReceived()")));
-        book.fulfillOrder{value: 499}(order, sig);
+        book.fulfillOrder{value: 499}(signedOrder);
     }
 
     function test_RevertWhenTransferTaxTokens() public {
-        (IFloodPlain.Order memory order,) = setup_mostBasicOrder();
+        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
 
-        order.consideration[0].token = address(token6); // fee-on-transfer token
-        bytes memory sig = getSignature(order, account0);
+        signedOrder.order.consideration[0].token = address(token6); // fee-on-transfer token
+        signedOrder.signature = getSignature(signedOrder.order, account0);
 
         deal(address(token6), address(this), 500);
         token6.approve(address(book), 500);
 
         // Filling order fails.
         vm.expectRevert(bytes4(keccak256("InsufficientAmountPulled()")));
-        book.fulfillOrder(order, sig);
+        book.fulfillOrder(signedOrder);
     }
 
     function test_OrderPassingThroughZone() public {
-        (IFloodPlain.Order memory order,) = setup_mostBasicOrder();
+        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
 
         deal(address(token1), address(this), 500);
         token1.approve(address(book), 500);
 
         // Set zone to pre deployed zone, and sign the order.
-        order.zone = address(zone);
-        bytes memory sig = getSignature(order, account0);
+        signedOrder.order.zone = address(zone);
+        signedOrder.signature = getSignature(signedOrder.order, account0);
 
         // Fill the order without a problem.
-        book.fulfillOrder(order, sig);
+        book.fulfillOrder(signedOrder);
     }
 
     function test_RevertWhenZoneReverts() public {
-        (IFloodPlain.Order memory order,) = setup_mostBasicOrder();
+        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
 
         deal(address(token1), address(this), 500);
         token1.approve(address(book), 500);
 
         // Set zone to pre deployed zone, and sign the order.
-        order.zone = address(zone);
-        bytes memory sig = getSignature(order, account0);
+        signedOrder.order.zone = address(zone);
+        signedOrder.signature = getSignature(signedOrder.order, account0);
 
         // Make zone revert.
         zone.pause();
 
         // Fulfillment disabled by zone.
         vm.expectRevert("Pausable: paused");
-        book.fulfillOrder(order, sig);
+        book.fulfillOrder(signedOrder);
     }
 
     function test_OrderValidityWithoutZone() public {
-        (IFloodPlain.Order memory order, bytes memory sig) = setup_mostBasicOrder();
+        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
 
         // Zone is not set.
 
         // Nonce available and deadline not passed.
-        assertTrue(book.getOrderValidity(order, address(this)));
+        assertTrue(book.getOrderValidity(signedOrder.order, address(this)));
 
         // Nonce available but deadline passed.
-        order.deadline = block.timestamp - 1;
-        assertFalse(book.getOrderValidity(order, address(this)));
-        order.deadline = type(uint256).max;
+        signedOrder.order.deadline = block.timestamp - 1;
+        assertFalse(book.getOrderValidity(signedOrder.order, address(this)));
+        signedOrder.order.deadline = type(uint256).max;
 
         // Fill the order, disables nonce.
-        book.fulfillOrder(order, sig, address(fulfiller), "");
+        book.fulfillOrder(signedOrder, address(fulfiller), "");
 
         // Deadline not passed but nonce not available.
-        assertFalse(book.getOrderValidity(order, address(this)));
+        assertFalse(book.getOrderValidity(signedOrder.order, address(this)));
 
         // Deadline passed and nonce not available.
-        order.deadline = block.timestamp - 1;
-        assertFalse(book.getOrderValidity(order, address(this)));
+        signedOrder.order.deadline = block.timestamp - 1;
+        assertFalse(book.getOrderValidity(signedOrder.order, address(this)));
     }
 
     function test_OrderValidityWithUnpausedZone() public {
-        (IFloodPlain.Order memory order, bytes memory sig) = setup_mostBasicOrder();
+        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
 
         // Zone is set but does not revert.
 
-        order.zone = address(zone);
-        sig = getSignature(order, account0);
+        signedOrder.order.zone = address(zone);
+        signedOrder.signature = getSignature(signedOrder.order, account0);
 
         // Nonce available and deadline not passed.
-        assertTrue(book.getOrderValidity(order, address(this)));
+        assertTrue(book.getOrderValidity(signedOrder.order, address(this)));
 
         // Nonce available but deadline passed.
-        order.deadline = block.timestamp - 1;
-        assertFalse(book.getOrderValidity(order, address(this)));
-        order.deadline = type(uint256).max;
+        signedOrder.order.deadline = block.timestamp - 1;
+        assertFalse(book.getOrderValidity(signedOrder.order, address(this)));
+        signedOrder.order.deadline = type(uint256).max;
 
         // Fill the order, disables nonce.
-        book.fulfillOrder(order, sig, address(fulfiller), "");
+        book.fulfillOrder(signedOrder, address(fulfiller), "");
 
         // Deadline not passed but nonce not available.
-        assertFalse(book.getOrderValidity(order, address(this)));
+        assertFalse(book.getOrderValidity(signedOrder.order, address(this)));
 
         // Deadline passed and nonce not available.
-        order.deadline = block.timestamp - 1;
-        assertFalse(book.getOrderValidity(order, address(this)));
+        signedOrder.order.deadline = block.timestamp - 1;
+        assertFalse(book.getOrderValidity(signedOrder.order, address(this)));
     }
 
     function test_OrderValidityWithPausedZone() public {
-        (IFloodPlain.Order memory order, bytes memory sig) = setup_mostBasicOrder();
+        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
 
         // Zone is set and reverts. Must always fail.
 
-        order.zone = address(zone);
-        sig = getSignature(order, account0);
+        signedOrder.order.zone = address(zone);
+        signedOrder.signature = getSignature(signedOrder.order, account0);
         zone.pause();
 
         // Nonce available and deadline not passed.
-        assertFalse(book.getOrderValidity(order, address(this)));
+        assertFalse(book.getOrderValidity(signedOrder.order, address(this)));
 
         // Nonce available but deadline passed.
-        order.deadline = block.timestamp - 1;
-        assertFalse(book.getOrderValidity(order, address(this)));
-        order.deadline = type(uint256).max;
+        signedOrder.order.deadline = block.timestamp - 1;
+        assertFalse(book.getOrderValidity(signedOrder.order, address(this)));
+        signedOrder.order.deadline = type(uint256).max;
 
         // Fill the order, disables nonce.
         zone.unpause();
-        book.fulfillOrder(order, sig, address(fulfiller), "");
+        book.fulfillOrder(signedOrder, address(fulfiller), "");
         zone.pause();
 
         // Deadline not passed but nonce not available.
-        assertFalse(book.getOrderValidity(order, address(this)));
+        assertFalse(book.getOrderValidity(signedOrder.order, address(this)));
 
         // Deadline passed and nonce not available.
-        order.deadline = block.timestamp - 1;
-        assertFalse(book.getOrderValidity(order, address(this)));
+        signedOrder.order.deadline = block.timestamp - 1;
+        assertFalse(book.getOrderValidity(signedOrder.order, address(this)));
     }
 }

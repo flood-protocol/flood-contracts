@@ -33,10 +33,13 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
         PERMIT2 = ISignatureTransfer(permit2);
     }
 
-    function fulfillOrder(Order calldata order, bytes calldata signature, address fulfiller, bytes calldata extraData)
+    function fulfillOrder(SignedOrder calldata signedOrder, address fulfiller, bytes calldata extraData)
         external
         nonReentrant
     {
+        // Get order component from calldata.
+        Order calldata order = signedOrder.order;
+
         // Retrieve the order hash for order.
         bytes32 orderHash = order.hash();
 
@@ -54,7 +57,7 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
         }
 
         // Transfer each offer item to fulfiller using Permit2.
-        _permitTransferOffer({order: order, signature: signature, orderHash: orderHash, to: fulfiller});
+        _permitTransferOffer({order: order, signature: signedOrder.signature, orderHash: orderHash, to: fulfiller});
 
         // Transfer consideration items from fulfiller to offerer.
         _transferConsideration({order: order, fulfiller: fulfiller, extraData: extraData});

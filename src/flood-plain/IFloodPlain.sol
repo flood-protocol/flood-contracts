@@ -10,6 +10,11 @@ interface IFloodPlain {
 
     event OrderFulfilled(bytes32 indexed orderHash, address indexed offerer, address indexed fulfiller);
 
+    struct SignedOrder {
+        Order order;
+        bytes signature;
+    }
+
     struct Order {
         address offerer;
         address zone;
@@ -32,14 +37,14 @@ interface IFloodPlain {
     /**
      * @notice Fulfill an order with an arbitrary number of items for offer and consideration.
      *
-     * @param order     The order to fulfill. Note that the offerer must first approve Permit2
-     *                  contract to transfer any relevant tokens on their behalf.
-     * @param signature The permit2 signature with the order as the witness.
-     * @param fulfiller The address that will receive offer items, then source consideration items
-     *                  for the offerer.
-     * @param extraData Extra bytes passed to the Zone and Fulfiller.
+     * @param signedOrder The order to fulfill and the permit2 signature with the order
+     *                           as the witness. Note that the offerer must first approve Permit2
+     *                           contract to transfer any relevant tokens on their behalf.
+     * @param fulfiller          The address that will receive offer items, then source
+     *                           consideration items for the offerer.
+     * @param extraData          Extra bytes passed to the Zone and Fulfiller.
      */
-    function fulfillOrder(Order calldata order, bytes calldata signature, address fulfiller, bytes calldata extraData)
+    function fulfillOrder(SignedOrder calldata signedOrder, address fulfiller, bytes calldata extraData)
         external;
 
     /**
