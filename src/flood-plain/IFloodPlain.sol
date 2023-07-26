@@ -37,12 +37,12 @@ interface IFloodPlain {
     /**
      * @notice Fulfill an order with an arbitrary number of items for offer and consideration.
      *
-     * @param signedOrder The order to fulfill and the permit2 signature with the order
-     *                           as the witness. Note that the offerer must first approve Permit2
-     *                           contract to transfer any relevant tokens on their behalf.
-     * @param fulfiller          The address that will receive offer items, then source
-     *                           consideration items for the offerer.
-     * @param extraData          Extra bytes passed to the Zone and Fulfiller.
+     * @param signedOrder The order to fulfill and the permit2 signature with the order as the
+     *                    witness. Note that the offerer must first approve Permit2 contract to
+     *                    transfer any relevant tokens on their behalf.
+     * @param fulfiller   The address that will receive offer items, then source consideration
+     *                    items for the offerer.
+     * @param extraData   Extra bytes passed to the Zone and Fulfiller.
      */
     function fulfillOrder(SignedOrder calldata signedOrder, address fulfiller, bytes calldata extraData)
         external;
