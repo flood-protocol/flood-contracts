@@ -7,6 +7,11 @@ interface IFloodPlainEncodedCalls {
     event DecoderAdded(uint256 indexed decoderId, address indexed decoder);
 
     /**
+     * @notice Declares a byte that does not clash with the first byte of any function signature.
+     */
+    function FALLBACK_SELECTOR_BYTE() external view returns (bytes1);
+
+    /**
      * @notice Get the decoder address corresponding to an identifier.
      *
      * @param decoderId The identifier of the decoder.

@@ -88,4 +88,21 @@ contract FloodPlainEncodedCalls is FloodPlainTestShared {
         vm.expectRevert(bytes4(keccak256("NotAContract()")));
         book.addDecoder(address(0xd00d));
     }
+
+    function test_NoSelectorClash() public {
+        string[] memory inputs = new string[](3);
+        inputs[0] = "sh";
+        inputs[1] = "test/flood-plain/utils/selector_check.sh";
+        inputs[2] = vm.toString(uint8(book.FALLBACK_SELECTOR_BYTE()));
+
+        bytes memory res = vm.ffi(inputs);
+
+        // False in raw hexcode. Means does not match any existing selector.
+        assertEq(res.length, 5);
+        assertEq(uint8(res[0]), uint8(0x66));
+        assertEq(uint8(res[1]), uint8(0x61));
+        assertEq(uint8(res[2]), uint8(0x6c));
+        assertEq(uint8(res[3]), uint8(0x73));
+        assertEq(uint8(res[4]), uint8(0x65));
+    }
 }

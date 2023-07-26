@@ -7,6 +7,8 @@ import {IFloodPlainEncodedCalls} from "./IFloodPlainEncodedCalls.sol";
 import {AccessControlDefaultAdminRules} from "@openzeppelin/access/AccessControlDefaultAdminRules.sol";
 
 abstract contract FloodPlainEncodedCalls is FloodPlain, IFloodPlainEncodedCalls, AccessControlDefaultAdminRules {
+    bytes1 public constant FALLBACK_SELECTOR_BYTE = 0x00;
+
     address[] internal _decoders;
 
     constructor(address admin) AccessControlDefaultAdminRules(3 days, admin) {}
