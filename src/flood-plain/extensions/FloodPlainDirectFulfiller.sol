@@ -22,11 +22,23 @@ abstract contract FloodPlainDirectFulfiller is FloodPlain, IFloodPlainDirectFulf
     using ItemDeduplicator for Item[];
 
     function fulfillOrder(Order calldata order, bytes calldata signature) external payable nonReentrant {
-        // Fulfill using internal function.
-        _fulfillOrder({
-            order: order,
-            signature: signature
-        });
+        // Retrieve the order hash for order.
+        bytes32 orderHash = order.hash();
+
+        // Check zone restrictions.
+        address zone = order.zone;
+        if (zone != address(0)) {
+            IZone(zone).validateOrder({order: order, book: address(this), caller: msg.sender, orderHash: orderHash});
+        }
+
+        // Transfer each offer item to msg.sender using Permit2.
+        _permitTransferOffer({order: order, signature: signature, orderHash: orderHash, to: msg.sender});
+
+        // Transfer consideration items from fulfiller to offerer.
+        _transferConsideration({order: order, fulfiller: msg.sender});
+
+        // Emit an event signifying that the order has been fulfilled.
+        emit OrderFulfilled(orderHash, order.offerer, msg.sender);
     }
 
     function getOrderValidity(Order calldata order, address caller) external view returns (bool /* isValid */ ) {
@@ -48,26 +60,6 @@ abstract contract FloodPlainDirectFulfiller is FloodPlain, IFloodPlainDirectFulf
                 return false;
             }
         }
-    }
-
-    function _fulfillOrder(Order calldata order, bytes calldata signature) internal {
-        // Retrieve the order hash for order.
-        bytes32 orderHash = order.hash();
-
-        // Check zone restrictions.
-        address zone = order.zone;
-        if (zone != address(0)) {
-            IZone(zone).validateOrder({order: order, book: address(this), caller: msg.sender, orderHash: orderHash});
-        }
-
-        // Transfer each offer item to msg.sender using Permit2.
-        _permitTransferOffer({order: order, signature: signature, orderHash: orderHash, to: msg.sender});
-
-        // Transfer consideration items from fulfiller to offerer.
-        _transferConsideration({order: order, fulfiller: msg.sender});
-
-        // Emit an event signifying that the order has been fulfilled.
-        emit OrderFulfilled(orderHash, order.offerer, msg.sender);
     }
 
     function _transferConsideration(Order calldata order, address fulfiller) internal {
