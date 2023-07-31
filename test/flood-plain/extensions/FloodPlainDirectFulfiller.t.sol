@@ -3,6 +3,8 @@ pragma solidity ^0.8.17;
 
 import "test/flood-plain/utils/FloodPlainTestShared.sol";
 
+import {IFloodPlain} from "src/flood-plain/IFloodPlain.sol";
+
 contract FloodPlainDirectFulfillerTest is FloodPlainTestShared {
     function test_fulfillBasicOrder() public {
         IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
@@ -143,7 +145,7 @@ contract FloodPlainDirectFulfillerTest is FloodPlainTestShared {
         zone.pause();
 
         // Fulfillment disabled by zone.
-        vm.expectRevert("Pausable: paused");
+        vm.expectRevert(IFloodPlain.ZoneDenied.selector);
         book.fulfillOrder(signedOrder);
     }
 

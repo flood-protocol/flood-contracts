@@ -2,6 +2,7 @@
 pragma solidity ^0.8.17;
 
 import {IZone} from "src/zone/IZone.sol";
+import {IZoneDirectFulfiller} from "src/zone/extensions/IZoneDirectFulfiller.sol";
 import {IFloodPlain} from "src/flood-plain/IFloodPlain.sol";
 import {Pausable} from "@openzeppelin/security/Pausable.sol";
 
@@ -17,12 +18,24 @@ contract MockZone is IZone, Pausable {
     function validateOrder(IFloodPlain.Order calldata, address, address, bytes32, bytes calldata)
         external
         view
-        whenNotPaused
-    {}
+        returns (bytes4)
+    {
+        if (paused()) {
+            return ~IZoneDirectFulfiller.validateOrder.selector;
+        } else {
+            return IZoneDirectFulfiller.validateOrder.selector;
+        }
+    }
 
     function validateOrder(IFloodPlain.Order calldata, address, address, address, bytes32, bytes calldata)
         external
         view
-        whenNotPaused
-    {}
+        returns (bytes4)
+    {
+        if (paused()) {
+            return ~IZone.validateOrder.selector;
+        } else {
+            return IZone.validateOrder.selector;
+        }
+    }
 }

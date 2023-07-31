@@ -46,14 +46,18 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
         // Check zone restrictions.
         address zone = order.zone;
         if (zone != address(0)) {
-            IZone(zone).validateOrder({
-                order: order,
-                book: address(this),
-                fulfiller: fulfiller,
-                caller: msg.sender,
-                orderHash: orderHash,
-                context: signedOrder.zoneData
-            });
+            if (
+                IZone(zone).validateOrder({
+                    order: order,
+                    book: address(this),
+                    fulfiller: fulfiller,
+                    caller: msg.sender,
+                    orderHash: orderHash,
+                    context: signedOrder.zoneData
+                }) != IZone.validateOrder.selector
+            ) {
+                revert ZoneDenied();
+            }
         }
 
         // Transfer each offer item to fulfiller using Permit2.
@@ -87,20 +91,22 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
 
         if (order.zone == address(0)) {
             return true;
-        } else {
-            try IZone(order.zone).validateOrder({
+        }
+
+        if (
+            IZone(order.zone).validateOrder({
                 book: address(this),
                 order: order,
                 fulfiller: fulfiller,
                 caller: caller,
                 orderHash: order.hash(),
                 context: zoneData
-            }) {
-                return true;
-            } catch {
-                return false;
-            }
+            }) == IZone.validateOrder.selector
+        ) {
+            return true;
         }
+
+        return false;
     }
 
     function getOrderStatus(Order calldata order) public view returns (bool /* isValid */ ) {

@@ -1,15 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import {IFloodPlain} from "../flood-plain/IFloodPlain.sol";
+import {IFloodPlain} from "../../flood-plain/IFloodPlain.sol";
 
-interface IZone {
+interface IZoneDirectFulfiller {
     /**
-     * @notice Check if an order with specific fulfillment parameters is valid.
+     * @notice Check if a direct fill order is valid.
      *
      * @param order     The components of an order, excluding its signature.
      * @param book      The address of the book where the order is created (e.g.: FloodPlain).
-     * @param fulfiller The address that is fulfilling the order by supplying consideration items.
      * @param caller    The address that is fulfilling the order by calling the book and supplying
      *                  all the fulfillment parameters.
      * @param orderHash The EIP712 hash of the order components.
@@ -20,7 +19,6 @@ interface IZone {
     function validateOrder(
         IFloodPlain.Order calldata order,
         address book,
-        address fulfiller,
         address caller,
         bytes32 orderHash,
         bytes calldata context

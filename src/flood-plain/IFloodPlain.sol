@@ -8,6 +8,8 @@ interface IFloodPlain {
 
     error NotAContract();
 
+    error ZoneDenied();
+
     event OrderFulfilled(bytes32 indexed orderHash, address indexed offerer, address indexed fulfiller);
 
     struct SignedOrder {

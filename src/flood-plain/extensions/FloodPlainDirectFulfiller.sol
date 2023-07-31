@@ -12,7 +12,7 @@ import {Address} from "@openzeppelin/utils/Address.sol";
 import {SafeERC20} from "@openzeppelin/token/ERC20/utils/SafeERC20.sol";
 
 // Interfaces
-import {IZone} from "../../zone/IZone.sol";
+import {IZoneDirectFulfiller} from "../../zone/extensions/IZoneDirectFulfiller.sol";
 import {IERC20} from "@openzeppelin/token/ERC20/IERC20.sol";
 
 abstract contract FloodPlainDirectFulfiller is FloodPlain, IFloodPlainDirectFulfiller {
@@ -31,17 +31,26 @@ abstract contract FloodPlainDirectFulfiller is FloodPlain, IFloodPlainDirectFulf
         // Check zone restrictions.
         address zone = order.zone;
         if (zone != address(0)) {
-            IZone(zone).validateOrder({
-                order: order,
-                book: address(this),
-                caller: msg.sender,
-                orderHash: orderHash,
-                context: signedOrder.zoneData
-            });
+            if (
+                IZoneDirectFulfiller(zone).validateOrder({
+                    order: order,
+                    book: address(this),
+                    caller: msg.sender,
+                    orderHash: orderHash,
+                    context: signedOrder.zoneData
+                }) != IZoneDirectFulfiller.validateOrder.selector
+            ) {
+                revert ZoneDenied();
+            }
         }
 
         // Transfer each offer item to msg.sender using Permit2.
-        _permitTransferOffer({order: order, signature: signedOrder.signature, orderHash: orderHash, to: msg.sender});
+        _permitTransferOffer({
+            order: order,
+            signature: signedOrder.signature,
+            orderHash: orderHash,
+            to: msg.sender
+        });
 
         // Transfer consideration items from fulfiller to offerer.
         _transferConsideration({order: order, fulfiller: msg.sender});
@@ -50,30 +59,32 @@ abstract contract FloodPlainDirectFulfiller is FloodPlain, IFloodPlainDirectFulf
         emit OrderFulfilled(orderHash, order.offerer, msg.sender);
     }
 
-    function getOrderValidity(Order calldata order, address caller, bytes calldata zoneData)
-        external
-        view
-        returns (bool /* isValid */ )
-    {
+    function getOrderValidity(
+        Order calldata order,
+        address caller,
+        bytes calldata zoneData
+    ) external view returns (bool /* isValid */) {
         if (!getOrderStatus({order: order})) {
             return false;
         }
 
         if (order.zone == address(0)) {
             return true;
-        } else {
-            try IZone(order.zone).validateOrder({
+        }
+
+        if (
+            IZoneDirectFulfiller(order.zone).validateOrder({
                 book: address(this),
                 order: order,
                 caller: caller,
                 orderHash: order.hash(),
                 context: zoneData
-            }) {
-                return true;
-            } catch {
-                return false;
-            }
+            }) == IZoneDirectFulfiller.validateOrder.selector
+        ) {
+            return true;
         }
+
+        return false;
     }
 
     function _transferConsideration(Order calldata order, address fulfiller) internal {
@@ -88,7 +99,7 @@ abstract contract FloodPlainDirectFulfiller is FloodPlain, IFloodPlainDirectFulf
         uint256 dedupCount = deduplicatedItems.length;
 
         address to = order.offerer;
-        for (uint256 i; i < dedupCount;) {
+        for (uint256 i; i < dedupCount; ) {
             item = deduplicatedItems[i];
             token = item.token;
             amount = item.amount;

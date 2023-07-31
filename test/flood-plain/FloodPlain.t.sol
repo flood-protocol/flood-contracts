@@ -6,6 +6,8 @@ import "test/flood-plain/utils/FloodPlainTestShared.sol";
 import {PermitHash} from "permit2/src/libraries/PermitHash.sol";
 import {OrderHash} from "src/flood-plain/libraries/OrderHash.sol";
 
+import {IFloodPlain} from "src/flood-plain/IFloodPlain.sol";
+
 contract FloodPlainTest is FloodPlainTestShared {
     function test_fulfillBasicOrder() public {
         (IFloodPlain.SignedOrder memory signedOrder) = setup_mostBasicOrder();
@@ -155,7 +157,7 @@ contract FloodPlainTest is FloodPlainTestShared {
         zone.pause();
 
         // Fulfillment disabled by zone.
-        vm.expectRevert("Pausable: paused");
+        vm.expectRevert(IFloodPlain.ZoneDenied.selector);
         book.fulfillOrder(signedOrder, address(fulfiller), "");
     }
 

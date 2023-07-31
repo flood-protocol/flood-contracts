@@ -2,7 +2,7 @@
 pragma solidity ^0.8.17;
 
 import {Script, console2 as console} from "forge-std/Script.sol";
-import {MainZone} from "src/zone/extensions/MainZone.sol";
+import {MainZone} from "src/zone/implementations/MainZone.sol";
 import {Create2Deploy} from "./Create2Deploy.sol";
 
 contract MainZoneScript is Script, Create2Deploy {
