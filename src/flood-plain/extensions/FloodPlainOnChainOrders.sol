@@ -14,22 +14,32 @@ import {IFloodPlain} from "../IFloodPlain.sol";
 abstract contract FloodPlainOnChainOrders is FloodPlain, IFloodPlainOnChainOrders {
     using OrderHash for Order;
 
-    SignedOrder[] internal _etchedOrders;
+    SimpleSignedOrder[] internal _etchedOrders;
 
     function getEtchedOrder(uint256 etchedOrderId)
         external
         view
-        returns (SignedOrder memory /* etchedOrder */ )
+        returns (SimpleSignedOrder memory /* etchedOrder */ )
     {
         return _etchedOrders[etchedOrderId];
     }
 
-    function fulfillEtchedOrder(uint256 orderId, address fulfiller, bytes calldata extraData) external {
-        SignedOrder memory signedOrder = _etchedOrders[orderId];
+    function fulfillEtchedOrder(
+        uint256 orderId,
+        address fulfiller,
+        bytes calldata zoneData,
+        bytes calldata swapData
+    ) external {
+        SimpleSignedOrder memory simpleSignedOrder = _etchedOrders[orderId];
+        IFloodPlain.SignedOrder memory signedOrder = IFloodPlain.SignedOrder({
+            order: simpleSignedOrder.order,
+            signature: simpleSignedOrder.signature,
+            zoneData: zoneData
+        });
 
         // Fulfill the etched order using the standard fulfillment function.
         bytes memory data = abi.encodeWithSelector(
-            this.fulfillOrder.selector, signedOrder, fulfiller, extraData
+            this.fulfillOrder.selector, signedOrder, fulfiller, swapData
         );
         assembly {
             let result := delegatecall(gas(), address(), add(data, 0x20), mload(data), 0, 0)
@@ -44,7 +54,7 @@ abstract contract FloodPlainOnChainOrders is FloodPlain, IFloodPlainOnChainOrder
         }
     }
 
-    function etchOrder(SignedOrder calldata signedOrder) external returns (uint256 orderId) {
+    function etchOrder(SimpleSignedOrder calldata signedOrder) external returns (uint256 orderId) {
         orderId = _etchedOrders.length;
         _etchedOrders.push(signedOrder);
         emit OrderEtched({

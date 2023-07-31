@@ -13,6 +13,7 @@ interface IFloodPlain {
     struct SignedOrder {
         Order order;
         bytes signature;
+        bytes zoneData;
     }
 
     struct Order {
@@ -42,9 +43,9 @@ interface IFloodPlain {
      *                    transfer any relevant tokens on their behalf.
      * @param fulfiller   The address that will receive offer items, then source consideration
      *                    items for the offerer.
-     * @param extraData   Extra bytes passed to the Zone and Fulfiller.
+     * @param swapData    Extra bytes passed to the Fulfiller.
      */
-    function fulfillOrder(SignedOrder calldata signedOrder, address fulfiller, bytes calldata extraData)
+    function fulfillOrder(SignedOrder calldata signedOrder, address fulfiller, bytes calldata swapData)
         external;
 
     /**
@@ -72,12 +73,12 @@ interface IFloodPlain {
      * @param order     The components of the order.
      * @param fulfiller The address that will fulfill the order.
      * @param caller    The address that will call `fulfillOrder`.
-     * @param extraData Extra bytes that will be passed to Zone and Fulfiller.
+     * @param zoneData  Extra bytes that will be passed to Zone.
      *
      * @return isValid A boolean guaranteeing the order cannot be fulfilled with supplied
      *                 parameters if false.
      */
-    function getOrderValidity(Order calldata order, address fulfiller, address caller, bytes calldata extraData)
+    function getOrderValidity(Order calldata order, address fulfiller, address caller, bytes calldata zoneData)
         external
         view
         returns (bool isValid);

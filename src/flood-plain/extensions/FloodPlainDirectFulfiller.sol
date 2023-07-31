@@ -31,7 +31,13 @@ abstract contract FloodPlainDirectFulfiller is FloodPlain, IFloodPlainDirectFulf
         // Check zone restrictions.
         address zone = order.zone;
         if (zone != address(0)) {
-            IZone(zone).validateOrder({order: order, book: address(this), caller: msg.sender, orderHash: orderHash});
+            IZone(zone).validateOrder({
+                order: order,
+                book: address(this),
+                caller: msg.sender,
+                orderHash: orderHash,
+                context: signedOrder.zoneData
+            });
         }
 
         // Transfer each offer item to msg.sender using Permit2.
@@ -44,7 +50,11 @@ abstract contract FloodPlainDirectFulfiller is FloodPlain, IFloodPlainDirectFulf
         emit OrderFulfilled(orderHash, order.offerer, msg.sender);
     }
 
-    function getOrderValidity(Order calldata order, address caller) external view returns (bool /* isValid */ ) {
+    function getOrderValidity(Order calldata order, address caller, bytes calldata zoneData)
+        external
+        view
+        returns (bool /* isValid */ )
+    {
         if (!getOrderStatus({order: order})) {
             return false;
         }
@@ -56,7 +66,8 @@ abstract contract FloodPlainDirectFulfiller is FloodPlain, IFloodPlainDirectFulf
                 book: address(this),
                 order: order,
                 caller: caller,
-                orderHash: order.hash()
+                orderHash: order.hash(),
+                context: zoneData
             }) {
                 return true;
             } catch {

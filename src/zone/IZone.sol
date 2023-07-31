@@ -14,10 +14,15 @@ interface IZone {
      * @param caller    The address that is fulfilling the order by calling the book and supplying
      *                  all the fulfillment parameters.
      * @param orderHash The EIP712 hash of the order components.
+     * @param context   The arbitrary extra data supplied by the caller to be checked by the Zone.
      */
-    function validateOrder(IFloodPlain.Order calldata order, address book, address caller, bytes32 orderHash)
-        external
-        view;
+    function validateOrder(
+        IFloodPlain.Order calldata order,
+        address book,
+        address caller,
+        bytes32 orderHash,
+        bytes calldata context
+    ) external view;
 
     /**
      * @notice Check if an order with specific fulfillment parameters is valid.
@@ -30,8 +35,7 @@ interface IZone {
      * @param caller    The address that is fulfilling the order by calling the book and supplying
      *                  all the fulfillment parameters.
      * @param orderHash The EIP712 hash of the order components.
-     * @param context   The extra data supplied by the caller, which might include swap
-     *                  instructions for the fulfiller.
+     * @param context   The arbitrary extra data supplied by the caller to be checked by the Zone.
      */
     function validateOrder(
         IFloodPlain.Order calldata order,

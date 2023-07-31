@@ -99,7 +99,7 @@ abstract contract FloodPlainTestShared is Test, DeployPermit2 {
         // Sign the order.
         bytes memory sig = getSignature(order, account0);
 
-        return IFloodPlain.SignedOrder({ order: order, signature: sig});
+        return IFloodPlain.SignedOrder({ order: order, signature: sig, zoneData: ""});
     }
 
     function setup_multiItemOrder() internal returns (IFloodPlain.SignedOrder memory) {
@@ -149,6 +149,6 @@ abstract contract FloodPlainTestShared is Test, DeployPermit2 {
         // Sign the order.
         bytes memory sig = getSignature(order, account0);
 
-        return IFloodPlain.SignedOrder({ order: order, signature: sig });
+        return IFloodPlain.SignedOrder({ order: order, signature: sig, zoneData: ""});
     }
 }

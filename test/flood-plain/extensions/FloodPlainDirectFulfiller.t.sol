@@ -153,22 +153,22 @@ contract FloodPlainDirectFulfillerTest is FloodPlainTestShared {
         // Zone is not set.
 
         // Nonce available and deadline not passed.
-        assertTrue(book.getOrderValidity(signedOrder.order, address(this)));
+        assertTrue(book.getOrderValidity(signedOrder.order, address(this), ""));
 
         // Nonce available but deadline passed.
         signedOrder.order.deadline = block.timestamp - 1;
-        assertFalse(book.getOrderValidity(signedOrder.order, address(this)));
+        assertFalse(book.getOrderValidity(signedOrder.order, address(this), ""));
         signedOrder.order.deadline = type(uint256).max;
 
         // Fill the order, disables nonce.
         book.fulfillOrder(signedOrder, address(fulfiller), "");
 
         // Deadline not passed but nonce not available.
-        assertFalse(book.getOrderValidity(signedOrder.order, address(this)));
+        assertFalse(book.getOrderValidity(signedOrder.order, address(this), ""));
 
         // Deadline passed and nonce not available.
         signedOrder.order.deadline = block.timestamp - 1;
-        assertFalse(book.getOrderValidity(signedOrder.order, address(this)));
+        assertFalse(book.getOrderValidity(signedOrder.order, address(this), ""));
     }
 
     function test_OrderValidityWithUnpausedZone() public {
@@ -180,22 +180,22 @@ contract FloodPlainDirectFulfillerTest is FloodPlainTestShared {
         signedOrder.signature = getSignature(signedOrder.order, account0);
 
         // Nonce available and deadline not passed.
-        assertTrue(book.getOrderValidity(signedOrder.order, address(this)));
+        assertTrue(book.getOrderValidity(signedOrder.order, address(this), ""));
 
         // Nonce available but deadline passed.
         signedOrder.order.deadline = block.timestamp - 1;
-        assertFalse(book.getOrderValidity(signedOrder.order, address(this)));
+        assertFalse(book.getOrderValidity(signedOrder.order, address(this), ""));
         signedOrder.order.deadline = type(uint256).max;
 
         // Fill the order, disables nonce.
         book.fulfillOrder(signedOrder, address(fulfiller), "");
 
         // Deadline not passed but nonce not available.
-        assertFalse(book.getOrderValidity(signedOrder.order, address(this)));
+        assertFalse(book.getOrderValidity(signedOrder.order, address(this), ""));
 
         // Deadline passed and nonce not available.
         signedOrder.order.deadline = block.timestamp - 1;
-        assertFalse(book.getOrderValidity(signedOrder.order, address(this)));
+        assertFalse(book.getOrderValidity(signedOrder.order, address(this), ""));
     }
 
     function test_OrderValidityWithPausedZone() public {
@@ -208,11 +208,11 @@ contract FloodPlainDirectFulfillerTest is FloodPlainTestShared {
         zone.pause();
 
         // Nonce available and deadline not passed.
-        assertFalse(book.getOrderValidity(signedOrder.order, address(this)));
+        assertFalse(book.getOrderValidity(signedOrder.order, address(this), ""));
 
         // Nonce available but deadline passed.
         signedOrder.order.deadline = block.timestamp - 1;
-        assertFalse(book.getOrderValidity(signedOrder.order, address(this)));
+        assertFalse(book.getOrderValidity(signedOrder.order, address(this), ""));
         signedOrder.order.deadline = type(uint256).max;
 
         // Fill the order, disables nonce.
@@ -221,10 +221,10 @@ contract FloodPlainDirectFulfillerTest is FloodPlainTestShared {
         zone.pause();
 
         // Deadline not passed but nonce not available.
-        assertFalse(book.getOrderValidity(signedOrder.order, address(this)));
+        assertFalse(book.getOrderValidity(signedOrder.order, address(this), ""));
 
         // Deadline passed and nonce not available.
         signedOrder.order.deadline = block.timestamp - 1;
-        assertFalse(book.getOrderValidity(signedOrder.order, address(this)));
+        assertFalse(book.getOrderValidity(signedOrder.order, address(this), ""));
     }
 }

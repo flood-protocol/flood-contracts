@@ -38,12 +38,13 @@ contract MainZone is Zone, IMainZone, AccessControlDefaultAdminRules, Pausable {
         emit SecondaryZoneSet(newSecondaryZone);
     }
 
-    function validateOrder(IFloodPlain.Order calldata, /* order */ address book, address caller, bytes32 orderHash)
-        external
-        view
-        override
-        whenNotPaused
-    {
+    function validateOrder(
+        IFloodPlain.Order calldata,/* order */
+        address book,
+        address caller,
+        bytes32 orderHash,
+        bytes calldata /* context */
+    ) external view override whenNotPaused {
         // Always do basic built-in access control checks.
         _checkRole(CALLER_ROLE, caller);
         _checkRole(BOOK_ROLE, book);

@@ -206,7 +206,7 @@ contract DecoderWithRegistry is IDecoder, AccessControlDefaultAdminRules {
         }
 
         IFloodPlain.SignedOrder memory signedOrder =
-            IFloodPlain.SignedOrder({ order: order, signature: signature });
+            IFloodPlain.SignedOrder({ order: order, signature: signature, zoneData: "" });
 
         return abi.encodeWithSelector(IFloodPlain.fulfillOrder.selector, signedOrder, fulfiller, data[ptr:]);
     }

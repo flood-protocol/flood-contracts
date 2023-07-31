@@ -95,7 +95,7 @@ contract MockDecoder is IDecoder {
         }
 
         IFloodPlain.SignedOrder memory signedOrder =
-            IFloodPlain.SignedOrder({ order: order, signature: signature });
+            IFloodPlain.SignedOrder({ order: order, signature: signature, zoneData: "" });
 
         return abi.encodeWithSelector(IFloodPlain.fulfillOrder.selector, signedOrder, fulfiller, context);
     }

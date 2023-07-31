@@ -6,6 +6,11 @@ import {IFloodPlain} from "../IFloodPlain.sol";
 interface IFloodPlainOnChainOrders {
     event OrderEtched(uint256 indexed orderId, bytes32 indexed orderHash, IFloodPlain.Order order, bytes signature);
 
+    struct SimpleSignedOrder {
+        IFloodPlain.Order order;
+        bytes signature;
+    }
+
     /**
      * @notice Get all the details of the etched order corresponding to an order identifier.
      *
@@ -13,7 +18,7 @@ interface IFloodPlainOnChainOrders {
      *
      * @return order All the details of the order, including its signature.
      */
-    function getEtchedOrder(uint256 etchedOrderId) external view returns (IFloodPlain.SignedOrder memory order);
+    function getEtchedOrder(uint256 etchedOrderId) external view returns (SimpleSignedOrder memory order);
 
     /**
      * @notice Fulfill an order with an arbitrary number of items for offer and consideration.
@@ -21,9 +26,15 @@ interface IFloodPlainOnChainOrders {
      * @param orderId   The identifier of the etched order to fulfill.
      * @param fulfiller The address that will receive offer items, then source consideration items
      *                  for the offerer.
-     * @param extraData Extra bytes passed to the Zone and Fulfiller.
+     * @param zoneData  Extra bytes passed to the Zone.
+     * @param swapData  Extra bytes passed to the Fulfiller.
      */
-    function fulfillEtchedOrder(uint256 orderId, address fulfiller, bytes calldata extraData) external;
+    function fulfillEtchedOrder(
+        uint256 orderId,
+        address fulfiller,
+        bytes calldata zoneData,
+        bytes calldata swapData
+     ) external;
 
     /**
      * @notice Record an order on-chain for ease of use by other contracts.
@@ -32,5 +43,5 @@ interface IFloodPlainOnChainOrders {
      *
      * @return orderId Extra bytes passed to the Zone and Fulfiller.
      */
-    function etchOrder(IFloodPlain.SignedOrder calldata signedOrder) external returns (uint256 orderId);
+    function etchOrder(SimpleSignedOrder calldata signedOrder) external returns (uint256 orderId);
 }

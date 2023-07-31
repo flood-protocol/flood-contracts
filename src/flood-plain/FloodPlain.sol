@@ -33,7 +33,7 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
         PERMIT2 = ISignatureTransfer(permit2);
     }
 
-    function fulfillOrder(SignedOrder calldata signedOrder, address fulfiller, bytes calldata extraData)
+    function fulfillOrder(SignedOrder calldata signedOrder, address fulfiller, bytes calldata swapData)
         external
         nonReentrant
     {
@@ -52,7 +52,7 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
                 fulfiller: fulfiller,
                 caller: msg.sender,
                 orderHash: orderHash,
-                context: extraData
+                context: signedOrder.zoneData
             });
         }
 
@@ -60,7 +60,7 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
         _permitTransferOffer({order: order, signature: signedOrder.signature, orderHash: orderHash, to: fulfiller});
 
         // Transfer consideration items from fulfiller to offerer.
-        _transferConsideration({order: order, fulfiller: fulfiller, extraData: extraData});
+        _transferConsideration({order: order, fulfiller: fulfiller, swapData: swapData});
 
         // Emit an event signifying that the order has been fulfilled.
         emit OrderFulfilled(orderHash, order.offerer, fulfiller);
@@ -76,7 +76,7 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
         return order.hash();
     }
 
-    function getOrderValidity(Order calldata order, address fulfiller, address caller, bytes calldata extraData)
+    function getOrderValidity(Order calldata order, address fulfiller, address caller, bytes calldata zoneData)
         external
         view
         returns (bool /* isValid */ )
@@ -94,7 +94,7 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
                 fulfiller: fulfiller,
                 caller: caller,
                 orderHash: order.hash(),
-                context: extraData
+                context: zoneData
             }) {
                 return true;
             } catch {
@@ -163,7 +163,7 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
         });
     }
 
-    function _transferConsideration(Order calldata order, address fulfiller, bytes calldata extraData) internal {
+    function _transferConsideration(Order calldata order, address fulfiller, bytes calldata swapData) internal {
         // Deduplicate consideration items, and move the length to stack.
         Item[] memory deduplicatedItems = order.consideration.deduplicate();
 
@@ -174,7 +174,7 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
             order: order,
             requestedItems: deduplicatedItems,
             caller: msg.sender,
-            context: extraData
+            context: swapData
         });
 
         // Define deduplicatedItems pointer once outside the loops.

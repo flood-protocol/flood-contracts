@@ -8,12 +8,17 @@ import {IFloodPlainOnChainOrders} from "src/flood-plain/extensions/IFloodPlainOn
 contract FloodPlainOnChainOrdersTest is FloodPlainTestShared {
     function test_fulfillEthOrder() public {
         IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
+        IFloodPlainOnChainOrders.SimpleSignedOrder
+            memory simpleSignedOrder = IFloodPlainOnChainOrders.SimpleSignedOrder({
+                order: signedOrder.order,
+                signature: signedOrder.signature
+            });
 
         // Etch order.
-        book.etchOrder(signedOrder);
+        book.etchOrder(simpleSignedOrder);
 
         // Fill etched order.
-        book.fulfillEtchedOrder(0, address(fulfiller), "");
+        book.fulfillEtchedOrder(0, address(fulfiller), "", "");
 
         // Assertions.
         assertEq(token0.balanceOf(address(account0.addr)), 0);
@@ -26,34 +31,50 @@ contract FloodPlainOnChainOrdersTest is FloodPlainTestShared {
 
     function test_etchingIncrementsOrderIds() public {
         IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
+        IFloodPlainOnChainOrders.SimpleSignedOrder
+            memory simpleSignedOrder = IFloodPlainOnChainOrders.SimpleSignedOrder({
+                order: signedOrder.order,
+                signature: signedOrder.signature
+            });
 
-        uint256 order1 = book.etchOrder(signedOrder);
+        uint256 order1 = book.etchOrder(simpleSignedOrder);
         assertEq(order1, 0);
-        uint256 order2 = book.etchOrder(signedOrder);
+        uint256 order2 = book.etchOrder(simpleSignedOrder);
         assertEq(order2, 1);
-        uint256 order3 = book.etchOrder(signedOrder);
+        uint256 order3 = book.etchOrder(simpleSignedOrder);
         assertEq(order3, 2);
-        uint256 order4 = book.etchOrder(signedOrder);
+        uint256 order4 = book.etchOrder(simpleSignedOrder);
         assertEq(order4, 3);
     }
 
     function test_getEtchedOrderDetails() public {
         IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
+        IFloodPlainOnChainOrders.SimpleSignedOrder
+            memory simpleSignedOrder = IFloodPlainOnChainOrders.SimpleSignedOrder({
+                order: signedOrder.order,
+                signature: signedOrder.signature
+            });
 
         // Etch order.
-        book.etchOrder(signedOrder);
+        book.etchOrder(simpleSignedOrder);
 
         // Get etched order details.
-        IFloodPlain.SignedOrder memory retreivedOrderWithSig = book.getEtchedOrder(0);
+        IFloodPlainOnChainOrders.SimpleSignedOrder memory retreivedOrder = book.getEtchedOrder(0);
 
-        assertEq(retreivedOrderWithSig.signature, signedOrder.signature);
-        assertEq(retreivedOrderWithSig.order.offerer, signedOrder.order.offerer);
-        assertEq(retreivedOrderWithSig.order.zone, signedOrder.order.zone);
-        assertEq(retreivedOrderWithSig.order.offer[0].token, signedOrder.order.offer[0].token);
-        assertEq(retreivedOrderWithSig.order.offer[0].amount, signedOrder.order.offer[0].amount);
-        assertEq(retreivedOrderWithSig.order.consideration[0].token, signedOrder.order.consideration[0].token);
-        assertEq(retreivedOrderWithSig.order.consideration[0].amount, signedOrder.order.consideration[0].amount);
-        assertEq(retreivedOrderWithSig.order.deadline, signedOrder.order.deadline);
-        assertEq(retreivedOrderWithSig.order.nonce, signedOrder.order.nonce);
+        assertEq(retreivedOrder.signature, signedOrder.signature);
+        assertEq(retreivedOrder.order.offerer, signedOrder.order.offerer);
+        assertEq(retreivedOrder.order.zone, signedOrder.order.zone);
+        assertEq(retreivedOrder.order.offer[0].token, signedOrder.order.offer[0].token);
+        assertEq(retreivedOrder.order.offer[0].amount, signedOrder.order.offer[0].amount);
+        assertEq(
+            retreivedOrder.order.consideration[0].token,
+            signedOrder.order.consideration[0].token
+        );
+        assertEq(
+            retreivedOrder.order.consideration[0].amount,
+            signedOrder.order.consideration[0].amount
+        );
+        assertEq(retreivedOrder.order.deadline, signedOrder.order.deadline);
+        assertEq(retreivedOrder.order.nonce, signedOrder.order.nonce);
     }
 }
