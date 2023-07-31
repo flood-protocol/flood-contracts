@@ -8,7 +8,7 @@ import {IZoneDirectFulfiller} from "./extensions/IZoneDirectFulfiller.sol";
 // Interfaces
 import {IFloodPlain} from "../flood-plain/IFloodPlain.sol";
 
-abstract contract ZoneFull is IZone, IZoneDirectFulfiller {
+abstract contract ZoneComplete is IZone, IZoneDirectFulfiller {
     function validateOrder(
         IFloodPlain.Order calldata order,
         address book,

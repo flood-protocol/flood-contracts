@@ -6,4 +6,4 @@
 	exit
 }
 
-forge inspect FloodPlainFull methodIdentifiers | jq --arg identifier $(printf '%02x' "$1") '[ .[][0:2] ] | contains([$identifier])'
+forge inspect FloodPlainComplete methodIdentifiers | jq --arg identifier $(printf '%02x' "$1") '[ .[][0:2] ] | contains([$identifier])'

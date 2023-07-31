@@ -4,7 +4,7 @@ pragma solidity ^0.8.17;
 import {Test} from "forge-std/Test.sol";
 import {DeployPermit2} from "permit2/test/utils/DeployPermit2.sol";
 
-import {FloodPlainFull} from "src/flood-plain/FloodPlainFull.sol";
+import {FloodPlainComplete} from "src/flood-plain/FloodPlainComplete.sol";
 import {IFloodPlain} from "src/flood-plain/IFloodPlain.sol";
 import {MockERC20} from "test/flood-plain/utils/MockERC20.sol";
 import {MockFeeOnTransferERC20} from "test/flood-plain/utils/MockFeeOnTransferERC20.sol";
@@ -19,7 +19,7 @@ import {EIP712} from "permit2/src/EIP712.sol";
 
 abstract contract FloodPlainTestShared is Test, DeployPermit2 {
     ISignatureTransfer permit2;
-    FloodPlainFull book;
+    FloodPlainComplete book;
     MockZone zone;
     MockFulfiller fulfiller;
     MockDecoder decoder;
@@ -40,7 +40,7 @@ abstract contract FloodPlainTestShared is Test, DeployPermit2 {
 
     function setUp() public virtual {
         permit2 = ISignatureTransfer(deployPermit2());
-        book = new FloodPlainFull(address(permit2), address(this));
+        book = new FloodPlainComplete(address(permit2), address(this));
         fulfiller = new MockFulfiller();
         decoder = new MockDecoder();
         maliciousFulfiller = new MaliciousFulfiller();

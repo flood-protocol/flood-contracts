@@ -266,7 +266,7 @@ contract FloodPlainTest is FloodPlainTestShared {
 
     function test_RevertWhenDeployedWithInvalidPermit2Contract() public {
         vm.expectRevert(bytes4(keccak256("NotAContract()")));
-        new FloodPlainFull(address(0xd00d), address(this));
+        new FloodPlainComplete(address(0xd00d), address(this));
     }
 
     // Testing against following ethers v6 script output:

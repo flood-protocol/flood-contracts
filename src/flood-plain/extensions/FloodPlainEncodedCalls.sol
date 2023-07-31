@@ -33,7 +33,7 @@ abstract contract FloodPlainEncodedCalls is FloodPlain, IFloodPlainEncodedCalls,
 
     fallback() external {
         // First byte of the calldata is not used. Any first byte that does not clash with other
-        // function signatures can be used to enter fallback. From the `forge inspect FloodPlainFull
+        // function signatures can be used to enter fallback. From the `forge inspect FloodPlainComplete
         // methodIdentifiers`, we see that `0x00` is available. We suggest using that since zeroes
         // in calldata is cheaper.
         //

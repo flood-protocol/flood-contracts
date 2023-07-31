@@ -3,15 +3,15 @@ pragma solidity 0.8.17;
 
 // Inheritances
 import {IMainZone} from "./IMainZone.sol";
-import {ZoneFull} from "../ZoneFull.sol";
+import {ZoneComplete} from "../ZoneComplete.sol";
 import {AccessControlDefaultAdminRules} from "@openzeppelin/access/AccessControlDefaultAdminRules.sol";
 import {Pausable} from "@openzeppelin/security/Pausable.sol";
 
 // Interfaces
 import {IFloodPlain} from "../../flood-plain/IFloodPlain.sol";
-import {IZone, IZoneDirectFulfiller} from "../ZoneFull.sol";
+import {IZone, IZoneDirectFulfiller} from "../ZoneComplete.sol";
 
-contract MainZone is ZoneFull, IMainZone, AccessControlDefaultAdminRules, Pausable {
+contract MainZone is ZoneComplete, IMainZone, AccessControlDefaultAdminRules, Pausable {
     bytes32 public constant CALLER_ROLE = keccak256("CALLER_ROLE");
     bytes32 public constant FULFILLER_ROLE = keccak256("FULFILLER_ROLE");
     bytes32 public constant BOOK_ROLE = keccak256("BOOK_ROLE");
