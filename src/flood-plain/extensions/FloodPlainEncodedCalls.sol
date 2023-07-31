@@ -4,20 +4,22 @@ pragma solidity 0.8.17;
 // Inheritances
 import {FloodPlain} from "../FloodPlain.sol";
 import {IFloodPlainEncodedCalls} from "./IFloodPlainEncodedCalls.sol";
-import {AccessControlDefaultAdminRules} from "@openzeppelin/access/AccessControlDefaultAdminRules.sol";
+import {Ownable2Step} from "@openzeppelin/access/Ownable2Step.sol";
 
-abstract contract FloodPlainEncodedCalls is FloodPlain, IFloodPlainEncodedCalls, AccessControlDefaultAdminRules {
+abstract contract FloodPlainEncodedCalls is FloodPlain, IFloodPlainEncodedCalls, Ownable2Step {
     bytes1 public constant FALLBACK_SELECTOR_BYTE = 0x00;
 
     address[] internal _decoders;
 
-    constructor(address admin) AccessControlDefaultAdminRules(3 days, admin) {}
+    constructor(address admin) {
+        _transferOwnership(admin);
+    }
 
     function getDecoder(uint256 decoderId) external view returns (address /* decoder */ ) {
         return _decoders[decoderId];
     }
 
-    function addDecoder(address decoder) external onlyRole(DEFAULT_ADMIN_ROLE) returns (uint8 decoderId) {
+    function addDecoder(address decoder) external onlyOwner returns (uint8 decoderId) {
         if (decoder.code.length == 0) {
             revert NotAContract();
         }
@@ -32,44 +34,31 @@ abstract contract FloodPlainEncodedCalls is FloodPlain, IFloodPlainEncodedCalls,
     }
 
     fallback() external {
-        // First byte of the calldata is not used. Any first byte that does not clash with other
-        // function signatures can be used to enter fallback. From the `forge inspect FloodPlainComplete
-        // methodIdentifiers`, we see that `0x00` is available. We suggest using that since zeroes
-        // in calldata is cheaper.
+        // First byte of the calldata is not used. Any first byte that does not clash with
+        // other function signatures can be used to enter fallback. From the `forge inspect
+        // FloodPlainComplete methodIdentifiers`, we see that `0x00` is available. We suggest using
+        // that since zeroes in calldata is cheaper.
         //
-        // "DEFAULT_ADMIN_ROLE()": "a217fddf",
         // "FALLBACK_SELECTOR_BYTE()": "f74b4767",
         // "PERMIT2()": "6afdd850",
-        // "acceptDefaultAdminTransfer()": "cefc1429",
+        // "acceptOwnership()": "79ba5097",
         // "addDecoder(address)": "9d481b66",
-        // "beginDefaultAdminTransfer(address)": "634e93da",
-        // "cancelDefaultAdminTransfer()": "d602b9fd",
-        // "changeDefaultAdminDelay(uint48)": "649a5ec7",
-        // "defaultAdmin()": "84ef8ffc",
-        // "defaultAdminDelay()": "cc8463c8",
-        // "defaultAdminDelayIncreaseWait()": "022d63fb",
         // "etchOrder(((address,address,(address,uint256)[],(address,uint256)[],uint256,uint256),bytes))": "1d5473a2",
-        // "fulfillEtchedOrder(uint256,address,bytes)": "a15e7907",
-        // "fulfillOrder(((address,address,(address,uint256)[],(address,uint256)[],uint256,uint256),bytes))": "6efbcb53",
-        // "fulfillOrder(((address,address,(address,uint256)[],(address,uint256)[],uint256,uint256),bytes),address,bytes)": "8d100655",
+        // "fulfillEtchedOrder(uint256,address,bytes,bytes)": "4d2a5c12",
+        // "fulfillOrder(((address,address,(address,uint256)[],(address,uint256)[],uint256,uint256),bytes,bytes))": "d990f79c",
+        // "fulfillOrder(((address,address,(address,uint256)[],(address,uint256)[],uint256,uint256),bytes,bytes),address,bytes)": "3ab6bec4",
         // "getDecoder(uint256)": "e77876cc",
         // "getEtchedOrder(uint256)": "4d599400",
         // "getNonceStatus(address,uint256)": "e9ba1e97",
         // "getOrderHash((address,address,(address,uint256)[],(address,uint256)[],uint256,uint256))": "1b8b792c",
         // "getOrderStatus((address,address,(address,uint256)[],(address,uint256)[],uint256,uint256))": "093de1d2",
-        // "getOrderValidity((address,address,(address,uint256)[],(address,uint256)[],uint256,uint256),address)": "fcb0caf2",
         // "getOrderValidity((address,address,(address,uint256)[],(address,uint256)[],uint256,uint256),address,address,bytes)": "a77dd3e4",
+        // "getOrderValidity((address,address,(address,uint256)[],(address,uint256)[],uint256,uint256),address,bytes)": "fc1481d2",
         // "getPermitHash((address,address,(address,uint256)[],(address,uint256)[],uint256,uint256))": "729d540d",
-        // "getRoleAdmin(bytes32)": "248a9ca3",
-        // "grantRole(bytes32,address)": "2f2ff15d",
-        // "hasRole(bytes32,address)": "91d14854",
         // "owner()": "8da5cb5b",
-        // "pendingDefaultAdmin()": "cf6eefb7",
-        // "pendingDefaultAdminDelay()": "a1eda53c",
-        // "renounceRole(bytes32,address)": "36568abe",
-        // "revokeRole(bytes32,address)": "d547741f",
-        // "rollbackDefaultAdminDelay()": "0aa6220b",
-        // "supportsInterface(bytes4)": "01ffc9a7"
+        // "pendingOwner()": "e30c3978",
+        // "renounceOwnership()": "715018a6",
+        // "transferOwnership(address)": "f2fde38b"
 
         // The second byte is the decoder ID. A decoder can employ any decoding scheme.
         uint256 decoderId;
