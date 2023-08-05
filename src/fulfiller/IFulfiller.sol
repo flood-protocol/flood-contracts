@@ -8,7 +8,6 @@ interface IFulfiller {
      * @notice External function to perform arbitrary swaps to source requested items.
      *
      * @param order All the details of a book order.
-     * @param requestedItems Deduplicated consideration items in an order.
      * @param caller The address that called the book.
      * @param context All the swap data, or any other arbitrary data.
      *
@@ -17,7 +16,6 @@ interface IFulfiller {
      */
     function sourceConsideration(
         IFloodPlain.Order calldata order,
-        IFloodPlain.Item[] calldata requestedItems,
         address caller,
         bytes calldata context
     ) external returns (uint256[] memory);

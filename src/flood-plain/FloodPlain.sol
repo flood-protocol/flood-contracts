@@ -7,7 +7,7 @@ import {ReentrancyGuard} from "@openzeppelin/security/ReentrancyGuard.sol";
 
 // Libraries
 import {OrderHash} from "./libraries/OrderHash.sol";
-import {ItemDeduplicator} from "./libraries/ItemDeduplicator.sol";
+import {Duplicates} from "./libraries/Duplicates.sol";
 import {SafeERC20} from "@openzeppelin/token/ERC20/utils/SafeERC20.sol";
 import {Address} from "@openzeppelin/utils/Address.sol";
 
@@ -21,7 +21,7 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
     using SafeERC20 for IERC20;
     using Address for address payable;
     using OrderHash for Order;
-    using ItemDeduplicator for Item[];
+    using Duplicates for Item[];
 
     ISignatureTransfer public immutable PERMIT2;
 
@@ -133,6 +133,10 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
         Item[] calldata offer = order.offer;
         uint256 itemsLength = offer.length;
 
+        if (offer.hasDuplicates()) {
+            revert DuplicateItems();
+        }
+
         ISignatureTransfer.TokenPermissions[] memory permitted = new ISignatureTransfer.TokenPermissions[](itemsLength);
         ISignatureTransfer.SignatureTransferDetails[] memory transferDetails =
         new ISignatureTransfer.SignatureTransferDetails[](
@@ -170,44 +174,55 @@ contract FloodPlain is IFloodPlain, ReentrancyGuard {
     }
 
     function _transferConsideration(Order calldata order, address fulfiller, bytes calldata swapData) internal {
-        // Deduplicate consideration items, and move the length to stack.
-        Item[] memory deduplicatedItems = order.consideration.deduplicate();
-
         // Call fulfiller with order data and the caller address to source consideration items.
         // Contracts implementing Fulfiller interface could get all their tokens drained, hence
         // they should restrict who can call them directly or indirectly.
         uint256[] memory returnedAmounts = IFulfiller(payable(fulfiller)).sourceConsideration({
             order: order,
-            requestedItems: deduplicatedItems,
             caller: msg.sender,
             context: swapData
         });
 
-        // Define deduplicatedItems pointer once outside the loops.
-        Item memory deduplicatedItem;
+        // Get consideration items, and their count.
+        Item[] calldata consideration = order.consideration;
+        uint256 length = consideration.length;
 
-        // Pull the returned amounts from the fulfiller.
-        uint256 dedupCount = deduplicatedItems.length;
+        // Ensure returned array length is valid.
+        if (length != returnedAmounts.length) {
+            revert ArrayLengthMismatch();
+        }
+
+        // Do not accept consideration with duplicate items.
+        if (consideration.hasDuplicates()) {
+            revert DuplicateItems();
+        }
+
+        // Move offerer to the stack.
         address to = order.offerer;
-        uint256 returnedAmount;
-        address token;
-        for (uint256 i; i < dedupCount;) {
-            deduplicatedItem = deduplicatedItems[i];
-            token = deduplicatedItem.token;
-            returnedAmount = returnedAmounts[i];
 
-            if (returnedAmount < deduplicatedItem.amount) {
+        // Create stack elements outside the loop.
+        Item calldata item;
+        uint256 amount;
+        address token;
+
+        for (uint256 i; i < length;) {
+            amount = returnedAmounts[i];
+            item = consideration[i];
+
+            if (amount < item.amount) {
                 revert InsufficientAmountReceived();
             }
 
+            token = item.token;
             if (token == address(0)) {
                 // Expect Fulfiller to have sent Ether when sourceConsideration was called. No
                 // check is made that Fulfiller sent correct amount. Because FloodPlain is not
                 // supposed to hold any Ether, and if less than the returnedAmount indicated by
                 // Fulfiller is received, below transfer will revert.
-                payable(to).sendValue(returnedAmount);
+                payable(to).sendValue(amount);
             } else {
-                IERC20(token).safeTransferFrom(fulfiller, to, returnedAmount);
+                // Simply transferFrom, without using Permit2.
+                IERC20(token).safeTransferFrom(fulfiller, to, amount);
             }
 
             unchecked {

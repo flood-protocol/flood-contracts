@@ -112,7 +112,6 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
 
     function sourceConsideration(
         IFloodPlain.Order calldata order,
-        IFloodPlain.Item[] calldata requestedItems,
         address, /* caller */
         bytes calldata context
     ) external whenNotPaused nonReentrant returns (uint256[] memory) {
@@ -123,8 +122,9 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
             revert InvalidZone();
         }
 
-        uint256 itemsLength = requestedItems.length;
-        uint256[] memory gatheredAmounts = new uint256[](itemsLength);
+        IFloodPlain.Item[] calldata consideration = order.consideration;
+        uint256 length = consideration.length;
+        uint256[] memory gatheredAmounts = new uint256[](length);
 
         // Book must have sent offer items prior to this call. The swap data is ought to use the
         // received offer items. However, this fulfiller will not have any checks to ensure not
@@ -134,8 +134,8 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
 
         // Record requested item balances before the swaps.
         address token;
-        for (uint256 i; i < itemsLength;) {
-            token = requestedItems[i].token;
+        for (uint256 i; i < length;) {
+            token = consideration[i].token;
 
             if (token == address(0)) {
                 gatheredAmounts[i] = address(this).balance;
@@ -153,8 +153,8 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
 
         // Get the gathered amounts, and approve book to spend them.
         uint256 gatheredAmount;
-        for (uint256 i; i < itemsLength;) {
-            token = requestedItems[i].token;
+        for (uint256 i; i < length;) {
+            token = consideration[i].token;
 
             if (token == address(0)) {
                 gatheredAmount = address(this).balance - gatheredAmounts[i];

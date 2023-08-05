@@ -7,7 +7,7 @@ import {IFloodPlainDirectFulfiller} from "./IFloodPlainDirectFulfiller.sol";
 
 // Libraries
 import {OrderHash} from "../libraries/OrderHash.sol";
-import {ItemDeduplicator} from "../libraries/ItemDeduplicator.sol";
+import {Duplicates} from "../libraries/Duplicates.sol";
 import {Address} from "@openzeppelin/utils/Address.sol";
 import {SafeERC20} from "@openzeppelin/token/ERC20/utils/SafeERC20.sol";
 
@@ -19,7 +19,7 @@ abstract contract FloodPlainDirectFulfiller is FloodPlain, IFloodPlainDirectFulf
     using Address for address payable;
     using SafeERC20 for IERC20;
     using OrderHash for Order;
-    using ItemDeduplicator for Item[];
+    using Duplicates for Item[];
 
     function fulfillOrder(SignedOrder calldata signedOrder) external payable nonReentrant {
         // Get order component from calldata.
@@ -88,35 +88,37 @@ abstract contract FloodPlainDirectFulfiller is FloodPlain, IFloodPlainDirectFulf
     }
 
     function _transferConsideration(Order calldata order, address fulfiller) internal {
-        // Define pointers once outside the loops.
-        Item memory item;
-        uint256 requiredAmount;
+        // Get consideration items, and their count.
+        Item[] calldata consideration = order.consideration;
+        uint256 length = consideration.length;
+
+        // Do not accept consideration with duplicate items.
+        if (consideration.hasDuplicates()) {
+            revert DuplicateItems();
+        }
+
+        // Move offerer to the stack.
+        address to = order.offerer;
+
+        // Create stack elements outside the loop.
+        Item calldata item;
         uint256 amount;
         address token;
 
-        // Deduplicate consideration items, and move the length to stack.
-        Item[] memory deduplicatedItems = order.consideration.deduplicate();
-        uint256 dedupCount = deduplicatedItems.length;
-
-        address to = order.offerer;
-        for (uint256 i; i < dedupCount; ) {
-            item = deduplicatedItems[i];
+        for (uint256 i; i < length;) {
+            item = consideration[i];
             token = item.token;
             amount = item.amount;
-            if (token == address(0)) {
-                if (msg.value != amount) {
-                    revert IncorrectValueReceived();
-                }
 
+            if (token == address(0)) {
+                // Expect caller to have sent Ether when sourceConsideration was called. No
+                // msg.value check is made to ensure caller sent correct amount. Because FloodPlain
+                // is not supposed to hold any Ether, and if contract has not received sufficient
+                // Ether, below transfer will revert.
                 payable(to).sendValue(amount);
             } else {
-                requiredAmount = amount + IERC20(token).balanceOf(to);
-
+                // Simply transferFrom, without using Permit2.
                 IERC20(token).safeTransferFrom(fulfiller, to, amount);
-
-                if (IERC20(token).balanceOf(to) < requiredAmount) {
-                    revert InsufficientAmountPulled();
-                }
             }
 
             unchecked {

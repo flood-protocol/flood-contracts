@@ -99,22 +99,8 @@ contract FloodPlainDirectFulfillerTest is FloodPlainTestShared {
         signedOrder.signature = getSignature(signedOrder.order, account0);
 
         // Filling order fails.
-        vm.expectRevert(bytes4(keccak256("IncorrectValueReceived()")));
+        vm.expectRevert("Address: insufficient balance");
         book.fulfillOrder{value: 499}(signedOrder);
-    }
-
-    function test_RevertWhenTransferTaxTokens() public {
-        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
-
-        signedOrder.order.consideration[0].token = address(token6); // fee-on-transfer token
-        signedOrder.signature = getSignature(signedOrder.order, account0);
-
-        deal(address(token6), address(this), 500);
-        token6.approve(address(book), 500);
-
-        // Filling order fails.
-        vm.expectRevert(bytes4(keccak256("InsufficientAmountPulled()")));
-        book.fulfillOrder(signedOrder);
     }
 
     function test_OrderPassingThroughZone() public {

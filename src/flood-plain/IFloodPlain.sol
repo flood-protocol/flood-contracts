@@ -10,6 +10,10 @@ interface IFloodPlain {
 
     error ZoneDenied();
 
+    error DuplicateItems();
+
+    error ArrayLengthMismatch();
+
     event OrderFulfilled(bytes32 indexed orderHash, address indexed offerer, address indexed fulfiller);
 
     struct SignedOrder {

@@ -11,18 +11,17 @@ contract MockFulfiller {
     using Address for address payable;
 
     function sourceConsideration(
-        IFloodPlain.Order calldata, /* order */
-        IFloodPlain.Item[] calldata requestedItems,
+        IFloodPlain.Order calldata order,
         address, /* caller */
         bytes calldata /* context */
     ) external returns (uint256[] memory) {
         // do nothing. test should just send tokens to this contract
 
-        uint256 length = requestedItems.length;
+        uint256 length = order.consideration.length;
         uint256[] memory amounts = new uint256[](length);
         IFloodPlain.Item calldata item;
         for (uint256 i = 0; i < length;) {
-            item = requestedItems[i];
+            item = order.consideration[i];
 
             if (item.token == address(0)) {
                 payable(msg.sender).sendValue(item.amount);
