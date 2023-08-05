@@ -200,6 +200,14 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
         return gatheredAmounts;
     }
 
+    function sourceConsiderations(
+        IFloodPlain.Order[] calldata orders,
+        address, /* caller */
+        bytes calldata context
+    ) external returns (uint256[][] memory) {
+        // Tbd
+    }
+
     fallback() external payable {
         _fallback();
     }

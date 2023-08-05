@@ -19,4 +19,20 @@ interface IFulfiller {
         address caller,
         bytes calldata context
     ) external returns (uint256[] memory);
+
+    /**
+     * @notice External function to fill multiple orders in the same transaction.
+     *
+     * @param orders An array of orders that will be batch filled.
+     * @param caller The address that called the book.
+     * @param context All the swap data, or any other arbitrary data.
+     *
+     * @return The amount of consideration items, for each order, that were sourced and approved
+     *         for Book to transfer. These amounts might be higher than requested amounts.
+     */
+    function sourceConsiderations(
+        IFloodPlain.Order[] calldata orders,
+        address caller,
+        bytes calldata context
+    ) external returns (uint256[][] memory);
 }
