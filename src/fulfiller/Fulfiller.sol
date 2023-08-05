@@ -132,7 +132,9 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
         // honest swap data. The caller is a trusted address and the access control is enforced
         // through the zone.
 
-        // Record requested item balances before the swaps.
+        // Record requested item balances before the swaps. Do not be confused by the name
+        // `gatheredAmounts`, we initially need to store existing balances to figure out much
+        // tokens we gathered after the swaps.
         address token;
         for (uint256 i; i < length;) {
             token = consideration[i].token;
@@ -153,6 +155,8 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
 
         // Get the gathered amounts, and approve book to spend them.
         uint256 gatheredAmount;
+        IFloodPlain.Item[] calldata offer = order.offer;
+        uint256 offerLength = offer.length;
         for (uint256 i; i < length;) {
             token = consideration[i].token;
 
@@ -160,6 +164,26 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
                 gatheredAmount = address(this).balance - gatheredAmounts[i];
                 payable(msg.sender).sendValue(gatheredAmount);
             } else {
+                // We check if the consideration token also exist in the offer. We did not check
+                // for token zero because a Permit2 transfer for token zero would have reverted.
+                for (uint256 j; j < offerLength;) {
+                    if (token == offer[j].token) {
+                        // This might cause revert or excess token loss for fee-on-transfer tokens,
+                        // which we do not care. Otherwise the pre-executeSwaps balance should be
+                        // higher or equal to the offer amount. We can assume entire offer amount
+                        // to have been spent during execution. So we will subtract this amount
+                        // from the pre balance to get a more accurate result. If not all of the
+                        // offer amount was used in execution, it should be fine to refund unused
+                        // offer amount (which the below operations should be achieving).
+                        gatheredAmounts[i] -= offer[j].amount;
+                        break;
+                    }
+
+                    unchecked {
+                        ++j;
+                    }
+                }
+
                 gatheredAmount = IERC20(token).balanceOf(address(this)) - gatheredAmounts[i];
                 IERC20(token).safeIncreaseAllowance(msg.sender, gatheredAmount);
             }
