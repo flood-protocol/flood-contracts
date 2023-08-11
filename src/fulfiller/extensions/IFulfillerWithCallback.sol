@@ -16,6 +16,12 @@ interface IFulfillerWithCallback {
 
     error NotAContract();
 
+    error TooManyExecutors();
+
+    error OrdersLenghtExceeded();
+
+    error ItemsLenghtExceeded();
+
     event ExecutorAdded(uint256 indexed executorId, address indexed executor);
 
     event ExecutorEnabled(uint256 indexed executorId);

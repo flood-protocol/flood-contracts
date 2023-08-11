@@ -59,7 +59,13 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
         ExecutorInfo memory executorInfo =
             ExecutorInfo({executor: executor, hasCallback: IExecutor(executor).hasCallback(), isEnabled: true});
 
+        // Reserve executorId 255 for specifying ratios to return (gathered amounts) during batch
+        // fulfillment that has multiple orders with same token.
         executorId = _executors.length;
+        if (executorId > 254) {
+            revert TooManyExecutors();
+        }
+
         _executors.push(executorInfo);
 
         emit ExecutorAdded(executorId, executor);
@@ -200,12 +206,248 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
         return gatheredAmounts;
     }
 
+    struct Ratio {
+        uint8 orderIndex;
+        uint8 itemIndex;
+        uint16 ratio;
+    }
     function sourceConsiderations(
         IFloodPlain.Order[] calldata orders,
         address, /* caller */
         bytes calldata context
-    ) external returns (uint256[][] memory) {
-        // Tbd
+    ) external whenNotPaused nonReentrant returns (uint256[][] memory) {
+        if (!_books[msg.sender]) {
+            revert InvalidBook();
+        }
+
+        uint256 ordersLength = orders.length;
+        if (ordersLength > type(uint8).max) {
+            revert OrdersLenghtExceeded();
+        }
+        uint256[][] memory allGatheredAmounts = new uint256[][](ordersLength);
+
+        // Book must have sent offer items prior to this call. The swap data is ought to use the
+        // received offer items. However, this fulfiller will not have any checks to ensure not
+        // more than the received offer items are spent. It will therefore trust `caller` to supply
+        // honest swap data. The caller is a trusted address and the access control is enforced
+        // through the zone.
+
+        // Record requested item balances before the swaps. Do not be confused by the name
+        // `gatheredAmounts`, we initially need to store existing balances to figure out much
+        // tokens we gathered after the swaps.
+        for (uint256 i; i < ordersLength;) {
+            IFloodPlain.Order calldata order = orders[i];
+            if (order.zone != ZONE) {
+                revert InvalidZone();
+            }
+
+            IFloodPlain.Item[] calldata consideration = order.consideration;
+            uint256 itemsLength = consideration.length;
+            if (itemsLength > type(uint8).max) {
+                revert ItemsLenghtExceeded();
+            }
+            uint256[] memory gatheredAmounts = new uint256[](itemsLength);
+
+            for (uint256 j; j < itemsLength;) {
+                address token = consideration[j].token;
+
+                // This method potentially gets the same token balance of the same token when the
+                // token exists in multiple orders. This can potentially be optimized by checking
+                // repeating tokens, but for simplicity, we will not optimize.
+                if (token == address(0)) {
+                    gatheredAmounts[j] = address(this).balance;
+                } else {
+                    gatheredAmounts[j] = IERC20(token).balanceOf(address(this));
+                }
+
+                unchecked {
+                    ++j;
+                }
+            }
+
+            allGatheredAmounts[i] = gatheredAmounts;
+
+            unchecked {
+                ++i;
+            }
+        }
+
+        // Get distribution ratios if there are any repeating consideration tokens.
+        (Ratio[] memory ratios, uint256 offset) = _retrieveDistributionRatios(context);
+
+        // Execute swaps based on the swap instructions provided.
+        _executeSwaps(context[offset:]);
+
+        uint256 ratiosIndex = 0;
+        uint256 ratiosLength = ratios.length;
+        for (uint256 i; i < ordersLength;) {
+            IFloodPlain.Order calldata order = orders[i];
+            IFloodPlain.Item[] calldata consideration = order.consideration;
+            uint256 itemsLength = consideration.length;
+
+            for (uint256 j; j < itemsLength;) {
+                address token = consideration[j].token;
+                uint256 gatheredAmount;
+
+                // This method potentially gets the same token balance of the same token when the
+                // token exists in multiple orders. This can potentially be optimized by checking
+                // repeating tokens, but for simplicity, we will not optimize.
+                if (token == address(0)) {
+                    gatheredAmount = address(this).balance - allGatheredAmounts[i][j];
+
+                    if (ratiosLength > ratiosIndex) {
+                        Ratio memory ratio = ratios[ratiosIndex];
+                        if (ratio.orderIndex == uint8(i) && ratio.itemIndex == uint8(j)) {
+                            gatheredAmount = (gatheredAmount * ratio.ratio) >> 16;
+                            unchecked {
+                                ++ratiosIndex;
+                            }
+                        }
+                    }
+
+                    payable(msg.sender).sendValue(gatheredAmount);
+                } else {
+                    // We check if the consideration token also exist in the offer. We did not check
+                    // for token zero because a Permit2 transfer for token zero would have reverted.
+                    for (uint256 k; k < ordersLength;) {
+                        IFloodPlain.Order calldata innerOrder = orders[k];
+                        IFloodPlain.Item[] calldata offer = innerOrder.offer;
+                        uint256 offerLength = offer.length;
+
+                        for (uint256 l; l < offerLength;) {
+                            if (token == offer[l].token) {
+                                // This might cause revert or excess token loss for fee-on-transfer tokens,
+                                // which we do not care. Otherwise the pre-executeSwaps balance should be
+                                // higher or equal to the offer amount. We can assume entire offer amount
+                                // to have been spent during execution. So we will subtract this amount
+                                // from the pre balance to get a more accurate result. If not all of the
+                                // offer amount was used in execution, it should be fine to refund unused
+                                // offer amount (which the below operations should be achieving).
+                                allGatheredAmounts[i][j] -= offer[l].amount;
+
+                                // We can break loop because FloodPlain ensures no offer tokens
+                                // repeated in the same order.
+                                break;
+                            }
+
+                            unchecked {
+                                ++l;
+                            }
+                        }
+
+                        unchecked {
+                            ++k;
+                        }
+                    }
+
+                    gatheredAmount = IERC20(token).balanceOf(address(this)) - allGatheredAmounts[i][j];
+
+                    if (ratiosLength > ratiosIndex) {
+                        Ratio memory ratio = ratios[ratiosIndex];
+                        if (ratio.orderIndex == uint8(i) && ratio.itemIndex == uint8(j)) {
+                            gatheredAmount = (gatheredAmount * ratio.ratio) >> 16;
+                            unchecked {
+                                ++ratiosIndex;
+                            }
+                        }
+                    }
+
+                    IERC20(token).safeIncreaseAllowance(msg.sender, gatheredAmount);
+                }
+
+                allGatheredAmounts[i][j] = gatheredAmount;
+
+                unchecked {
+                    ++j;
+                }
+            }
+
+            unchecked {
+                ++i;
+            }
+        }
+
+        // Let Book pull the tokens and send to offerer. Book checks if gathered amounts cover
+        // requested amounts.
+         return allGatheredAmounts;
+    }
+
+    // Distribution ratios are defined based on the following encoding scheme.
+    //
+    // * 1 byte - executor Id (always 0xff)
+    // * 1 byte - number of items
+    // * 4 bytes x n - ratio info
+    //      1 byte - order index (based on how orders were listed when calling fulfillOrder)
+    //      1 byte - item index (consideration item in the order)
+    //      2 byte - ratio of gathered tokens to send to the offerer of this order
+    //
+    // CAVEATS
+    // * This data must preceed swapData, i.e.: it should be the first thing in `context`
+    // * Items must be ordered by their order index, then the item index.
+    // * Item index is the index of consideration items as signed by the offerer.
+    // * Order index is the index of orders supplied to fulfillOrder call in this transaction.
+    // * Sum of ratios for the items corresponding to the same token must be `2**16` (note, it is
+    //   NOT `2**16 - 1`)
+    // * An item with same order and item index must not be repeated
+    // * If a consideration item token in an order exist in another order, it must have its
+    // * distribution ratio defined.
+    function _retrieveDistributionRatios(
+        bytes calldata ratioData
+    ) internal pure returns (Ratio[] memory, uint256) {
+        // Whether the `context` has distribution ratios. This must return true if any
+        // considerations of different orders have the same token.
+        bool hasDistributionRatios;
+
+        uint256 startPtr;
+        uint256 ptr;
+        assembly ("memory-safe") {
+            ptr := ratioData.offset
+            startPtr := ptr
+            hasDistributionRatios := eq(0xff, shr(248, calldataload(ptr)))
+        }
+
+        if (hasDistributionRatios) {
+            uint256 length;
+
+            assembly ("memory-safe") {
+                // Increase ptr by 1 because the first byte was 0xff.
+                ptr := add(ptr, 1)
+
+                // Get number of items from the 2nd byte.
+                length := shr(248, calldataload(ptr))
+                ptr := add(ptr, 1)
+            }
+
+            // Create the ratios array based on item length.
+            Ratio[] memory ratios = new Ratio[](length);
+
+            for (uint256 i; i < length; ) {
+                uint8 orderIndex;
+                uint8 itemIndex;
+                uint16 ratio;
+
+                assembly ("memory-safe") {
+                    let singleRatioData := calldataload(ptr)
+
+                    orderIndex := shr(248, singleRatioData)
+                    itemIndex := shr(240, singleRatioData)
+                    ratio := shr(224, singleRatioData)
+
+                    ptr := add(ptr, 4)
+                    i := add(i, 1)
+                }
+
+                ratios[i] = Ratio({
+                    orderIndex: orderIndex,
+                    itemIndex: itemIndex,
+                    ratio: ratio
+                });
+            }
+
+            return (ratios, ptr - startPtr);
+        }
+
+        return (new Ratio[](0), 0);
     }
 
     fallback() external payable {
@@ -219,7 +461,7 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
     function _executeSwaps(bytes calldata swaps) internal {
         // Pointer is incremented with each loop.
         uint256 ptr = 0;
-        assembly {
+        assembly ("memory-safe") {
             ptr := swaps.offset
         }
 
@@ -238,7 +480,7 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
             unchecked {
                 if (msg.data.length - ptr < 32) {
                     bool paddingRemainingOnly;
-                    assembly {
+                    assembly ("memory-safe") {
                         paddingRemainingOnly := iszero(calldataload(ptr))
                     }
                     if (paddingRemainingOnly) break;
@@ -317,7 +559,7 @@ contract Fulfiller is IFulfiller, IFulfillerWithCallback, Ownable2Step, Pausable
         uint256 amountOut;
 
         // Decode instructions based on the above-described scheme.
-        assembly {
+        assembly ("memory-safe") {
             executorId := shr(248, calldataload(ptr))
             ptr := add(ptr, 1)
 
