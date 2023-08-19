@@ -103,6 +103,38 @@ contract FloodPlainDirectFulfillerTest is FloodPlainTestShared {
         book.fulfillOrder{value: 499}(signedOrder);
     }
 
+    function test_revertWhenOfferTokenRepeated(uint256 indexA, uint256 indexB) public {
+        indexA = bound(indexA, 0, 2);
+        indexB = bound(indexB, 0, 2);
+        vm.assume(indexA != indexB);
+
+        IFloodPlain.SignedOrder memory signedOrder = setup_multiItemOrder();
+
+        // Set deadline to one second ago, and sign it.
+        signedOrder.order.offer[indexA].token = signedOrder.order.offer[indexB].token;
+        signedOrder.signature = getSignature(signedOrder.order, account0);
+
+        // Fail fill the order.
+        vm.expectRevert(bytes4(keccak256("DuplicateItems()")));
+        book.fulfillOrder{value: 0}(signedOrder);
+    }
+
+    function test_revertWhenConsiderationTokenRepeated(uint256 indexA, uint256 indexB) public {
+        indexA = bound(indexA, 0, 2);
+        indexB = bound(indexB, 0, 2);
+        vm.assume(indexA != indexB);
+
+        IFloodPlain.SignedOrder memory signedOrder = setup_multiItemOrder();
+
+        // Set deadline to one second ago, and sign it.
+        signedOrder.order.consideration[indexA].token = signedOrder.order.consideration[indexB].token;
+        signedOrder.signature = getSignature(signedOrder.order, account0);
+
+        // Fail fill the order.
+        vm.expectRevert(bytes4(keccak256("DuplicateItems()")));
+        book.fulfillOrder{value: 0}(signedOrder);
+    }
+
     function test_OrderPassingThroughZone() public {
         IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
 

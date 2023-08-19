@@ -9,6 +9,9 @@ import {IFloodPlain} from "src/flood-plain/IFloodPlain.sol";
 import {MockERC20} from "test/flood-plain/utils/MockERC20.sol";
 import {MockFeeOnTransferERC20} from "test/flood-plain/utils/MockFeeOnTransferERC20.sol";
 import {MockFulfiller} from "test/flood-plain/utils/MockFulfiller.sol";
+import {MockBadFulfiller} from "test/flood-plain/utils/MockBadFulfiller.sol";
+import {MockBadFulfiller2} from "test/flood-plain/utils/MockBadFulfiller2.sol";
+import {MockBatchFulfiller} from "test/flood-plain/utils/MockBatchFulfiller.sol";
 import {MockDecoder} from "test/flood-plain/utils/MockDecoder.sol";
 import {MaliciousFulfiller} from "test/flood-plain/utils/MaliciousFulfiller.sol";
 import {MaliciousFulfiller2} from "test/flood-plain/utils/MaliciousFulfiller2.sol";
@@ -22,6 +25,9 @@ abstract contract FloodPlainTestShared is Test, DeployPermit2 {
     FloodPlainComplete book;
     MockZone zone;
     MockFulfiller fulfiller;
+    MockBadFulfiller badFulfiller;
+    MockBadFulfiller2 badFulfiller2;
+    MockBatchFulfiller batchFulfiller;
     MockDecoder decoder;
     MaliciousFulfiller maliciousFulfiller;
     MaliciousFulfiller2 maliciousFulfiller2;
@@ -42,6 +48,9 @@ abstract contract FloodPlainTestShared is Test, DeployPermit2 {
         permit2 = ISignatureTransfer(deployPermit2());
         book = new FloodPlainComplete(address(permit2), address(this));
         fulfiller = new MockFulfiller();
+        badFulfiller = new MockBadFulfiller();
+        badFulfiller2 = new MockBadFulfiller2();
+        batchFulfiller = new MockBatchFulfiller();
         decoder = new MockDecoder();
         maliciousFulfiller = new MaliciousFulfiller();
         maliciousFulfiller2 = new MaliciousFulfiller2();
@@ -69,8 +78,8 @@ abstract contract FloodPlainTestShared is Test, DeployPermit2 {
     }
 
     function setup_mostBasicOrder() internal returns (IFloodPlain.SignedOrder memory) {
-        deal(address(token0), address(account0.addr), 500);
-        deal(address(token1), address(fulfiller), 500);
+        deal(address(token0), account0.addr, token0.balanceOf(account0.addr) + 500);
+        deal(address(token1), address(fulfiller), token1.balanceOf(address(fulfiller)) + 500);
 
         // Set offer item.
         IFloodPlain.Item[] memory offer = new IFloodPlain.Item[](1);
@@ -78,8 +87,9 @@ abstract contract FloodPlainTestShared is Test, DeployPermit2 {
         offer[0].amount = 500;
 
         // Approve permit2 spending.
+        uint256 existingAllowance = token0.allowance(account0.addr, address(permit2));
         vm.prank(account0.addr);
-        token0.approve(address(permit2), 500);
+        token0.approve(address(permit2), existingAllowance + 500);
 
         // Set consideration item.
         IFloodPlain.Item[] memory consideration = new IFloodPlain.Item[](1);

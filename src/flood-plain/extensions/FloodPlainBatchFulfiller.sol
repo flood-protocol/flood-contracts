@@ -31,7 +31,7 @@ abstract contract FloodPlainBatchFulfiller is FloodPlain, IFloodPlainBatchFulfil
         Order calldata order;
         bytes32 orderHash;
         address zone;
-        Order[] memory orders;
+        Order[] memory orders = new Order[](length);
 
         for (uint256 i; i < length; ) {
             signedOrder = signedOrders[i];
@@ -98,57 +98,47 @@ abstract contract FloodPlainBatchFulfiller is FloodPlain, IFloodPlainBatchFulfil
             revert ArrayLengthMismatch();
         }
 
-        // Define pointers set in outer loop.
-        Order calldata order;
-        address offerer;
-        Item[] calldata consideration;
-        uint256[] memory returnedAmounts;
-        uint256 itemsLength;
-
-        // Define pointers set in inner loop.
-        Item calldata item;
-        address token;
-        uint256 returnedAmount;
-
         for (uint256 i; i < ordersLength;) {
-            order = signedOrders[i].order;
-            offerer = order.offerer;
-            consideration = order.consideration;
-            returnedAmounts = allReturnedAmounts[i];
-            itemsLength = consideration.length;
-
-            if (itemsLength != returnedAmounts.length) {
-                revert ArrayLengthMismatch();
-            }
-
-            // Do not accept consideration with duplicate items.
-            if (consideration.hasDuplicates()) {
-                revert DuplicateItems();
-            }
-
             // Pull the returned amounts from the fulfiller.
-            for (uint256 j; j < itemsLength;) {
-                item = consideration[j];
-                token = item.token;
-                returnedAmount = returnedAmounts[j];
+            _pullReturnedAmounts(signedOrders[i].order, allReturnedAmounts[i], fulfiller);
 
-                if (returnedAmount < item.amount) {
-                    revert InsufficientAmountReceived();
-                }
+            unchecked {
+                ++i;
+            }
+        }
+    }
 
-                if (token == address(0)) {
-                    // Expect Fulfiller to have sent Ether when sourceConsideration was called. No
-                    // check is made that Fulfiller sent correct amount. Because FloodPlain is not
-                    // supposed to hold any Ether, and if less than the returnedAmount indicated by
-                    // Fulfiller is received, below transfer will revert.
-                    payable(offerer).sendValue(returnedAmount);
-                } else {
-                    IERC20(token).safeTransferFrom(fulfiller, offerer, returnedAmount);
-                }
+    function _pullReturnedAmounts(Order calldata order, uint256[] memory returnedAmounts, address fulfiller) internal {
+        address offerer = order.offerer;
+        Item[] calldata consideration = order.consideration;
+        uint256 itemsLength = consideration.length;
 
-                unchecked {
-                    ++j;
-                }
+        if (itemsLength != returnedAmounts.length) {
+            revert ArrayLengthMismatch();
+        }
+
+        // Do not accept consideration with duplicate items.
+        if (consideration.hasDuplicates()) {
+            revert DuplicateItems();
+        }
+
+        for (uint256 i; i < itemsLength;) {
+            Item calldata item = consideration[i];
+            address token = item.token;
+            uint256 returnedAmount = returnedAmounts[i];
+
+            if (returnedAmount < item.amount) {
+                revert InsufficientAmountReceived();
+            }
+
+            if (token == address(0)) {
+                // Expect Fulfiller to have sent Ether when sourceConsideration was called. No
+                // check is made that Fulfiller sent correct amount. Because FloodPlain is not
+                // supposed to hold any Ether, and if less than the returnedAmount indicated by
+                // Fulfiller is received, below transfer will revert.
+                payable(offerer).sendValue(returnedAmount);
+            } else {
+                IERC20(token).safeTransferFrom(fulfiller, offerer, returnedAmount);
             }
 
             unchecked {

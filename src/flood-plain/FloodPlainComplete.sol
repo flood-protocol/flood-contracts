@@ -6,7 +6,17 @@ import {FloodPlain} from "./FloodPlain.sol";
 import {FloodPlainOnChainOrders} from "./extensions/FloodPlainOnChainOrders.sol";
 import {FloodPlainEncodedCalls} from "./extensions/FloodPlainEncodedCalls.sol";
 import {FloodPlainDirectFulfiller} from "./extensions/FloodPlainDirectFulfiller.sol";
+import {FloodPlainBatchFulfiller} from "./extensions/FloodPlainBatchFulfiller.sol";
 
-contract FloodPlainComplete is FloodPlain, FloodPlainOnChainOrders, FloodPlainEncodedCalls, FloodPlainDirectFulfiller {
-    constructor(address permit2, address admin) FloodPlain(permit2) FloodPlainEncodedCalls(admin) {}
+contract FloodPlainComplete is
+    FloodPlain,
+    FloodPlainOnChainOrders,
+    FloodPlainEncodedCalls,
+    FloodPlainDirectFulfiller,
+    FloodPlainBatchFulfiller
+{
+    constructor(
+        address permit2,
+        address admin
+    ) FloodPlain(permit2) FloodPlainEncodedCalls(admin) {}
 }
