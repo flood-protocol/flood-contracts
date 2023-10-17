@@ -157,6 +157,22 @@ contract FloodPlainTest is FloodPlainTestShared {
         assertFalse(book.getNonceStatus(account0.addr, 0));
     }
 
+    function test_NonceValidityForOrderId1() public {
+        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
+
+        // Use nonce 1. Using nonce 0 does not pass mutation tests due to bit shift operations by 0
+        // being ineffective. So we test with nonce 1 as well.
+        signedOrder.order.nonce = 1;
+        signedOrder.signature = getSignature(signedOrder.order, account0);
+
+        assertTrue(book.getNonceStatus(account0.addr, 1));
+
+        // Fill the order.
+        book.fulfillOrder(signedOrder, address(fulfiller), "");
+
+        assertFalse(book.getNonceStatus(account0.addr, 1));
+    }
+
     function test_RevertWhenNonceReuse() public {
         IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
 
@@ -232,6 +248,28 @@ contract FloodPlainTest is FloodPlainTestShared {
 
         // Deadline passed and nonce not available.
         signedOrder.order.deadline = block.timestamp - 1;
+        assertFalse(book.getOrderStatus(signedOrder.order));
+    }
+
+    function test_OrderStatusWhenDeadlineIsNow() public {
+        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
+
+        // Nonce available and deadline not passed.
+        assertTrue(book.getOrderStatus(signedOrder.order));
+
+        // Nonce available and deadline still not passed (per Permit2 contract)
+        signedOrder.order.deadline = block.timestamp;
+        assertTrue(book.getOrderStatus(signedOrder.order));
+        signedOrder.order.deadline = type(uint256).max;
+
+        // Fill the order, disables nonce.
+        book.fulfillOrder(signedOrder, address(fulfiller), "");
+
+        // Deadline not passed but nonce not available.
+        assertFalse(book.getOrderStatus(signedOrder.order));
+
+        // Deadline still passed and nonce not available.
+        signedOrder.order.deadline = block.timestamp;
         assertFalse(book.getOrderStatus(signedOrder.order));
     }
 

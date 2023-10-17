@@ -21,6 +21,12 @@ contract FloodPlainEncodedCalls is FloodPlainTestShared {
         assertEq(decoderId, 3);
     }
 
+    function test_RevertAddDecoderWhenUnprivilegedCaller() public {
+        vm.prank(account2.addr);
+        vm.expectRevert();
+        book.addDecoder(address(decoder));
+    }
+
     function test_getDecoder() public {
         // Add a decoder.
         uint256 decoderId = book.addDecoder(address(decoder));
