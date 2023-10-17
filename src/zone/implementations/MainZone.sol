@@ -18,6 +18,8 @@ contract MainZone is ZoneComplete, IMainZone, AccessControlDefaultAdminRules, Pa
     bytes32 public constant CANCELLED_ORDERS = keccak256("CANCELLED_ORDERS");
 
     address public secondaryZone;
+    address public feeRecipient;
+    uint256 public feeBps;
 
     constructor(address admin) AccessControlDefaultAdminRules(2 days, admin) {}
 
@@ -37,6 +39,12 @@ contract MainZone is ZoneComplete, IMainZone, AccessControlDefaultAdminRules, Pa
         secondaryZone = newSecondaryZone; // Zero address is to unset.
 
         emit SecondaryZoneSet(newSecondaryZone);
+    }
+
+    function fee(
+        IFloodPlain.Order calldata /* order */
+    ) external view override returns (address, uint256) {
+        return (feeRecipient, feeBps);
     }
 
     function validateOrder(
