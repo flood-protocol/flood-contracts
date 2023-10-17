@@ -91,14 +91,17 @@ contract MainZone is ZoneComplete, IMainZone, AccessControlDefaultAdminRules, Pa
 
     function _checkSecondaryZone(address _secondaryZone) internal view returns (bytes4 selector) {
         assembly {
-            // Move entire calldata to memory starting from offset zero.
-            calldatacopy(0, 0, calldatasize())
+            // Get free memory pointer.
+            let fmp := mload(0x40)
+
+            // Move entire calldata to memory starting from the free memory pointer.
+            calldatacopy(fmp, 0, calldatasize())
 
             // Make the exact same staticcall to the secondary zone.
-            let result := staticcall(gas(), _secondaryZone, 0, calldatasize(), 0, 4)
+            let result := staticcall(gas(), _secondaryZone, fmp, calldatasize(), fmp, 4)
 
             // Optimistically move selector to stack.
-            selector := mload(0)
+            selector := mload(fmp)
 
             // Revert with the same message if call fails.
             if iszero(result) {
