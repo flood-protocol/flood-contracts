@@ -7,7 +7,7 @@ pub use i_signature_transfer::*;
     clippy::upper_case_acronyms,
     clippy::type_complexity,
     dead_code,
-    non_camel_case_types,
+    non_camel_case_types
 )]
 pub mod i_signature_transfer {
     #[allow(deprecated)]
@@ -443,9 +443,8 @@ pub mod i_signature_transfer {
         }
     }
     ///The parsed JSON ABI of the contract.
-    pub static ISIGNATURETRANSFER_ABI: ::ethers::contract::Lazy<
-        ::ethers::core::abi::Abi,
-    > = ::ethers::contract::Lazy::new(__abi);
+    pub static ISIGNATURETRANSFER_ABI: ::ethers::contract::Lazy<::ethers::core::abi::Abi> =
+        ::ethers::contract::Lazy::new(__abi);
     pub struct ISignatureTransfer<M>(::ethers::contract::Contract<M>);
     impl<M> ::core::clone::Clone for ISignatureTransfer<M> {
         fn clone(&self) -> Self {
@@ -477,13 +476,11 @@ pub mod i_signature_transfer {
             address: T,
             client: ::std::sync::Arc<M>,
         ) -> Self {
-            Self(
-                ::ethers::contract::Contract::new(
-                    address.into(),
-                    ISIGNATURETRANSFER_ABI.clone(),
-                    client,
-                ),
-            )
+            Self(::ethers::contract::Contract::new(
+                address.into(),
+                ISIGNATURETRANSFER_ABI.clone(),
+                client,
+            ))
         }
         ///Calls the contract's `invalidateUnorderedNonces` (0x3ff9dcb1) function
         pub fn invalidate_unordered_nonces(
@@ -591,7 +588,10 @@ pub mod i_signature_transfer {
             M,
             UnorderedNonceInvalidationFilter,
         > {
-            self.0.event()
+            let mut event = self.0.event();
+            event.filter = event.filter.address(self.address());
+
+            event
         }
         /// Returns an `Event` builder for all the events of this contract.
         pub fn events(
@@ -601,11 +601,13 @@ pub mod i_signature_transfer {
             M,
             UnorderedNonceInvalidationFilter,
         > {
-            self.0.event_with_filter(::core::default::Default::default())
+            self.0
+                .event_with_filter(::core::default::Default::default())
         }
     }
     impl<M: ::ethers::providers::Middleware> From<::ethers::contract::Contract<M>>
-    for ISignatureTransfer<M> {
+        for ISignatureTransfer<M>
+    {
         fn from(contract: ::ethers::contract::Contract<M>) -> Self {
             Self::new(contract.address(), contract.client())
         }
@@ -619,7 +621,7 @@ pub mod i_signature_transfer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[etherror(name = "InvalidAmount", abi = "InvalidAmount(uint256)")]
     pub struct InvalidAmount {
@@ -634,7 +636,7 @@ pub mod i_signature_transfer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[etherror(name = "LengthMismatch", abi = "LengthMismatch()")]
     pub struct LengthMismatch;
@@ -652,18 +654,15 @@ pub mod i_signature_transfer {
             data: impl AsRef<[u8]>,
         ) -> ::core::result::Result<Self, ::ethers::core::abi::AbiError> {
             let data = data.as_ref();
-            if let Ok(decoded)
-                = <::std::string::String as ::ethers::core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) =
+                <::std::string::String as ::ethers::core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::RevertString(decoded));
             }
-            if let Ok(decoded)
-                = <InvalidAmount as ::ethers::core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <InvalidAmount as ::ethers::core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::InvalidAmount(decoded));
             }
-            if let Ok(decoded)
-                = <LengthMismatch as ::ethers::core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <LengthMismatch as ::ethers::core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::LengthMismatch(decoded));
             }
             Err(::ethers::core::abi::Error::InvalidData.into())
@@ -672,12 +671,8 @@ pub mod i_signature_transfer {
     impl ::ethers::core::abi::AbiEncode for ISignatureTransferErrors {
         fn encode(self) -> ::std::vec::Vec<u8> {
             match self {
-                Self::InvalidAmount(element) => {
-                    ::ethers::core::abi::AbiEncode::encode(element)
-                }
-                Self::LengthMismatch(element) => {
-                    ::ethers::core::abi::AbiEncode::encode(element)
-                }
+                Self::InvalidAmount(element) => ::ethers::core::abi::AbiEncode::encode(element),
+                Self::LengthMismatch(element) => ::ethers::core::abi::AbiEncode::encode(element),
                 Self::RevertString(s) => ::ethers::core::abi::AbiEncode::encode(s),
             }
         }
@@ -686,12 +681,10 @@ pub mod i_signature_transfer {
         fn valid_selector(selector: [u8; 4]) -> bool {
             match selector {
                 [0x08, 0xc3, 0x79, 0xa0] => true,
-                _ if selector
-                    == <InvalidAmount as ::ethers::contract::EthError>::selector() => {
+                _ if selector == <InvalidAmount as ::ethers::contract::EthError>::selector() => {
                     true
                 }
-                _ if selector
-                    == <LengthMismatch as ::ethers::contract::EthError>::selector() => {
+                _ if selector == <LengthMismatch as ::ethers::contract::EthError>::selector() => {
                     true
                 }
                 _ => false,
@@ -730,7 +723,7 @@ pub mod i_signature_transfer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethevent(
         name = "UnorderedNonceInvalidation",
@@ -751,7 +744,7 @@ pub mod i_signature_transfer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(
         name = "invalidateUnorderedNonces",
@@ -770,7 +763,7 @@ pub mod i_signature_transfer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "nonceBitmap", abi = "nonceBitmap(address,uint256)")]
     pub struct NonceBitmapCall(
@@ -786,7 +779,7 @@ pub mod i_signature_transfer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(
         name = "permitTransferFrom",
@@ -807,7 +800,7 @@ pub mod i_signature_transfer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(
         name = "permitTransferFrom",
@@ -828,7 +821,7 @@ pub mod i_signature_transfer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(
         name = "permitWitnessTransferFrom",
@@ -851,13 +844,14 @@ pub mod i_signature_transfer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(
         name = "permitWitnessTransferFrom",
         abi = "permitWitnessTransferFrom(((address,uint256)[],uint256,uint256),(address,uint256)[],address,bytes32,string,bytes)"
     )]
-    pub struct PermitWitnessTransferFromWithPermitAndTransferDetailsAndOwnerAndWitnessAndWitnessTypeStringAndSignatureCall {
+    pub struct PermitWitnessTransferFromWithPermitAndTransferDetailsAndOwnerAndWitnessAndWitnessTypeStringAndSignatureCall
+    {
         pub permit: PermitBatchTransferFrom,
         pub transfer_details: ::std::vec::Vec<SignatureTransferDetails>,
         pub owner: ::ethers::core::types::Address,
@@ -884,20 +878,17 @@ pub mod i_signature_transfer {
             data: impl AsRef<[u8]>,
         ) -> ::core::result::Result<Self, ::ethers::core::abi::AbiError> {
             let data = data.as_ref();
-            if let Ok(decoded)
-                = <InvalidateUnorderedNoncesCall as ::ethers::core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) =
+                <InvalidateUnorderedNoncesCall as ::ethers::core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::InvalidateUnorderedNonces(decoded));
             }
-            if let Ok(decoded)
-                = <NonceBitmapCall as ::ethers::core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <NonceBitmapCall as ::ethers::core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::NonceBitmap(decoded));
             }
-            if let Ok(decoded)
-                = <PermitTransferFromCall as ::ethers::core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) =
+                <PermitTransferFromCall as ::ethers::core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::PermitTransferFrom(decoded));
             }
             if let Ok(decoded)
@@ -910,10 +901,9 @@ pub mod i_signature_transfer {
                     ),
                 );
             }
-            if let Ok(decoded)
-                = <PermitWitnessTransferFromCall as ::ethers::core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) =
+                <PermitWitnessTransferFromCall as ::ethers::core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::PermitWitnessTransferFrom(decoded));
             }
             if let Ok(decoded)
@@ -975,8 +965,7 @@ pub mod i_signature_transfer {
             }
         }
     }
-    impl ::core::convert::From<InvalidateUnorderedNoncesCall>
-    for ISignatureTransferCalls {
+    impl ::core::convert::From<InvalidateUnorderedNoncesCall> for ISignatureTransferCalls {
         fn from(value: InvalidateUnorderedNoncesCall) -> Self {
             Self::InvalidateUnorderedNonces(value)
         }
@@ -991,19 +980,18 @@ pub mod i_signature_transfer {
             Self::PermitTransferFrom(value)
         }
     }
-    impl ::core::convert::From<
-        PermitTransferFromWithPermitAndTransferDetailsAndOwnerAndSignatureCall,
-    > for ISignatureTransferCalls {
+    impl
+        ::core::convert::From<
+            PermitTransferFromWithPermitAndTransferDetailsAndOwnerAndSignatureCall,
+        > for ISignatureTransferCalls
+    {
         fn from(
             value: PermitTransferFromWithPermitAndTransferDetailsAndOwnerAndSignatureCall,
         ) -> Self {
-            Self::PermitTransferFromWithPermitAndTransferDetailsAndOwnerAndSignature(
-                value,
-            )
+            Self::PermitTransferFromWithPermitAndTransferDetailsAndOwnerAndSignature(value)
         }
     }
-    impl ::core::convert::From<PermitWitnessTransferFromCall>
-    for ISignatureTransferCalls {
+    impl ::core::convert::From<PermitWitnessTransferFromCall> for ISignatureTransferCalls {
         fn from(value: PermitWitnessTransferFromCall) -> Self {
             Self::PermitWitnessTransferFrom(value)
         }
@@ -1028,7 +1016,7 @@ pub mod i_signature_transfer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct NonceBitmapReturn(pub ::ethers::core::types::U256);
     ///`PermitBatchTransferFrom((address,uint256)[],uint256,uint256)`
@@ -1040,7 +1028,7 @@ pub mod i_signature_transfer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct PermitBatchTransferFrom {
         pub permitted: ::std::vec::Vec<TokenPermissions>,
@@ -1056,7 +1044,7 @@ pub mod i_signature_transfer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct PermitTransferFrom {
         pub permitted: TokenPermissions,
@@ -1072,7 +1060,7 @@ pub mod i_signature_transfer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct SignatureTransferDetails {
         pub to: ::ethers::core::types::Address,
@@ -1087,7 +1075,7 @@ pub mod i_signature_transfer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct TokenPermissions {
         pub token: ::ethers::core::types::Address,

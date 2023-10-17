@@ -21,8 +21,7 @@ contract DecoderWithRegistryScriptTest is DecoderWithRegistryScript, Test {
     MockERC20 token1;
 
     function setUp() public {
-        vm.prank(msg.sender);
-        registryDecoder = new DecoderWithRegistry(address(this));
+        registryDecoder = new DecoderWithRegistry(msg.sender);
         zone = new MockZone();
         fulfiller = new MockFulfiller();
         token0 = new MockERC20();
@@ -37,7 +36,7 @@ contract DecoderWithRegistryScriptTest is DecoderWithRegistryScript, Test {
         address[] memory tokensToAdd = new address[](2);
         tokensToAdd[0] = address(token0);
         tokensToAdd[1] = address(token1);
-        this.addTokens(registryDecoder, tokensToAdd);
+        addTokens(registryDecoder, tokensToAdd);
         assertEq(registryDecoder.tokens().length, 2);
         assertEq(registryDecoder.tokens()[0].addr, address(token0));
         assertEq(registryDecoder.tokens()[1].addr, address(token1));
@@ -49,11 +48,11 @@ contract DecoderWithRegistryScriptTest is DecoderWithRegistryScript, Test {
         address[] memory tokensToAdd = new address[](2);
         tokensToAdd[0] = address(token0);
         tokensToAdd[1] = address(token1);
-        this.addTokens(registryDecoder, tokensToAdd);
+        addTokens(registryDecoder, tokensToAdd);
         vm.expectEmit();
         emit Duplicated(0, address(token0));
         emit Duplicated(1, address(token1));
-        this.addTokens(registryDecoder, tokensToAdd);
+        addTokens(registryDecoder, tokensToAdd);
         assertEq(registryDecoder.tokens().length, 2);
         assertEq(registryDecoder.tokens()[0].addr, address(token0));
         assertEq(registryDecoder.tokens()[1].addr, address(token1));
@@ -64,7 +63,7 @@ contract DecoderWithRegistryScriptTest is DecoderWithRegistryScript, Test {
     function testAddZones() public {
         address[] memory zonesToAdd = new address[](1);
         zonesToAdd[0] = address(zone);
-        this.addZones(registryDecoder, zonesToAdd);
+        addZones(registryDecoder, zonesToAdd);
         assertEq(registryDecoder.zones().length, 1);
         assertEq(registryDecoder.zones()[0].addr, address(zone));
         assertEq(registryDecoder.zones()[0].id, 0);
@@ -73,10 +72,10 @@ contract DecoderWithRegistryScriptTest is DecoderWithRegistryScript, Test {
     function testAddDuplicatedZones() public {
         address[] memory zonesToAdd = new address[](1);
         zonesToAdd[0] = address(zone);
-        this.addZones(registryDecoder, zonesToAdd);
+        addZones(registryDecoder, zonesToAdd);
         vm.expectEmit();
         emit Duplicated(0, address(zone));
-        this.addZones(registryDecoder, zonesToAdd);
+        addZones(registryDecoder, zonesToAdd);
         assertEq(registryDecoder.zones().length, 1);
         assertEq(registryDecoder.zones()[0].addr, address(zone));
         assertEq(registryDecoder.zones()[0].id, 0);
@@ -85,7 +84,7 @@ contract DecoderWithRegistryScriptTest is DecoderWithRegistryScript, Test {
     function testAddFulfillers() public {
         address[] memory fulfillersToAdd = new address[](1);
         fulfillersToAdd[0] = address(fulfiller);
-        this.addFulfillers(registryDecoder, fulfillersToAdd);
+        addFulfillers(registryDecoder, fulfillersToAdd);
         assertEq(registryDecoder.fulfillers().length, 1);
         assertEq(registryDecoder.fulfillers()[0].addr, address(fulfiller));
         assertEq(registryDecoder.fulfillers()[0].id, 0);
@@ -94,10 +93,10 @@ contract DecoderWithRegistryScriptTest is DecoderWithRegistryScript, Test {
     function testAddDuplicatedFulfillers() public {
         address[] memory fulfillersToAdd = new address[](1);
         fulfillersToAdd[0] = address(fulfiller);
-        this.addFulfillers(registryDecoder, fulfillersToAdd);
+        addFulfillers(registryDecoder, fulfillersToAdd);
         vm.expectEmit();
         emit Duplicated(0, address(fulfiller));
-        this.addFulfillers(registryDecoder, fulfillersToAdd);
+        addFulfillers(registryDecoder, fulfillersToAdd);
         assertEq(registryDecoder.fulfillers().length, 1);
         assertEq(registryDecoder.fulfillers()[0].addr, address(fulfiller));
         assertEq(registryDecoder.fulfillers()[0].id, 0);
