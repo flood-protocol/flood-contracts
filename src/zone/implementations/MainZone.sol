@@ -45,11 +45,12 @@ contract MainZone is ZoneComplete, IMainZone, AccessControlDefaultAdminRules, Pa
         address caller,
         bytes32 orderHash,
         bytes calldata /* context */
-    ) external view override whenNotPaused returns (bytes4) {
+    ) external view override returns (bytes4) {
         // Do basic built-in access control checks and check if an order is manually cancelled.
         if (
             hasRole(CALLER_ROLE, caller) &&
                 hasRole(BOOK_ROLE, book) &&
+                !paused() &&
                 !hasRole(CANCELLED_ORDERS, address(uint160(uint256(orderHash))))
         ) {
             address _secondaryZone = secondaryZone;
@@ -70,12 +71,13 @@ contract MainZone is ZoneComplete, IMainZone, AccessControlDefaultAdminRules, Pa
         address caller,
         bytes32 orderHash,
         bytes calldata /* context */
-    ) external view override whenNotPaused returns (bytes4) {
+    ) external view override returns (bytes4) {
         // Do basic built-in access control checks and check if an order is manually cancelled.
         if (
             hasRole(CALLER_ROLE, caller) &&
                 hasRole(FULFILLER_ROLE, fulfiller) &&
                 hasRole(BOOK_ROLE, book) &&
+                !paused() &&
                 !hasRole(CANCELLED_ORDERS, address(uint160(uint256(orderHash))))
         ) {
             address _secondaryZone = secondaryZone;
