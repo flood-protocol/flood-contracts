@@ -19,7 +19,7 @@ contract MainZone is Zone, IMainZone, IAuthZone, AccessControlDefaultAdminRules,
 
     address public secondaryZone;
 
-    mapping (address => Filter) public filters;
+    mapping(address => Filter) public filters;
 
     constructor(address admin) AccessControlDefaultAdminRules(2 days, admin) {}
 

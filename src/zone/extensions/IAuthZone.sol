@@ -5,19 +5,19 @@ interface IAuthZone {
     event FilterUpdated(address indexed actor, Filter filter);
 
     struct RangeFilter {
-        uint gte;
-        uint lte;
+        uint256 gte;
+        uint256 lte;
     }
 
-    struct TokenFilter {
+    struct ItemFilter {
         address token;
         RangeFilter amount;
     }
 
     struct Filter {
         address offerer;
-        TokenFilter[] offer;
-        TokenFilter consideration;
+        ItemFilter[] offer;
+        ItemFilter consideration;
         RangeFilter deadline;
         RangeFilter nonce;
     }
