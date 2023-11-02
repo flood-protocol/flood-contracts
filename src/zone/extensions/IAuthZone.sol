@@ -5,8 +5,8 @@ interface IAuthZone {
     event FilterUpdated(address indexed actor, Filter filter);
 
     struct RangeFilter {
-        uint gt;
-        uint lt;
+        uint gte;
+        uint lte;
     }
 
     struct TokenFilter {
