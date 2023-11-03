@@ -15,6 +15,7 @@ interface IAuthZone {
     }
 
     struct Filter {
+        bool initialized;
         address offerer;
         ItemFilter[] offer;
         ItemFilter consideration;
