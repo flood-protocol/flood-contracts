@@ -1,3 +1,52 @@
+///`Filter(bool,address,(address,(uint256,uint256))[],(address,(uint256,uint256)),(uint256,uint256),(uint256,uint256))`
+#[derive(
+    Clone,
+    ::ethers::contract::EthAbiType,
+    ::ethers::contract::EthAbiCodec,
+    Default,
+    Debug,
+    PartialEq,
+    Eq,
+    Hash
+)]
+pub struct Filter {
+    pub initialized: bool,
+    pub offerer: ::ethers::core::types::Address,
+    pub offer: ::std::vec::Vec<ItemFilter>,
+    pub consideration: ItemFilter,
+    pub deadline: RangeFilter,
+    pub nonce: RangeFilter,
+}
+///`ItemFilter(address,(uint256,uint256))`
+#[derive(
+    Clone,
+    ::ethers::contract::EthAbiType,
+    ::ethers::contract::EthAbiCodec,
+    Default,
+    Debug,
+    PartialEq,
+    Eq,
+    Hash
+)]
+pub struct ItemFilter {
+    pub token: ::ethers::core::types::Address,
+    pub amount: RangeFilter,
+}
+///`RangeFilter(uint256,uint256)`
+#[derive(
+    Clone,
+    ::ethers::contract::EthAbiType,
+    ::ethers::contract::EthAbiCodec,
+    Default,
+    Debug,
+    PartialEq,
+    Eq,
+    Hash
+)]
+pub struct RangeFilter {
+    pub gte: ::ethers::core::types::U256,
+    pub lte: ::ethers::core::types::U256,
+}
 ///`Item(address,uint256)`
 #[derive(
     Clone,
@@ -7,7 +56,7 @@
     Debug,
     PartialEq,
     Eq,
-    Hash,
+    Hash
 )]
 pub struct Item {
     pub token: ::ethers::core::types::Address,
@@ -22,7 +71,7 @@ pub struct Item {
     Debug,
     PartialEq,
     Eq,
-    Hash,
+    Hash
 )]
 pub struct Order {
     pub offerer: ::ethers::core::types::Address,
@@ -41,9 +90,40 @@ pub struct Order {
     Debug,
     PartialEq,
     Eq,
-    Hash,
+    Hash
 )]
 pub struct OrderWithSignature {
     pub order: Order,
     pub signature: ::ethers::core::types::Bytes,
+}
+///`ExecutorInfo(address,bool,bool)`
+#[derive(
+    Clone,
+    ::ethers::contract::EthAbiType,
+    ::ethers::contract::EthAbiCodec,
+    Default,
+    Debug,
+    PartialEq,
+    Eq,
+    Hash
+)]
+pub struct ExecutorInfo {
+    pub executor: ::ethers::core::types::Address,
+    pub has_callback: bool,
+    pub is_enabled: bool,
+}
+///`FuzzSelector(address,bytes4[])`
+#[derive(
+    Clone,
+    ::ethers::contract::EthAbiType,
+    ::ethers::contract::EthAbiCodec,
+    Default,
+    Debug,
+    PartialEq,
+    Eq,
+    Hash
+)]
+pub struct FuzzSelector {
+    pub addr: ::ethers::core::types::Address,
+    pub selectors: ::std::vec::Vec<[u8; 4]>,
 }
