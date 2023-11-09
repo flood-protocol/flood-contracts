@@ -6,20 +6,16 @@ import {MockERC20} from "test/flood-plain/utils/MockERC20.sol";
 import {MainZone} from "src/zone/extensions/MainZone.sol";
 import {IAuthZone} from "src/zone/extensions/IAuthZone.sol";
 import {AuthZoneFilter} from "test/zone/utils/AuthZoneFilter.sol";
+import "test/flood-plain/utils/FloodPlainTestShared.sol";
 
-contract ZoneTest is Test {
-    Account account0;
-    Account account1;
-    MainZone zone;
-    MockERC20 token0;
+contract ZoneTest is FloodPlainTestShared {
+    MainZone mainZone;
 
     event FilterUpdated(address indexed actor, IAuthZone.Filter filter);
 
-    function setUp() public virtual {
-        account0 = makeAccount("a");
-        account1 = makeAccount("b");
-        zone = new MainZone(account0.addr);
-        token0 = new MockERC20();
+    function setUp() public override {
+        super.setUp();
+        mainZone = new MainZone(account0.addr);
     }
 
     function test_auth() public {
@@ -41,14 +37,16 @@ contract ZoneTest is Test {
             nonce: rangeFilter
         });
 
-        assertTrue(AuthZoneFilter.isFilterEqual(zone.authorizationFilter(account1.addr), AuthZoneFilter.allowNone()));
+        assertTrue(
+            AuthZoneFilter.isFilterEqual(mainZone.authorizationFilter(account1.addr), AuthZoneFilter.allowNone())
+        );
 
         vm.expectEmit();
         emit FilterUpdated(account1.addr, filter);
 
         vm.prank(account0.addr);
-        zone.setAuthorizationFilter(account1.addr, filter);
+        mainZone.setAuthorizationFilter(account1.addr, filter);
 
-        assertTrue(AuthZoneFilter.isFilterEqual(zone.authorizationFilter(account1.addr), filter));
+        assertTrue(AuthZoneFilter.isFilterEqual(mainZone.authorizationFilter(account1.addr), filter));
     }
 }
