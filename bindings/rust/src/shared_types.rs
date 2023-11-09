@@ -13,7 +13,7 @@ pub struct AddressFilter {
     pub value: ::ethers::core::types::Address,
     pub exclude: bool,
 }
-///`Filter(bool,address,(address,(uint256,uint256))[],(address,(uint256,uint256)),(uint256,uint256),(uint256,uint256))`
+///`AuthFilter(bool,(address,bool),((address,bool),(uint256,uint256))[],((address,bool),(uint256,uint256)),(uint256,uint256),(uint256,uint256))`
 #[derive(
     Clone,
     ::ethers::contract::EthAbiType,
@@ -24,9 +24,9 @@ pub struct AddressFilter {
     Eq,
     Hash
 )]
-pub struct Filter {
+pub struct AuthFilter {
     pub initialized: bool,
-    pub offerer: ::ethers::core::types::Address,
+    pub offerer: AddressFilter,
     pub offer: ::std::vec::Vec<ItemFilter>,
     pub consideration: ItemFilter,
     pub deadline: RangeFilter,
