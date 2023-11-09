@@ -28,7 +28,5 @@ interface IAuthZone {
         RangeFilter nonce;
     }
 
-    function setAuthorizationFilter(address actor, AuthFilter calldata filter) external;
-
     function authorizationFilter(address actor) external view returns (AuthFilter memory);
 }
