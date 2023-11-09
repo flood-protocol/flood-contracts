@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 // Inheritances
 import {IMainZone} from "./IMainZone.sol";
+import {IAuthZone} from "./IAuthZone.sol";
 import {Zone} from "../Zone.sol";
 import {AccessControlDefaultAdminRules} from "@openzeppelin/access/AccessControlDefaultAdminRules.sol";
 import {Pausable} from "@openzeppelin/security/Pausable.sol";
@@ -10,13 +11,15 @@ import {Pausable} from "@openzeppelin/security/Pausable.sol";
 // Interfaces
 import {IFloodPlain} from "../../flood-plain/IFloodPlain.sol";
 
-contract MainZone is Zone, IMainZone, AccessControlDefaultAdminRules, Pausable {
+contract MainZone is Zone, IMainZone, IAuthZone, AccessControlDefaultAdminRules, Pausable {
     bytes32 public constant CALLER_ROLE = keccak256("CALLER_ROLE");
     bytes32 public constant FULFILLER_ROLE = keccak256("FULFILLER_ROLE");
     bytes32 public constant BOOK_ROLE = keccak256("BOOK_ROLE");
     bytes32 public constant CANCELLED_ORDERS = keccak256("CANCELLED_ORDERS");
 
     address public secondaryZone;
+
+    mapping(address => AuthFilter) public filters;
 
     constructor(address admin) AccessControlDefaultAdminRules(2 days, admin) {}
 
@@ -96,5 +99,14 @@ contract MainZone is Zone, IMainZone, AccessControlDefaultAdminRules, Pausable {
                 }
             }
         }
+    }
+
+    function setAuthorizationFilter(address actor, AuthFilter calldata filter) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        filters[actor] = filter;
+        emit FilterUpdated(actor, filter);
+    }
+
+    function authorizationFilter(address actor) external view returns (AuthFilter memory) {
+        return filters[actor];
     }
 }
