@@ -1,3 +1,18 @@
+///`AddressFilter(address,bool)`
+#[derive(
+    Clone,
+    ::ethers::contract::EthAbiType,
+    ::ethers::contract::EthAbiCodec,
+    Default,
+    Debug,
+    PartialEq,
+    Eq,
+    Hash
+)]
+pub struct AddressFilter {
+    pub value: ::ethers::core::types::Address,
+    pub exclude: bool,
+}
 ///`Filter(bool,address,(address,(uint256,uint256))[],(address,(uint256,uint256)),(uint256,uint256),(uint256,uint256))`
 #[derive(
     Clone,
