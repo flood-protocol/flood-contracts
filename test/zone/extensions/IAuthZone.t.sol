@@ -9,7 +9,7 @@ import {AuthZoneFilter} from "test/zone/utils/AuthZoneFilter.sol";
 contract ZoneTest is FloodPlainTestShared {
     MainZone mainZone;
 
-    event FilterUpdated(address indexed actor, IAuthZone.Filter filter);
+    event FilterUpdated(address indexed actor, IAuthZone.AuthFilter filter);
 
     function setUp() public override {
         super.setUp();
@@ -26,7 +26,7 @@ contract ZoneTest is FloodPlainTestShared {
         IAuthZone.ItemFilter[] memory filters = new IAuthZone.ItemFilter[](1);
         filters[0] = tokenFilter;
 
-        IAuthZone.Filter memory filter = IAuthZone.Filter({
+        IAuthZone.AuthFilter memory filter = IAuthZone.AuthFilter({
             initialized: true,
             offerer: offererAddressFilter,
             offer: filters,

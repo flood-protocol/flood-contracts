@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 interface IAuthZone {
-    event FilterUpdated(address indexed actor, Filter filter);
+    event FilterUpdated(address indexed actor, AuthFilter filter);
 
     struct AddressFilter {
         address value;
@@ -19,7 +19,7 @@ interface IAuthZone {
         RangeFilter amount;
     }
 
-    struct Filter {
+    struct AuthFilter {
         bool initialized;
         AddressFilter offerer;
         ItemFilter[] offer;
@@ -28,7 +28,7 @@ interface IAuthZone {
         RangeFilter nonce;
     }
 
-    function setAuthorizationFilter(address actor, Filter calldata filter) external;
+    function setAuthorizationFilter(address actor, AuthFilter calldata filter) external;
 
-    function authorizationFilter(address actor) external view returns (Filter memory);
+    function authorizationFilter(address actor) external view returns (AuthFilter memory);
 }

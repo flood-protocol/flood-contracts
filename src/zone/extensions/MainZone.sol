@@ -19,7 +19,7 @@ contract MainZone is Zone, IMainZone, IAuthZone, AccessControlDefaultAdminRules,
 
     address public secondaryZone;
 
-    mapping(address => Filter) public filters;
+    mapping(address => AuthFilter) public filters;
 
     constructor(address admin) AccessControlDefaultAdminRules(2 days, admin) {}
 
@@ -101,12 +101,12 @@ contract MainZone is Zone, IMainZone, IAuthZone, AccessControlDefaultAdminRules,
         }
     }
 
-    function setAuthorizationFilter(address actor, Filter calldata filter) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setAuthorizationFilter(address actor, AuthFilter calldata filter) external onlyRole(DEFAULT_ADMIN_ROLE) {
         filters[actor] = filter;
         emit FilterUpdated(actor, filter);
     }
 
-    function authorizationFilter(address actor) external view returns (Filter memory) {
+    function authorizationFilter(address actor) external view returns (AuthFilter memory) {
         return filters[actor];
     }
 }

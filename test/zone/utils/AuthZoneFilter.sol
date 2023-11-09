@@ -4,7 +4,7 @@ pragma solidity ^0.8.17;
 import {IAuthZone} from "src/zone/extensions/IAuthZone.sol";
 
 library AuthZoneFilter {
-    function isFilterEqual(IAuthZone.Filter memory a, IAuthZone.Filter memory b) public pure returns (bool) {
+    function isFilterEqual(IAuthZone.AuthFilter memory a, IAuthZone.AuthFilter memory b) public pure returns (bool) {
         if (a.initialized != b.initialized) {
             return false;
         }
@@ -55,7 +55,7 @@ library AuthZoneFilter {
         return a.value == b.value && a.exclude == b.exclude;
     }
 
-    function allowNone() public pure returns (IAuthZone.Filter memory) {
+    function allowNone() public pure returns (IAuthZone.AuthFilter memory) {
         IAuthZone.AddressFilter memory emptyAddressFilter = IAuthZone.AddressFilter({value: address(0), exclude: false});
 
         IAuthZone.RangeFilter memory emptyRangeFilter = IAuthZone.RangeFilter({gte: 0, lte: 0});
@@ -65,7 +65,7 @@ library AuthZoneFilter {
 
         IAuthZone.ItemFilter[] memory emptyItemFilters;
 
-        return IAuthZone.Filter({
+        return IAuthZone.AuthFilter({
             initialized: false,
             offerer: emptyAddressFilter,
             offer: emptyItemFilters,
@@ -75,8 +75,8 @@ library AuthZoneFilter {
         });
     }
 
-    function allowAll() public pure returns (IAuthZone.Filter memory) {
-        IAuthZone.Filter memory filter = allowNone();
+    function allowAll() public pure returns (IAuthZone.AuthFilter memory) {
+        IAuthZone.AuthFilter memory filter = allowNone();
         filter.initialized = true;
         return filter;
     }
