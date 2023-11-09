@@ -4,19 +4,24 @@ pragma solidity ^0.8.13;
 interface IAuthZone {
     event FilterUpdated(address indexed actor, Filter filter);
 
+    struct AddressFilter {
+        address value;
+        bool exclude;
+    }
+
     struct RangeFilter {
         uint256 gte;
         uint256 lte;
     }
 
     struct ItemFilter {
-        address token;
+        AddressFilter token;
         RangeFilter amount;
     }
 
     struct Filter {
         bool initialized;
-        address offerer;
+        AddressFilter offerer;
         ItemFilter[] offer;
         ItemFilter consideration;
         RangeFilter deadline;

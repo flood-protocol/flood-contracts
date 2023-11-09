@@ -23,16 +23,18 @@ contract ZoneTest is Test {
     }
 
     function test_auth() public {
-        MainZone.RangeFilter memory rangeFilter = IAuthZone.RangeFilter({gte: 0, lte: 100});
-
-        IAuthZone.ItemFilter memory tokenFilter = IAuthZone.ItemFilter({token: address(token0), amount: rangeFilter});
-
+        IAuthZone.AddressFilter memory tokenAddressFilter =
+            IAuthZone.AddressFilter({value: address(token0), exclude: false});
+        IAuthZone.AddressFilter memory offererAddressFilter =
+            IAuthZone.AddressFilter({value: account0.addr, exclude: false});
+        IAuthZone.RangeFilter memory rangeFilter = IAuthZone.RangeFilter({gte: 0, lte: 100});
+        IAuthZone.ItemFilter memory tokenFilter = IAuthZone.ItemFilter({token: tokenAddressFilter, amount: rangeFilter});
         IAuthZone.ItemFilter[] memory filters = new IAuthZone.ItemFilter[](1);
         filters[0] = tokenFilter;
 
         IAuthZone.Filter memory filter = IAuthZone.Filter({
             initialized: true,
-            offerer: account0.addr,
+            offerer: offererAddressFilter,
             offer: filters,
             consideration: tokenFilter,
             deadline: rangeFilter,
@@ -41,9 +43,10 @@ contract ZoneTest is Test {
 
         assertTrue(AuthZoneFilter.isFilterEqual(zone.authorizationFilter(account1.addr), AuthZoneFilter.allowNone()));
 
-        vm.startPrank(account0.addr);
         vm.expectEmit();
         emit FilterUpdated(account1.addr, filter);
+
+        vm.prank(account0.addr);
         zone.setAuthorizationFilter(account1.addr, filter);
 
         assertTrue(AuthZoneFilter.isFilterEqual(zone.authorizationFilter(account1.addr), filter));
