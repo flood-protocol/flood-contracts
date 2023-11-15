@@ -8,6 +8,7 @@ pub mod eip712;
 pub mod erc20;
 pub mod flood_plain_l2;
 pub mod i_auth_zone;
+pub mod i_signature_transfer;
 pub mod i_zone_with_fees;
 pub mod main_zone;
 pub mod shared_types;
