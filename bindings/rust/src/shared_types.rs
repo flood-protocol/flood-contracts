@@ -32,7 +32,7 @@ pub struct AuthFilter {
     pub deadline: RangeFilter,
     pub nonce: RangeFilter,
 }
-///`ItemFilter(address,(uint256,uint256))`
+///`ItemFilter((address,bool),(uint256,uint256))`
 #[derive(
     Clone,
     ::ethers::contract::EthAbiType,
@@ -44,7 +44,7 @@ pub struct AuthFilter {
     Hash
 )]
 pub struct ItemFilter {
-    pub token: ::ethers::core::types::Address,
+    pub token: AddressFilter,
     pub amount: RangeFilter,
 }
 ///`RangeFilter(uint256,uint256)`

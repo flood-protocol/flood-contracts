@@ -2105,8 +2105,9 @@ pub mod main_zone {
                     MainZoneEvents::DefaultAdminDelayChangeCanceledFilter(decoded),
                 );
             }
-            if let Ok(decoded)
-                = DefaultAdminDelayChangeScheduledFilter::decode_log(log) {
+            if let Ok(decoded) = DefaultAdminDelayChangeScheduledFilter::decode_log(
+                log,
+            ) {
                 return Ok(
                     MainZoneEvents::DefaultAdminDelayChangeScheduledFilter(decoded),
                 );
@@ -2740,160 +2741,164 @@ pub mod main_zone {
             data: impl AsRef<[u8]>,
         ) -> ::core::result::Result<Self, ::ethers::core::abi::AbiError> {
             let data = data.as_ref();
-            if let Ok(decoded)
-                = <BookRoleCall as ::ethers::core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <BookRoleCall as ::ethers::core::abi::AbiDecode>::decode(
+                data,
+            ) {
                 return Ok(Self::BookRole(decoded));
             }
-            if let Ok(decoded)
-                = <CallerRoleCall as ::ethers::core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <CallerRoleCall as ::ethers::core::abi::AbiDecode>::decode(
+                data,
+            ) {
                 return Ok(Self::CallerRole(decoded));
             }
-            if let Ok(decoded)
-                = <CancelledOrdersCall as ::ethers::core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <CancelledOrdersCall as ::ethers::core::abi::AbiDecode>::decode(
+                data,
+            ) {
                 return Ok(Self::CancelledOrders(decoded));
             }
-            if let Ok(decoded)
-                = <DefaultAdminRoleCall as ::ethers::core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <DefaultAdminRoleCall as ::ethers::core::abi::AbiDecode>::decode(
+                data,
+            ) {
                 return Ok(Self::DefaultAdminRole(decoded));
             }
-            if let Ok(decoded)
-                = <FulfillerRoleCall as ::ethers::core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <FulfillerRoleCall as ::ethers::core::abi::AbiDecode>::decode(
+                data,
+            ) {
                 return Ok(Self::FulfillerRole(decoded));
             }
-            if let Ok(decoded)
-                = <AcceptDefaultAdminTransferCall as ::ethers::core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <AcceptDefaultAdminTransferCall as ::ethers::core::abi::AbiDecode>::decode(
+                data,
+            ) {
                 return Ok(Self::AcceptDefaultAdminTransfer(decoded));
             }
-            if let Ok(decoded)
-                = <AuthorizationFilterCall as ::ethers::core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <AuthorizationFilterCall as ::ethers::core::abi::AbiDecode>::decode(
+                data,
+            ) {
                 return Ok(Self::AuthorizationFilter(decoded));
             }
-            if let Ok(decoded)
-                = <BeginDefaultAdminTransferCall as ::ethers::core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <BeginDefaultAdminTransferCall as ::ethers::core::abi::AbiDecode>::decode(
+                data,
+            ) {
                 return Ok(Self::BeginDefaultAdminTransfer(decoded));
             }
-            if let Ok(decoded)
-                = <CancelDefaultAdminTransferCall as ::ethers::core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <CancelDefaultAdminTransferCall as ::ethers::core::abi::AbiDecode>::decode(
+                data,
+            ) {
                 return Ok(Self::CancelDefaultAdminTransfer(decoded));
             }
-            if let Ok(decoded)
-                = <ChangeDefaultAdminDelayCall as ::ethers::core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <ChangeDefaultAdminDelayCall as ::ethers::core::abi::AbiDecode>::decode(
+                data,
+            ) {
                 return Ok(Self::ChangeDefaultAdminDelay(decoded));
             }
-            if let Ok(decoded)
-                = <DefaultAdminCall as ::ethers::core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <DefaultAdminCall as ::ethers::core::abi::AbiDecode>::decode(
+                data,
+            ) {
                 return Ok(Self::DefaultAdmin(decoded));
             }
-            if let Ok(decoded)
-                = <DefaultAdminDelayCall as ::ethers::core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <DefaultAdminDelayCall as ::ethers::core::abi::AbiDecode>::decode(
+                data,
+            ) {
                 return Ok(Self::DefaultAdminDelay(decoded));
             }
-            if let Ok(decoded)
-                = <DefaultAdminDelayIncreaseWaitCall as ::ethers::core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <DefaultAdminDelayIncreaseWaitCall as ::ethers::core::abi::AbiDecode>::decode(
+                data,
+            ) {
                 return Ok(Self::DefaultAdminDelayIncreaseWait(decoded));
             }
-            if let Ok(decoded)
-                = <FiltersCall as ::ethers::core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <FiltersCall as ::ethers::core::abi::AbiDecode>::decode(
+                data,
+            ) {
                 return Ok(Self::Filters(decoded));
             }
-            if let Ok(decoded)
-                = <GetRoleAdminCall as ::ethers::core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <GetRoleAdminCall as ::ethers::core::abi::AbiDecode>::decode(
+                data,
+            ) {
                 return Ok(Self::GetRoleAdmin(decoded));
             }
-            if let Ok(decoded)
-                = <GrantRoleCall as ::ethers::core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <GrantRoleCall as ::ethers::core::abi::AbiDecode>::decode(
+                data,
+            ) {
                 return Ok(Self::GrantRole(decoded));
             }
-            if let Ok(decoded)
-                = <HasRoleCall as ::ethers::core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <HasRoleCall as ::ethers::core::abi::AbiDecode>::decode(
+                data,
+            ) {
                 return Ok(Self::HasRole(decoded));
             }
-            if let Ok(decoded)
-                = <OwnerCall as ::ethers::core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <OwnerCall as ::ethers::core::abi::AbiDecode>::decode(
+                data,
+            ) {
                 return Ok(Self::Owner(decoded));
             }
-            if let Ok(decoded)
-                = <PauseCall as ::ethers::core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <PauseCall as ::ethers::core::abi::AbiDecode>::decode(
+                data,
+            ) {
                 return Ok(Self::Pause(decoded));
             }
-            if let Ok(decoded)
-                = <PausedCall as ::ethers::core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <PausedCall as ::ethers::core::abi::AbiDecode>::decode(
+                data,
+            ) {
                 return Ok(Self::Paused(decoded));
             }
-            if let Ok(decoded)
-                = <PendingDefaultAdminCall as ::ethers::core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <PendingDefaultAdminCall as ::ethers::core::abi::AbiDecode>::decode(
+                data,
+            ) {
                 return Ok(Self::PendingDefaultAdmin(decoded));
             }
-            if let Ok(decoded)
-                = <PendingDefaultAdminDelayCall as ::ethers::core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <PendingDefaultAdminDelayCall as ::ethers::core::abi::AbiDecode>::decode(
+                data,
+            ) {
                 return Ok(Self::PendingDefaultAdminDelay(decoded));
             }
-            if let Ok(decoded)
-                = <RenounceRoleCall as ::ethers::core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <RenounceRoleCall as ::ethers::core::abi::AbiDecode>::decode(
+                data,
+            ) {
                 return Ok(Self::RenounceRole(decoded));
             }
-            if let Ok(decoded)
-                = <RevokeRoleCall as ::ethers::core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <RevokeRoleCall as ::ethers::core::abi::AbiDecode>::decode(
+                data,
+            ) {
                 return Ok(Self::RevokeRole(decoded));
             }
-            if let Ok(decoded)
-                = <RollbackDefaultAdminDelayCall as ::ethers::core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <RollbackDefaultAdminDelayCall as ::ethers::core::abi::AbiDecode>::decode(
+                data,
+            ) {
                 return Ok(Self::RollbackDefaultAdminDelay(decoded));
             }
-            if let Ok(decoded)
-                = <SecondaryZoneCall as ::ethers::core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <SecondaryZoneCall as ::ethers::core::abi::AbiDecode>::decode(
+                data,
+            ) {
                 return Ok(Self::SecondaryZone(decoded));
             }
-            if let Ok(decoded)
-                = <SetAuthorizationFilterCall as ::ethers::core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <SetAuthorizationFilterCall as ::ethers::core::abi::AbiDecode>::decode(
+                data,
+            ) {
                 return Ok(Self::SetAuthorizationFilter(decoded));
             }
-            if let Ok(decoded)
-                = <SetSecondaryZoneCall as ::ethers::core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <SetSecondaryZoneCall as ::ethers::core::abi::AbiDecode>::decode(
+                data,
+            ) {
                 return Ok(Self::SetSecondaryZone(decoded));
             }
-            if let Ok(decoded)
-                = <SupportsInterfaceCall as ::ethers::core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <SupportsInterfaceCall as ::ethers::core::abi::AbiDecode>::decode(
+                data,
+            ) {
                 return Ok(Self::SupportsInterface(decoded));
             }
-            if let Ok(decoded)
-                = <UnpauseCall as ::ethers::core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <UnpauseCall as ::ethers::core::abi::AbiDecode>::decode(
+                data,
+            ) {
                 return Ok(Self::Unpause(decoded));
             }
-            if let Ok(decoded)
-                = <ValidateOrder0Call as ::ethers::core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <ValidateOrder0Call as ::ethers::core::abi::AbiDecode>::decode(
+                data,
+            ) {
                 return Ok(Self::ValidateOrder0(decoded));
             }
-            if let Ok(decoded)
-                = <ValidateOrder1Call as ::ethers::core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <ValidateOrder1Call as ::ethers::core::abi::AbiDecode>::decode(
+                data,
+            ) {
                 return Ok(Self::ValidateOrder1(decoded));
             }
             Err(::ethers::core::abi::Error::InvalidData.into())
