@@ -1,0 +1,10 @@
+[package]
+    edition = "2021"
+    name = "flood-contracts"
+    version = "5.0.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+    ethers = {version = "2", default-features = false, features = ["abigen"] }
+    serde = {version = "1.0.193", features = ["derive"] }
