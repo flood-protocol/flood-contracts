@@ -34,11 +34,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo and submodules
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Parse cargo.toml and assert version tag matching
         # Hacky way of parsing the version from Cargo.toml and comparing it to tag
         run: |
-          if [ "$(cat bindings/rust/Cargo.toml | grep version | head -n 1 |awk '{print $3}' | tr -d '"' )" == "${GITHUB_REF#refs/*/}" ];then exit 0; else exit 1; fi
+          if [ "$(cat rust-bindings/Cargo.toml | grep version | head -n 1 |awk '{print $3}' | tr -d '"' )" == "${GITHUB_REF#refs/*/}" ];then exit 0; else exit 1; fi
   publish:
     needs: [test, version-tag-match]
     # Ensure master is tagged
@@ -71,5 +71,5 @@ jobs:
         run: forge build
 
       - name: Publish to cargo
-        working-directory: bindings/rust
+        working-directory: rust-bindings
         run: cargo publish --registry fulmin-labs-registry
