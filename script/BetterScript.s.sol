@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.23;
 
-import "forge-std/Script.sol";
+import {Script, console2 as console} from "forge-std/Script.sol";
 
 interface Create2Factory {
     function safeCreate2(bytes32 salt, bytes memory initializationCode) external returns (address deploymentAddress);

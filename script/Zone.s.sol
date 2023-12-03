@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import {BetterScript, console2 as console} from "./BetterScript.s.sol";
+import {BetterScript, console} from "./BetterScript.s.sol";
 import {Zone, IAuthZone} from "src/Zone.sol";
 
 contract ZoneScript is BetterScript {
