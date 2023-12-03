@@ -71,5 +71,5 @@ jobs:
         run: forge build
 
       - name: Publish to cargo
-        working-directory: bindings/rust
+        working-directory: rust-bindings
         run: cargo publish --registry fulmin-labs-registry
