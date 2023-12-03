@@ -1,25 +1,25 @@
 [profile.default]
-remappings = [
-  "@openzeppelin/=lib/openzeppelin-contracts/contracts/",
-  "permit2/=lib/permit2/",
-]
-solc_version = "0.8.17"
-src = "src"
+  ffi = true
+  remappings = [
+    "@openzeppelin/=lib/openzeppelin-contracts/contracts/",
+    "permit2/=lib/permit2/",
+    "solady/=lib/solady/src/"
+  ]
+  solc_version = "0.8.23"
+  evm_version = "paris"
 
 [profile.ci]
-libs = ["lib"]
-optmitizer = false
-out = "out"
-fuzz_runs = 5000
+  fuzz_runs = 5000
+  libs = ["lib"]
+  optimizer = false
+  out = "out"
 
 [profile.deploy]
-optimizer = true
-optimizer_runs = 10_000_000
-via_ir = true
-fs_permissions = [{ access = "read", path = "./out" }]
+  fs_permissions = [{ access = "read", path = "./out" }]
+  optimizer = true
+  optimizer_runs = 10_000_000
+  via_ir = true
 
 [etherscan]
-mainnet = { key = "${ETHERSCAN_MAINNET}" }
-arbitrum = { key = "${ETHERSCAN_ARBITRUM}" }
-
-# See more config options https://github.com/foundry-rs/foundry/tree/master/config
+  arbitrum = { key = "${ETHERSCAN_ARBITRUM}" }
+  mainnet = { key = "${ETHERSCAN_MAINNET}" }
