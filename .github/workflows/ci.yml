@@ -13,7 +13,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+	with:
+	  submodules: recursive
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
@@ -31,7 +33,9 @@ jobs:
   test:
     runs-on: ubuntu-latest 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      - with:
+	  submodules: recursive
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
@@ -47,7 +51,9 @@ jobs:
   coverage:
     runs-on: ubuntu-latest 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+	with:
+	  submodules: recursive
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
@@ -92,7 +98,9 @@ jobs:
   lint:
     runs-on: ubuntu-latest 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+	with:
+	  submodules: recursive
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
@@ -119,7 +127,9 @@ jobs:
       contents: read
       security-events: write
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+	with:
+	  submodules: recursive
 
       - name: Run Slither
         uses: crytic/slither-action@v0.3.0
