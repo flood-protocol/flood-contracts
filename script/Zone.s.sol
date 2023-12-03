@@ -8,13 +8,12 @@ contract ZoneScript is BetterScript {
     function run() public {
         address zoneAdmin = vm.envAddress("ZONE_ADMIN_ADDRESS");
         console.logBytes32(keccak256(bytes.concat(type(Zone).creationCode, abi.encode(zoneAdmin))));
-        string memory profile = vm.envString("FOUNDRY_PROFILE");
-        require(keccak256(bytes(profile)) == keccak256(bytes("deploy")), " not deploy profile");
+
         bytes32 SALT = 0x45bddd7a4404868c5a41cb716e01a4006b38bab06c000000000000000001abdd;
         vm.broadcast(zoneAdmin);
-        address zone = deploy2("MainZone", SALT, abi.encode(zoneAdmin));
+        address zone = deploy2("Zone", SALT, abi.encode(zoneAdmin));
 
-        console.log("MainZone deployed at", zone);
+        console.log("Zone deployed at", zone);
         require(Zone(zone).owner() == zoneAdmin, "Zone: wrong owner");
     }
 

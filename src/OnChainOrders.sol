@@ -11,8 +11,8 @@ import {OrderHash} from "./libraries/OrderHash.sol";
 abstract contract OnChainOrders is IOnChainOrders {
     using OrderHash for IFloodPlain.Order;
 
-    function etchOrder(IFloodPlain.SignedOrder calldata orderWithSignature) external {
-        bytes32 orderHash = orderWithSignature.order.hash();
-        emit IOnChainOrders.OrderEtched(orderHash, orderWithSignature);
+    function etchOrder(IFloodPlain.SignedOrder calldata signedOrder) external {
+        bytes32 orderHash = signedOrder.order.hash();
+        emit IOnChainOrders.OrderEtched(orderHash, signedOrder);
     }
 }
