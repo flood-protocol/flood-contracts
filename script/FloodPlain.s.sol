@@ -8,11 +8,12 @@ contract FloodPlainScript is BetterScript {
     address PERMIT2 = 0x000000000022D473030F116dDEE9F6B43aC78BA3;
 
     function run() public {
-        console.logBytes32(keccak256(bytes.concat(type(FloodPlain).creationCode, abi.encode(PERMIT2))));
+        bytes memory creationCode = type(FloodPlain).creationCode;
+        console.logBytes32(keccak256(bytes.concat(creationCode, abi.encode(PERMIT2))));
 
-        bytes32 SALT = 0x45bddd7a4404868c5a41cb716e01a4006b38bab06c000000000000000001abdd;
+        bytes32 SALT = 0x45bddd7a4404868c5a41cb716e01a4006b38bab0d883c5718e9f000089fb98fe;
         vm.broadcast();
-        console.log("FloodPlain deployed at ", deploy2("FloodPlain", SALT, abi.encode(PERMIT2)));
+        console.log("FloodPlain deployed at ", deploy2(creationCode, SALT, abi.encode(PERMIT2)));
     }
 
     function addDecoder(FloodPlain flood, address decoder) public {

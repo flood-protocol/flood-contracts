@@ -22,12 +22,12 @@ contract BetterScript is Script {
         vm.stopBroadcast();
     }
 
-    function deploy2(bytes memory initCode, bytes32 salt, bytes memory abiEncodedArgs) internal returns (address) {
+    function deploy2(bytes memory creationCode, bytes32 salt, bytes memory abiEncodedArgs) internal returns (address) {
         require(
             keccak256(abi.encodePacked(vm.envString("FOUNDRY_PROFILE"))) == keccak256(abi.encodePacked("deploy")),
             "Deploy profile not used"
         );
-        return factory.safeCreate2(salt, bytes.concat(initCode, abiEncodedArgs));
+        return factory.safeCreate2(salt, bytes.concat(creationCode, abiEncodedArgs));
     }
 
     function initCodeHash(bytes memory initCode, bytes memory abiEncodedArgs) internal pure returns (bytes32) {
