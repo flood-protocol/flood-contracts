@@ -92,13 +92,13 @@ contract FloodPlain is IFloodPlain, EncodedCalls, OnChainOrders, ReentrancyGuard
         bytes32 orderHash = order.hash();
 
         // Check zone accepts the fulfiller. Fulfiller is msg.sender in this case.
-        if (order.zone != address(0)) if (!(IZone(order.zone).validate(order, msg.sender))) revert ZoneDenied();
+        if (order.zone != address(0)) if (!(IZone(order.zone).validate(order, fulfiller))) revert ZoneDenied();
 
         // Execute pre hooks.
         order.preHooks.execute();
 
-        // Transfer each offer item to msg.sender using Permit2.
-        _permitTransferOffer(order, package.signature, orderHash, msg.sender);
+        // Transfer each offer item to fulfiller using Permit2.
+        _permitTransferOffer(order, package.signature, orderHash, fulfiller);
 
         // Call fulfiller to perform swaps and return the sourced consideration amount.
         uint256 amount =
@@ -116,7 +116,7 @@ contract FloodPlain is IFloodPlain, EncodedCalls, OnChainOrders, ReentrancyGuard
         order.postHooks.execute();
 
         // Emit an event signifying that the order has been fulfilled.
-        emit OrderFulfilled(order, msg.sender, amount);
+        emit OrderFulfilled(order, fulfiller, amount);
     }
 
     function fulfillOrders(SignedOrder[] calldata packages, address fulfiller, bytes calldata swapData)
