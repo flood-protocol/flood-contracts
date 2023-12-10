@@ -94,9 +94,9 @@ contract OrderHashTest is Test {
             postHooks: postHooks
         });
 
-        bytes32 permitHash = orderSignature.hashAsWitness(order, address(0x1));
+        bytes32 permitHash = orderSignature.hashAsWitness(order, address(0x420));
 
-        assertEq(permitHash, 0xcfe871cb7e58020cf567a85b67b0ff9cdc88780d91ac564c827b26e9bc437f03);
+        assertEq(permitHash, 0x8aea3ef4ab58e3cfd67a39b948421def10f4424ee4be0b8c1be0bb6c05bb022a);
     }
 
     // `test_permitHash` checks the whole PermitBatchWitnessTransferFrom struct typehash, but

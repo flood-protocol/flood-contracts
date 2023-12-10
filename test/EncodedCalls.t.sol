@@ -83,6 +83,13 @@ contract EncodedCallsTest is LEB128Encode, FloodPlainTestShared {
         assertEq(data, abi.encodeWithSignature("Panic(uint256)", 0x32));
     }
 
+    function test_emptyCalldata() public {
+        encodedCalls.addDecoder(address(decoder));
+        (bool success, bytes memory data) = address(encodedCalls).call("");
+        assertFalse(success);
+        assertEq(data, hex"");
+    }
+
     function test_decoderError() public {
         uint256 decoderId = encodedCalls.addDecoder(address(decoder));
         bytes memory callData = abi.encodePacked(hex"00", _encode(decoderId));
@@ -98,54 +105,6 @@ contract EncodedCallsTest is LEB128Encode, FloodPlainTestShared {
         assertFalse(success);
         assertEq(data, abi.encodeWithSignature("Error(string)", "DECODING_ERROR"));
     }
-
-    //function test_fufillThroughDecoder() public {
-    //    book.addDecoder(address(decoder));
-
-    //    IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
-    //    signedOrder.order.deadline = type(uint32).max;
-    //    signedOrder.signature = getSignature(signedOrder.order, account0);
-
-    //    (bytes32 r, bytes32 s) = abi.decode(signedOrder.signature, (bytes32, bytes32));
-    //    bytes1 v = signedOrder.signature[64];
-
-    //    bytes memory encodedDataBegin = abi.encodePacked(
-    //        bytes1(0x00), // fallback selector
-    //        bytes1(0x00), // decoder id
-    //        signedOrder.order.offerer,
-    //        signedOrder.order.zone,
-    //        uint24(signedOrder.order.nonce),
-    //        uint32(signedOrder.order.deadline),
-    //        address(fulfiller),
-    //        v,
-    //        r,
-    //        s
-    //    );
-
-    //    bytes memory encodedDataEnd = abi.encodePacked(
-    //        bytes1(0x11), // (0001, 0001)
-    //        address(address(token0)),
-    //        uint112(500),
-    //        address(address(token1)),
-    //        uint112(500)
-    //    );
-
-    //    bytes memory encodedData = bytes.concat(encodedDataBegin, encodedDataEnd);
-
-    //    address bookAddress = address(book);
-
-    //    bool result;
-    //    assembly {
-    //        result := call(gas(), bookAddress, 0, add(encodedData, 0x20), encodedData, 0, 0)
-    //    }
-    //    assertTrue(result);
-
-    //    // Assertions.
-    //    assertEq(token0.balanceOf(address(account0.addr)), 0);
-    //    assertEq(token1.balanceOf(address(account0.addr)), 500);
-    //    assertEq(token0.balanceOf(address(fulfiller)), 500);
-    //    assertEq(token1.balanceOf(address(fulfiller)), 0);
-    //}
 
     function test_NoSelectorClash() public {
         string[] memory inputs = new string[](3);

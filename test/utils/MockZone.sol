@@ -3,8 +3,9 @@ pragma solidity 0.8.23;
 
 import {IZone, IFloodPlain} from "src/interfaces/IZone.sol";
 import {Ownable, Ownable2Step} from "@openzeppelin/access/Ownable2Step.sol";
+import {Pausable} from "@openzeppelin/utils/Pausable.sol";
 
-contract MockZone is IZone, Ownable2Step {
+contract MockZone is IZone, Ownable2Step, Pausable {
     mapping(address fulfiller => bool enabled) private _fulfillers;
     FeeInfo private _fee;
 
@@ -29,7 +30,15 @@ contract MockZone is IZone, Ownable2Step {
         emit FulfillerUpdated(fulfiller, valid);
     }
 
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    function unpause() external onlyOwner {
+        _unpause();
+    }
+
     function validate(IFloodPlain.Order calldata, address fulfiller) external view returns (bool) {
-        return _fulfillers[fulfiller];
+        return _fulfillers[fulfiller] && !paused();
     }
 }

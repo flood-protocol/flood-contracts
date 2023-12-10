@@ -11,10 +11,10 @@ import {MockFeeOnTransferERC20} from "./MockFeeOnTransferERC20.sol";
 import {MockFulfiller} from "./MockFulfiller.sol";
 //import {MockBadFulfiller} from "test/utils/MockBadFulfiller.sol";
 //import {MockBadFulfiller2} from "test/utils/MockBadFulfiller2.sol";
-//import {MockBatchFulfiller} from "test/utils/MockBatchFulfiller.sol";
+import {MockBatchFulfiller} from "test/utils/MockBatchFulfiller.sol";
 //import {MockDecoder} from "test/utils/MockDecoder.sol";
-//import {MaliciousFulfiller} from "test/utils/MaliciousFulfiller.sol";
-//import {MaliciousFulfiller2} from "test/utils/MaliciousFulfiller2.sol";
+import {MaliciousFulfiller} from "test/utils/MaliciousFulfiller.sol";
+import {MaliciousFulfiller2} from "test/utils/MaliciousFulfiller2.sol";
 import {MockZone} from "./MockZone.sol";
 import {OrderSignature} from "./OrderSignature.sol";
 import {ISignatureTransfer} from "permit2/src/interfaces/ISignatureTransfer.sol";
@@ -27,10 +27,10 @@ abstract contract FloodPlainTestShared is Test, DeployPermit2 {
     MockFulfiller fulfiller;
     //MockBadFulfiller badFulfiller;
     //MockBadFulfiller2 badFulfiller2;
-    //MockBatchFulfiller batchFulfiller;
+    MockBatchFulfiller batchFulfiller;
     //MockDecoder decoder;
-    //MaliciousFulfiller maliciousFulfiller;
-    //MaliciousFulfiller2 maliciousFulfiller2;
+    MaliciousFulfiller maliciousFulfiller;
+    MaliciousFulfiller2 maliciousFulfiller2;
     OrderSignature orderSignature;
     MockERC20 token0;
     MockERC20 token1;
@@ -50,10 +50,10 @@ abstract contract FloodPlainTestShared is Test, DeployPermit2 {
         fulfiller = new MockFulfiller();
         //badFulfiller = new MockBadFulfiller();
         //badFulfiller2 = new MockBadFulfiller2();
-        //batchFulfiller = new MockBatchFulfiller();
+        batchFulfiller = new MockBatchFulfiller();
         //decoder = new MockDecoder();
-        //maliciousFulfiller = new MaliciousFulfiller();
-        //maliciousFulfiller2 = new MaliciousFulfiller2();
+        maliciousFulfiller = new MaliciousFulfiller();
+        maliciousFulfiller2 = new MaliciousFulfiller2();
         zone = new MockZone(address(this));
         orderSignature = new OrderSignature();
         token0 = new MockERC20();
@@ -67,6 +67,10 @@ abstract contract FloodPlainTestShared is Test, DeployPermit2 {
         account1 = makeAccount("b");
         account2 = makeAccount("c");
         account3 = makeAccount("d");
+
+        zone.setFulfiller(address(fulfiller), true);
+        zone.setFulfiller(address(this), true);
+        zone.setFulfiller(address(batchFulfiller), true);
     }
 
     function getSignature(IFloodPlain.Order memory order, Account memory signer)
@@ -98,12 +102,11 @@ abstract contract FloodPlainTestShared is Test, DeployPermit2 {
 
         IFloodPlain.Hook[] memory hooks = new IFloodPlain.Hook[](0);
 
-
         // Construct order.
         IFloodPlain.Order memory order = IFloodPlain.Order({
             offerer: address(account0.addr),
             zone: address(0),
-            recipient: address(this),
+            recipient: account0.addr,
             offer: offer,
             consideration: consideration,
             deadline: type(uint256).max,
@@ -118,53 +121,51 @@ abstract contract FloodPlainTestShared is Test, DeployPermit2 {
         return IFloodPlain.SignedOrder({ order: order, signature: sig });
     }
 
-    //function setup_multiItemOrder() internal returns (IFloodPlain.SignedOrder memory) {
-    //    deal(address(token0), address(account0.addr), 100);
-    //    deal(address(token1), address(account0.addr), 200);
-    //    deal(address(token2), address(account0.addr), 300);
-    //    deal(address(token3), address(fulfiller), 400);
-    //    deal(address(token4), address(fulfiller), 500);
-    //    deal(address(token5), address(fulfiller), 600);
+    function setup_multiItemOrder() internal returns (IFloodPlain.SignedOrder memory) {
+        deal(address(token0), address(account0.addr), 100);
+        deal(address(token1), address(account0.addr), 200);
+        deal(address(token2), address(account0.addr), 300);
+        deal(address(token3), address(fulfiller), 999);
 
-    //    // Set offer item.
-    //    IFloodPlain.Item[] memory offer = new IFloodPlain.Item[](3);
-    //    offer[0].token = address(token0);
-    //    offer[0].amount = 100;
-    //    offer[1].token = address(token1);
-    //    offer[1].amount = 200;
-    //    offer[2].token = address(token2);
-    //    offer[2].amount = 300;
+        // Set offer item.
+        IFloodPlain.Item[] memory offer = new IFloodPlain.Item[](3);
+        offer[0].token = address(token0);
+        offer[0].amount = 100;
+        offer[1].token = address(token1);
+        offer[1].amount = 200;
+        offer[2].token = address(token2);
+        offer[2].amount = 300;
 
-    //    // Approve permit2 spending.
-    //    vm.prank(account0.addr);
-    //    token0.approve(address(permit2), 100);
-    //    vm.prank(account0.addr);
-    //    token1.approve(address(permit2), 200);
-    //    vm.prank(account0.addr);
-    //    token2.approve(address(permit2), 300);
+        // Approve permit2 spending.
+        vm.prank(account0.addr);
+        token0.approve(address(permit2), 100);
+        vm.prank(account0.addr);
+        token1.approve(address(permit2), 200);
+        vm.prank(account0.addr);
+        token2.approve(address(permit2), 300);
 
-    //    // Set consideration item.
-    //    IFloodPlain.Item[] memory consideration = new IFloodPlain.Item[](3);
-    //    consideration[0].token = address(token3);
-    //    consideration[0].amount = 400;
-    //    consideration[1].token = address(token4);
-    //    consideration[1].amount = 500;
-    //    consideration[2].token = address(token5);
-    //    consideration[2].amount = 600;
+        // Set consideration item.
+        IFloodPlain.Item memory consideration;
+        consideration.token = address(token3);
+        consideration.amount = 999;
 
-    //    // Construct order.
-    //    IFloodPlain.Order memory order = IFloodPlain.Order({
-    //        offerer: address(account0.addr),
-    //        zone: address(0),
-    //        offer: offer,
-    //        consideration: consideration,
-    //        deadline: type(uint256).max,
-    //        nonce: 0
-    //    });
+        // Construct order.
+        IFloodPlain.Hook[] memory hooks = new IFloodPlain.Hook[](0);
+        IFloodPlain.Order memory order = IFloodPlain.Order({
+            offerer: address(account0.addr),
+            zone: address(0),
+            recipient: account0.addr,
+            offer: offer,
+            consideration: consideration,
+            deadline: type(uint256).max,
+            nonce: 0,
+            preHooks: hooks,
+            postHooks: hooks
+        });
 
-    //    // Sign the order.
-    //    bytes memory sig = getSignature(order, account0);
+        // Sign the order.
+        bytes memory sig = getSignature(order, account0);
 
-    //    return IFloodPlain.SignedOrder({ order: order, signature: sig, zoneData: ""});
-    //}
+        return IFloodPlain.SignedOrder({ order: order, signature: sig });
+    }
 }

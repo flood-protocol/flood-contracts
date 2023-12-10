@@ -1,506 +1,147 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
-//
-//import {MockERC20} from "test/flood-plain/utils/MockERC20.sol";
-//import {MainZone} from "src/zone/implementations/MainZone.sol";
-//import {FloodPlainTestShared} from "test/flood-plain/utils/FloodPlainTestShared.sol";
-//import {OrderHash} from "src/flood-plain/libraries/OrderHash.sol";
-//import {IFloodPlain} from "src/flood-plain/IFloodPlain.sol";
-//import {IZone, IZoneDirectFulfiller} from "src/zone/ZoneComplete.sol";
-//
-//contract MainZoneTest is FloodPlainTestShared {
-//    Zone zone;
-//
-//    function setUp() public override {
-//        super.setUp();
-//
-//        zone = new Zone(account0.addr);
-//    }
-//
-//    function test_ValidateDirectOrder() public {
-//        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
-//
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("CALLER_ROLE"), address(0));
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("BOOK_ROLE"), address(1));
-//
-//        bytes4 magicValue = mainZone.validateOrder(
-//            signedOrder.order,
-//            address(1), // book
-//            address(0), // caller
-//            book.getOrderHash(signedOrder.order),
-//            "" // context
-//        );
-//
-//        assertEq(magicValue, IZoneDirectFulfiller.validateOrder.selector);
-//    }
-//
-//    function test_RevertValidateDirectOrderWhenInvalidCallerAndInvalidBook() public {
-//        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
-//
-//        bytes4 magicValue = mainZone.validateOrder(
-//            signedOrder.order,
-//            address(1), // book
-//            address(0), // caller
-//            book.getOrderHash(signedOrder.order),
-//            "" // context
-//        );
-//
-//        assertFalse(magicValue == IZoneDirectFulfiller.validateOrder.selector);
-//    }
-//
-//    function test_RevertValidateDirectOrderWhenInvalidCaller() public {
-//        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
-//
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("BOOK_ROLE"), address(1));
-//
-//        bytes4 magicValue = mainZone.validateOrder(
-//            signedOrder.order,
-//            address(1), // book
-//            address(0), // caller
-//            book.getOrderHash(signedOrder.order),
-//            "" // context
-//        );
-//
-//        assertFalse(magicValue == IZoneDirectFulfiller.validateOrder.selector);
-//    }
-//
-//    function test_RevertValidateDirectOrderWhenInvalidBook() public {
-//        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
-//
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("CALLER_ROLE"), address(0));
-//
-//        bytes4 magicValue = mainZone.validateOrder(
-//            signedOrder.order,
-//            address(1), // book
-//            address(0), // caller
-//            book.getOrderHash(signedOrder.order),
-//            "" // context
-//        );
-//
-//        assertFalse(magicValue == IZoneDirectFulfiller.validateOrder.selector);
-//    }
-//
-//    function test_RevertValidateDirectOrderWhenCancelledOrder() public {
-//        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
-//
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("CALLER_ROLE"), address(0));
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("BOOK_ROLE"), address(1));
-//
-//        bytes32 orderHash = book.getOrderHash(signedOrder.order);
-//
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("CANCELLED_ORDERS"), address(uint160(uint256(orderHash))));
-//
-//        bytes4 magicValue = mainZone.validateOrder(
-//            signedOrder.order,
-//            address(1), // book
-//            address(0), // caller
-//            orderHash,
-//            "" // context
-//        );
-//
-//        assertFalse(magicValue == IZoneDirectFulfiller.validateOrder.selector);
-//    }
-//
-//    function test_ValidateDirectOrderWithSecondaryZone() public {
-//        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
-//
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("CALLER_ROLE"), address(0));
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("BOOK_ROLE"), address(1));
-//        vm.prank(account0.addr);
-//        mainZone.setSecondaryZone(address(zone));
-//
-//        bytes4 magicValue = mainZone.validateOrder(
-//            signedOrder.order,
-//            address(1), // book
-//            address(0), // caller
-//            book.getOrderHash(signedOrder.order),
-//            "" // context
-//        );
-//
-//        assertEq(magicValue, IZoneDirectFulfiller.validateOrder.selector);
-//    }
-//
-//    function test_RevertValidateDirectOrderWithInvalidSecondaryZone() public {
-//        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
-//
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("CALLER_ROLE"), address(0));
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("BOOK_ROLE"), address(1));
-//        vm.prank(account0.addr);
-//        mainZone.setSecondaryZone(address(zone));
-//
-//        zone.pause();
-//
-//        bytes4 magicValue = mainZone.validateOrder(
-//            signedOrder.order,
-//            address(1), // book
-//            address(0), // caller
-//            book.getOrderHash(signedOrder.order),
-//            "" // context
-//        );
-//
-//        assertFalse(magicValue == IZoneDirectFulfiller.validateOrder.selector);
-//    }
-//
-//    function test_RevertValidateDirectOrderWhenPaused() public {
-//        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
-//
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("CALLER_ROLE"), address(0));
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("BOOK_ROLE"), address(1));
-//        vm.prank(account0.addr);
-//        mainZone.pause();
-//
-//        bytes4 magicValue = mainZone.validateOrder(
-//            signedOrder.order,
-//            address(1), // book
-//            address(0), // caller
-//            book.getOrderHash(signedOrder.order),
-//            "" // context
-//        );
-//
-//        assertFalse(magicValue == IZoneDirectFulfiller.validateOrder.selector);
-//    }
-//
-//    function test_ValidateOrder() public {
-//        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
-//
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("CALLER_ROLE"), address(0));
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("BOOK_ROLE"), address(1));
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("FULFILLER_ROLE"), address(2));
-//
-//        bytes4 magicValue = mainZone.validateOrder(
-//            signedOrder.order,
-//            address(1), // book
-//            address(2), // fullfiller
-//            address(0), // caller
-//            book.getOrderHash(signedOrder.order),
-//            "" // context
-//        );
-//
-//        assertEq(magicValue, IZone.validateOrder.selector);
-//    }
-//
-//    function test_RevertValidateOrderWhenInvalidCallerInvalidBookInvalidFulfiller() public {
-//        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
-//
-//        bytes4 magicValue = mainZone.validateOrder(
-//            signedOrder.order,
-//            address(1), // book
-//            address(2), // fullfiller
-//            address(0), // caller
-//            book.getOrderHash(signedOrder.order),
-//            "" // context
-//        );
-//
-//        assertFalse(magicValue == IZone.validateOrder.selector);
-//    }
-//
-//    function test_RevertValidateOrderWhenInvalidCaller() public {
-//        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
-//
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("BOOK_ROLE"), address(1));
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("FULFILLER_ROLE"), address(2));
-//
-//        bytes4 magicValue = mainZone.validateOrder(
-//            signedOrder.order,
-//            address(1), // book
-//            address(2), // fullfiller
-//            address(0), // caller
-//            book.getOrderHash(signedOrder.order),
-//            "" // context
-//        );
-//
-//        assertFalse(magicValue == IZone.validateOrder.selector);
-//    }
-//
-//    function test_RevertValidateOrderWhenInvalidBook() public {
-//        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
-//
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("CALLER_ROLE"), address(0));
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("FULFILLER_ROLE"), address(2));
-//
-//        bytes4 magicValue = mainZone.validateOrder(
-//            signedOrder.order,
-//            address(1), // book
-//            address(2), // fullfiller
-//            address(0), // caller
-//            book.getOrderHash(signedOrder.order),
-//            "" // context
-//        );
-//
-//        assertFalse(magicValue == IZone.validateOrder.selector);
-//    }
-//
-//    function test_RevertValidateOrderWhenInvalidFulfiller() public {
-//        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
-//
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("CALLER_ROLE"), address(0));
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("BOOK_ROLE"), address(1));
-//
-//        bytes4 magicValue = mainZone.validateOrder(
-//            signedOrder.order,
-//            address(1), // book
-//            address(2), // fullfiller
-//            address(0), // caller
-//            book.getOrderHash(signedOrder.order),
-//            "" // context
-//        );
-//
-//        assertFalse(magicValue == IZone.validateOrder.selector);
-//    }
-//
-//    function test_RevertValidateOrderWhenInvalidFulfillerAndInvalidBook() public {
-//        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
-//
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("CALLER_ROLE"), address(0));
-//
-//        bytes4 magicValue = mainZone.validateOrder(
-//            signedOrder.order,
-//            address(1), // book
-//            address(2), // fullfiller
-//            address(0), // caller
-//            book.getOrderHash(signedOrder.order),
-//            "" // context
-//        );
-//
-//        assertFalse(magicValue == IZone.validateOrder.selector);
-//    }
-//
-//    function test_RevertValidateOrderWhenInvalidFulfillerAndInvalidCaller() public {
-//        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
-//
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("BOOK_ROLE"), address(1));
-//
-//        bytes4 magicValue = mainZone.validateOrder(
-//            signedOrder.order,
-//            address(1), // book
-//            address(2), // fullfiller
-//            address(0), // caller
-//            book.getOrderHash(signedOrder.order),
-//            "" // context
-//        );
-//
-//        assertFalse(magicValue == IZone.validateOrder.selector);
-//    }
-//
-//    function test_RevertValidateOrderWhenInvalidBookAndInvalidCaller() public {
-//        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
-//
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("FULFILLER_ROLE"), address(2));
-//
-//        bytes4 magicValue = mainZone.validateOrder(
-//            signedOrder.order,
-//            address(1), // book
-//            address(2), // fullfiller
-//            address(0), // caller
-//            book.getOrderHash(signedOrder.order),
-//            "" // context
-//        );
-//
-//        assertFalse(magicValue == IZone.validateOrder.selector);
-//    }
-//
-//    function test_RevertValidateOrderWhenCancelledOrder() public {
-//        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
-//
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("CALLER_ROLE"), address(0));
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("BOOK_ROLE"), address(1));
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("FULFILLER_ROLE"), address(2));
-//
-//        bytes32 orderHash = book.getOrderHash(signedOrder.order);
-//
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("CANCELLED_ORDERS"), address(uint160(uint256(orderHash))));
-//
-//        bytes4 magicValue = mainZone.validateOrder(
-//            signedOrder.order,
-//            address(1), // book
-//            address(2), // fullfiller
-//            address(0), // caller
-//            orderHash,
-//            "" // context
-//        );
-//
-//        assertFalse(magicValue == IZone.validateOrder.selector);
-//    }
-//
-//    function test_ValidateOrderWithSecondaryZone() public {
-//        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
-//
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("CALLER_ROLE"), address(0));
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("BOOK_ROLE"), address(1));
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("FULFILLER_ROLE"), address(2));
-//
-//        vm.prank(account0.addr);
-//        mainZone.setSecondaryZone(address(zone));
-//
-//        bytes4 magicValue = mainZone.validateOrder(
-//            signedOrder.order,
-//            address(1), // book
-//            address(2), // fullfiller
-//            address(0), // caller
-//            book.getOrderHash(signedOrder.order),
-//            "" // context
-//        );
-//
-//        assertEq(magicValue, IZone.validateOrder.selector);
-//    }
-//
-//    function test_RevertValidateOrderWithInvalidSecondaryZone() public {
-//        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
-//
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("CALLER_ROLE"), address(0));
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("BOOK_ROLE"), address(1));
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("FULFILLER_ROLE"), address(2));
-//
-//        vm.prank(account0.addr);
-//        mainZone.setSecondaryZone(address(zone));
-//        zone.pause();
-//
-//        bytes4 magicValue = mainZone.validateOrder(
-//            signedOrder.order,
-//            address(1), // book
-//            address(2), // fullfiller
-//            address(0), // caller
-//            book.getOrderHash(signedOrder.order),
-//            "" // context
-//        );
-//
-//        assertFalse(magicValue == IZone.validateOrder.selector);
-//    }
-//
-//    function test_RevertValidateOrderWhenPaused() public {
-//        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
-//
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("CALLER_ROLE"), address(0));
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("BOOK_ROLE"), address(1));
-//        vm.prank(account0.addr);
-//        mainZone.grantRole(keccak256("FULFILLER_ROLE"), address(2));
-//
-//        vm.prank(account0.addr);
-//        mainZone.pause();
-//
-//        bytes4 magicValue = mainZone.validateOrder(
-//            signedOrder.order,
-//            address(1), // book
-//            address(2), // fullfiller
-//            address(0), // caller
-//            book.getOrderHash(signedOrder.order),
-//            "" // context
-//        );
-//
-//        assertFalse(magicValue == IZone.validateOrder.selector);
-//    }
-//
-//    function test_FeeUnsetByDefault() public {
-//        IFloodPlain.Order memory order = setup_mostBasicOrder().order;
-//
-//        (address recipient, uint256 fee) = mainZone.fee(order);
-//
-//        assertEq(recipient, address(0));
-//        assertEq(fee, 0);
-//    }
-//
-//    function test_SetFee(uint256 newFee) public {
-//        newFee = bound(newFee, 0, 500); // assume fee is 5% or less
-//
-//        IFloodPlain.Order memory order = setup_mostBasicOrder().order;
-//
-//        vm.prank(account0.addr);
-//        mainZone.setFee(newFee);
-//        (address recipient, uint256 fee) = mainZone.fee(order);
-//
-//        assertEq(recipient, address(0));
-//        assertEq(fee, newFee);
-//    }
-//
-//    function test_SetFeeRevertWhenAbove5Percent(uint256 newFee) public {
-//        newFee = bound(newFee, 501, type(uint256).max); // assume fee is 5% or less
-//
-//        IFloodPlain.Order memory order = setup_mostBasicOrder().order;
-//
-//        vm.prank(account0.addr);
-//        vm.expectRevert();
-//        mainZone.setFee(newFee);
-//
-//        (address recipient, uint256 fee) = mainZone.fee(order);
-//
-//        assertEq(recipient, address(0));
-//        assertEq(fee, 0);
-//    }
-//
-//    function test_SetFeeRevertWhenUnprivileged(uint256 newFee) public {
-//        newFee = bound(newFee, 0, 500); // assume fee is 5% or less
-//
-//        IFloodPlain.Order memory order = setup_mostBasicOrder().order;
-//
-//        vm.prank(account1.addr);
-//        vm.expectRevert();
-//        mainZone.setFee(newFee);
-//
-//        (address recipient, uint256 fee) = mainZone.fee(order);
-//
-//        assertEq(recipient, address(0));
-//        assertEq(fee, 0);
-//    }
-//
-//    function test_SetFeeRecipient(address newFeeRecipient) public {
-//        IFloodPlain.Order memory order = setup_mostBasicOrder().order;
-//
-//        vm.prank(account0.addr);
-//        mainZone.setFeeRecipient(newFeeRecipient);
-//
-//        (address recipient, uint256 fee) = mainZone.fee(order);
-//
-//        assertEq(recipient, newFeeRecipient);
-//        assertEq(fee, 0);
-//    }
-//
-//    function test_SetFeeRecipientRevertWhenUnprivileged(address newFeeRecipient) public {
-//        IFloodPlain.Order memory order = setup_mostBasicOrder().order;
-//
-//        vm.prank(account1.addr);
-//        vm.expectRevert();
-//        mainZone.setFeeRecipient(newFeeRecipient);
-//
-//        (address recipient, uint256 fee) = mainZone.fee(order);
-//
-//        assertEq(recipient, address(0));
-//        assertEq(fee, 0);
-//    }
-//}
+
+import {MockERC20} from "test/utils/MockERC20.sol";
+import {Zone} from "src/Zone.sol";
+
+import {FloodPlainTestShared} from "test/utils/FloodPlainTestShared.sol";
+import {OrderHash} from "src/libraries/OrderHash.sol";
+import {IFloodPlain} from "src/interfaces/IFloodPlain.sol";
+import {IZone} from "src/interfaces/IZone.sol";
+import {IAuthZone} from "src/interfaces/IAuthZone.sol";
+
+contract ZoneTest is FloodPlainTestShared {
+    Zone mainZone;
+
+    function setUp() public override {
+        super.setUp();
+
+        mainZone = new Zone(account0.addr);
+
+        vm.prank(account0.addr);
+        mainZone.grantRole(keccak256("FULFILLER_ROLE"), address(0xabcd));
+    }
+
+    function test_ValidateOrder() public {
+        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
+        assertTrue(mainZone.validate(signedOrder.order, address(0xabcd)));
+    }
+
+    function test_InvalidateOrder() public {
+        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
+        assertFalse(mainZone.validate(signedOrder.order, address(0xaaaa)));
+    }
+
+    function test_Pause() public {
+        assertFalse(mainZone.paused());
+
+        vm.prank(account0.addr);
+        mainZone.pause();
+
+        assertTrue(mainZone.paused());
+    }
+
+    function test_PauseUnprivileged() public {
+        assertFalse(mainZone.paused());
+
+        vm.expectRevert();
+        mainZone.pause();
+
+        assertFalse(mainZone.paused());
+    }
+
+    function test_Unpause() public {
+        assertFalse(mainZone.paused());
+
+        vm.prank(account0.addr);
+        mainZone.pause();
+
+        assertTrue(mainZone.paused());
+
+        vm.prank(account0.addr);
+        mainZone.unpause();
+
+        assertFalse(mainZone.paused());
+    }
+
+    function test_UnpauseUnprivileged() public {
+        assertFalse(mainZone.paused());
+
+        vm.prank(account0.addr);
+        mainZone.pause();
+
+        assertTrue(mainZone.paused());
+
+        vm.expectRevert();
+        mainZone.unpause();
+
+        assertTrue(mainZone.paused());
+    }
+
+    function test_InvalidateOrderWhenPaused() public {
+        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
+
+        vm.prank(account0.addr);
+        mainZone.pause();
+
+        assertFalse(mainZone.validate(signedOrder.order, address(0xabcd)));
+    }
+
+    function test_FeeUnsetByDefault() public {
+        IFloodPlain.Order memory order = setup_mostBasicOrder().order;
+
+        IZone.FeeInfo memory fee = mainZone.fee(order, address(0xabcd));
+
+        assertEq(fee.recipient, address(0));
+        assertEq(fee.bps, 0);
+    }
+
+    function test_SetFee(uint256 bps, address recipient) public {
+        bps = bound(bps, 0, 500); // assume fee is 5% or less
+
+        IFloodPlain.Order memory order = setup_mostBasicOrder().order;
+
+        IZone.FeeInfo memory fee;
+        fee.recipient = recipient;
+        fee.bps = uint64(bps);
+
+        vm.prank(account0.addr);
+        mainZone.setFee(fee);
+
+        assertEq(abi.encode(fee), abi.encode(mainZone.fee(order, address(0xabcd))));
+    }
+
+    function test_RevertSetFeeAboveLimite(uint256 bps, address recipient) public {
+        bps = bound(bps, 501, type(uint64).max); // assume fee is greater than 5%
+
+        IZone.FeeInfo memory fee;
+        fee.recipient = recipient;
+        fee.bps = uint64(bps);
+
+        vm.prank(account0.addr);
+        vm.expectRevert(bytes4(keccak256("FeeTooHigh()")));
+        mainZone.setFee(fee);
+    }
+
+    function test_RevertSetFeeUnprivilegedCalled(uint256 bps, address recipient) public {
+        bps = bound(bps, 0, 500); // assume fee is 5% or less
+
+        IZone.FeeInfo memory fee;
+        fee.recipient = recipient;
+        fee.bps = uint64(bps);
+
+        vm.expectRevert(abi.encodeWithSignature("AccessControlUnauthorizedAccount(address,bytes32)", address(this), bytes32(0)));
+        mainZone.setFee(fee);
+    }
+
+    function test_setAuthFilter(address actor, IAuthZone.AuthFilter calldata filter) public {
+        vm.prank(account0.addr);
+        mainZone.setAuthorizationFilter(actor, filter);
+        assertEq(abi.encode(filter), abi.encode(mainZone.authorizationFilter(actor)));
+    }
+
+    function test_setAuthFilterUnprivileged(address actor, IAuthZone.AuthFilter calldata filter) public {
+        vm.expectRevert();
+        mainZone.setAuthorizationFilter(actor, filter);
+    }
+}

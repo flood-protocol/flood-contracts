@@ -13,6 +13,6 @@ abstract contract OnChainOrders is IOnChainOrders {
 
     function etchOrder(IFloodPlain.SignedOrder calldata signedOrder) external {
         bytes32 orderHash = signedOrder.order.hash();
-        emit IOnChainOrders.OrderEtched(orderHash, signedOrder);
+        emit OrderEtched(orderHash, signedOrder);
     }
 }
