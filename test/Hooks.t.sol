@@ -54,7 +54,7 @@ contract HooksTest is Test {
     function test_NoopWhenExtcodesizeIsZero(bytes calldata data) public {
         if (data.length >= 32) {
             uint256 ext = abi.decode(data, (uint256));
-            vm.assume(ext << 32 != 0x138beaebd34676ddcaaba2ac75bbd144c652c8c6d933f962245c61ff);
+            vm.assume(ext << 32 != 0x138beaebd34676ddcaaba2ac75bbd144c652c8c6d933f962245c61ff00000000);
         }
         // This is noop. We allow it because checking extcodesize on each hook is expensive.
         hookHelper.execute(IFloodPlain.Hook({ target: address(0x6969696969), data: data }));
