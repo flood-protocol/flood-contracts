@@ -51,6 +51,12 @@ All orders have nine components: Offerer, zone, recipient, offer, consideration,
 * PreHooks: A list of hooks, target and data pairs, the FloodPlain executes before transferring all items.
 * PostHooks: A list of hooks, target and data pairs, the FloodPlain executes after transferring all items.
 
+## Hooks
+
+Hooks allow offerer to define arbitrary calls to be made by FloodPlain before and after all items are transferred. Each hook is formed by a target contract address and data to be forwarded to the address. Hooks enables extra functionality to the protocol.
+
+The only exception to the arbitrary calls is that the target cannot be Fulfiller. Because Fulfiller is the only contract that grants certain privileges to the FloodPlain, with the assumption that FloodPlain adheres to a certain functionality. Arbitrary calls from FloodPlain would break this assumption. Given that Flood ecosystem can have multiple fulfillers, FloodPlain cannot restrict a certain address in Hooks. Instead it ensures that the hook data bytes from 4 to 31 must not clash with a certain value. This 28 bytes value, called selector extension, is always the first argument in `Fulfiller.sourceConsideration` functions. Fulfiller must ensure that this value is correct. This prevents hooks from calling `Fulfiller.sourceConsideration` functions.
+
 ## Fulfillment Types
 
 There are three fulfillment types in FloodPlain: Direct, with execution, and batch.
@@ -184,7 +190,7 @@ Any single byte that doesn't clash with other function signatures can be used to
 
 ### Fee-on-tranfer Tokens
 
-Fee-on-transfer tokens are not supported. If an offer item has a fee-on-transfer token, the fulfiller will receive less than the amount specified in the item. If a consideration item has a fee-on-transfer token, the transaction will revert.
+Fee-on-transfer tokens are semi-supported. If an offer item has a fee-on-transfer token, the fulfiller will receive less than the amount specified in the item. If a consideration item has a fee-on-transfer token, the offerer will receive less than the requested amount, which breaks a core invariant.
 
 ### Fulfillers with Balance
 
