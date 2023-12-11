@@ -42,4 +42,3 @@ contract OrderSignature is Test {
         return bytes.concat(r, s, bytes1(v));
     }
 }
-

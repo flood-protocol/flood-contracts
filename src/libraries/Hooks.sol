@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.22;
 
 import {IFloodPlain} from "../interfaces/IFloodPlain.sol";
 
@@ -14,7 +14,7 @@ library Hooks {
         assembly ("memory-safe") {
             extension := shl(32, calldataload(data.offset))
         }
-        require(extension != SELECTOR_EXTENSION);
+        require(extension != SELECTOR_EXTENSION, "MALICIOUS_CALL");
 
         assembly ("memory-safe") {
             let fmp := mload(0x40)

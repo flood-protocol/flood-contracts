@@ -8,13 +8,15 @@ import {Pausable} from "@openzeppelin/utils/Pausable.sol";
 
 contract Zone is IAuthZone, AccessControlDefaultAdminRules, Pausable {
     bytes32 public constant FULFILLER_ROLE = keccak256("FULFILLER_ROLE");
-    mapping(address => AuthFilter) public filters;
+    mapping(address => AuthFilter) private _filters;
 
     FeeInfo private _fee;
 
     event FeeUpdated(FeeInfo indexed newFee);
     event FulfillerUpdated(address indexed fulfiller, bool indexed valid);
     event FilterUpdated(address indexed actor, AuthFilter filter);
+
+    error FeeTooHigh();
 
     constructor(address admin) AccessControlDefaultAdminRules(1 hours, admin) {}
 
@@ -27,34 +29,26 @@ contract Zone is IAuthZone, AccessControlDefaultAdminRules, Pausable {
     }
 
     function setFee(FeeInfo calldata newFee) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (newFee.bps > 500) revert FeeTooHigh();
         _fee.bps = newFee.bps;
         _fee.recipient = newFee.recipient;
         emit FeeUpdated(newFee);
     }
 
     function setAuthorizationFilter(address actor, AuthFilter calldata filter) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        filters[actor] = filter;
+        _filters[actor] = filter;
         emit FilterUpdated(actor, filter);
     }
 
-    function fee(IFloodPlain.Order calldata, address) external view returns (FeeInfo memory) {
+    function fee(IFloodPlain.Order calldata, address /* fulfiller */) external view returns (FeeInfo memory) {
         return _fee;
     }
 
-    function validate(IFloodPlain.Order calldata, /* order */ address fulfiller)
-        external
-        view
-        whenNotPaused
-        returns (bool)
-    {
-        if (!hasRole(FULFILLER_ROLE, fulfiller)) {
-            return false;
-        }
-
-        return true;
+    function validate(IFloodPlain.Order calldata, /* order */ address fulfiller) external view returns (bool) {
+        return hasRole(FULFILLER_ROLE, fulfiller) && !paused();
     }
 
     function authorizationFilter(address actor) external view returns (AuthFilter memory) {
-        return filters[actor];
+        return _filters[actor];
     }
 }

@@ -7,6 +7,7 @@ import {LEB128} from "src/libraries/LEB128.sol";
 // Helpers
 import {LibBit} from "solady/utils/LibBit.sol";
 import {FixedPointMathLib} from "solady/utils/FixedPointMathLib.sol";
+import {LEB128Encode} from "./utils/LEB128Encode.sol";
 
 contract LEB128Contract {
     fallback(bytes calldata) external returns (bytes memory) {
@@ -15,36 +16,11 @@ contract LEB128Contract {
     }
 }
 
-contract LEB128Test is Test {
+contract LEB128Test is LEB128Encode, Test {
     LEB128Contract public leb128;
 
     function setUp() public {
         leb128 = new LEB128Contract();
-    }
-
-    function _encode(uint256 x) internal pure returns (bytes memory result) {
-        if (x == 0) return result = new bytes(1);
-        /// @solidity memory-safe-assembly
-        assembly {
-            result := mload(0x40)
-            let offset := add(result, 32)
-            let i := offset
-            for {} 1 {} {
-                let nextByte := and(x, 0x7f)
-                x := shr(7, x)
-                if x {
-                    nextByte := or(nextByte, 0x80)
-                    mstore8(i, nextByte)
-                    i := add(i, 1)
-                    continue
-                }
-                mstore8(i, nextByte)
-                i := add(i, 1)
-                break
-            }
-            mstore(result, sub(i, offset))
-            mstore(0x40, i)
-        }
     }
 
     function _encodedUintLength(uint256 x) internal pure returns (uint256) {
