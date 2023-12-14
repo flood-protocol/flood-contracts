@@ -55,30 +55,6 @@ contract FloodPlainTest is FloodPlainTestShared {
         assertEq(token1.balanceOf(address(account3.addr)), 500);
     }
 
-    function test_fulfillEthOrder() public {
-        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
-
-        signedOrder.order.consideration.token = address(0);
-        deal(address(fulfiller), 500);
-
-        signedOrder.signature = getSignature(signedOrder.order, account0);
-
-        // Prechecks.
-        assertEq(token0.balanceOf(address(account0.addr)), 500);
-        assertEq(address(account0.addr).balance, 0);
-        assertEq(token0.balanceOf(address(fulfiller)), 0);
-        assertEq(address(fulfiller).balance, 500);
-
-        // Fill the order.
-        book.fulfillOrder(signedOrder, address(fulfiller), "");
-
-        // Assertions.
-        assertEq(token0.balanceOf(address(account0.addr)), 0);
-        assertEq(address(account0.addr).balance, 500);
-        assertEq(token0.balanceOf(address(fulfiller)), 500);
-        assertEq(address(fulfiller).balance, 0);
-    }
-
     function test_fulfillMultiItemOrder() public {
         IFloodPlain.SignedOrder memory signedOrder = setup_multiItemOrder();
 
@@ -119,19 +95,6 @@ contract FloodPlainTest is FloodPlainTestShared {
 
         // Filling order fails.
         vm.expectRevert(abi.encodeWithSignature("ERC20InsufficientAllowance(address,uint256,uint256)", address(book), 499, 500));
-        book.fulfillOrder(signedOrder, address(maliciousFulfiller), "");
-    }
-
-    function test_RevertWhenInsufficientEthConsiderationReceived() public {
-        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
-
-        signedOrder.order.consideration.token = address(0);
-        deal(address(maliciousFulfiller), 500);
-
-        signedOrder.signature = getSignature(signedOrder.order, account0);
-
-        // Filling order fails.
-        vm.expectRevert(abi.encodeWithSignature("AddressInsufficientBalance(address)", address(book)));
         book.fulfillOrder(signedOrder, address(maliciousFulfiller), "");
     }
 
@@ -398,25 +361,6 @@ contract FloodPlainTest is FloodPlainTestShared {
         assertEq(token1.balanceOf(address(this)), 0);
     }
 
-    function test_fulfillDirectEthOrder() public {
-        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
-
-        signedOrder.order.consideration.token = address(0);
-
-        signedOrder.signature = getSignature(signedOrder.order, account0);
-
-        uint256 balanceBefore = address(this).balance;
-
-        // Fill the order.
-        book.fulfillOrder{value: 500}(signedOrder);
-
-        // Assertions.
-        assertEq(token0.balanceOf(address(account0.addr)), 0);
-        assertEq(address(account0.addr).balance, 500);
-        assertEq(token0.balanceOf(address(this)), 500);
-        assertEq(address(this).balance, balanceBefore - 500);
-    }
-
     function test_fulfillMultiItemDirectOrder() public {
         IFloodPlain.SignedOrder memory signedOrder = setup_multiItemOrder();
 
@@ -457,18 +401,6 @@ contract FloodPlainTest is FloodPlainTestShared {
         // Filling order fails.
         vm.expectRevert(abi.encodeWithSignature("ERC20InsufficientBalance(address,uint256,uint256)", address(this), 499, 500));
         book.fulfillOrder(signedOrder);
-    }
-
-    function test_RevertDirectOrderWhenInsufficientEthConsiderationReceived() public {
-        IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
-
-        signedOrder.order.consideration.token = address(0);
-
-        signedOrder.signature = getSignature(signedOrder.order, account0);
-
-        // Filling order fails.
-        vm.expectRevert(abi.encodeWithSignature("AddressInsufficientBalance(address)", address(book)));
-        book.fulfillOrder{value: 499}(signedOrder);
     }
 
     function test_revertDirectOrderWhenOfferTokenRepeated(uint256 indexA, uint256 indexB) public {
@@ -543,31 +475,6 @@ contract FloodPlainTest is FloodPlainTestShared {
         assertEq(token1.balanceOf(address(account0.addr)), 1000);
         assertEq(token0.balanceOf(address(batchFulfiller)), 1000);
         assertEq(token1.balanceOf(address(batchFulfiller)), 0);
-    }
-
-    function test_fulfillEthBatchOrder() public {
-        IFloodPlain.SignedOrder[] memory signedOrders = new IFloodPlain.SignedOrder[](2);
-        signedOrders[0] = setup_mostBasicOrder();
-        signedOrders[1] = setup_mostBasicOrder();
-
-        signedOrders[1].order.nonce = 1;
-        signedOrders[1].order.consideration.token = address(0);
-        signedOrders[1].signature = getSignature(signedOrders[1].order, account0);
-
-        // Send tokens to fulfiller to fill the order.
-        deal(address(token1), address(batchFulfiller), 500);
-        deal(address(batchFulfiller), 500);
-
-        // Fill the order.
-        book.fulfillOrders(signedOrders, address(batchFulfiller), "");
-
-        // Assertions.
-        assertEq(token0.balanceOf(address(account0.addr)), 0);
-        assertEq(token1.balanceOf(address(account0.addr)), 500);
-        assertEq(address(account0.addr).balance, 500);
-        assertEq(token0.balanceOf(address(batchFulfiller)), 1000);
-        assertEq(token1.balanceOf(address(batchFulfiller)), 0);
-        assertEq(address(batchFulfiller).balance, 0);
     }
 
     function test_RevertBatchFillWhenDeadlineExpire() public {
