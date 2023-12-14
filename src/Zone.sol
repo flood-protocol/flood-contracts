@@ -16,8 +16,6 @@ contract Zone is IAuthZone, AccessControlDefaultAdminRules, Pausable {
     event FulfillerUpdated(address indexed fulfiller, bool indexed valid);
     event FilterUpdated(address indexed actor, AuthFilter filter);
 
-    error FeeTooHigh();
-
     constructor(address admin) AccessControlDefaultAdminRules(1 hours, admin) {}
 
     function pause() external onlyRole(DEFAULT_ADMIN_ROLE) {
@@ -39,7 +37,7 @@ contract Zone is IAuthZone, AccessControlDefaultAdminRules, Pausable {
         emit FilterUpdated(actor, filter);
     }
 
-    function fee(IFloodPlain.Order calldata, address /* fulfiller */) external view returns (FeeInfo memory) {
+    function fee(IFloodPlain.Order calldata, address /* fulfiller */ ) external view returns (FeeInfo memory) {
         return _fee;
     }
 
