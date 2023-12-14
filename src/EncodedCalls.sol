@@ -5,7 +5,7 @@ pragma solidity 0.8.23;
 import {IEncodedCalls} from "./interfaces/IEncodedCalls.sol";
 
 // Libraries
-import {LEB128} from "./libraries/LEB128.sol";
+import {LEB128Lib} from "leb128/LEB128Lib.sol";
 
 abstract contract EncodedCalls is IEncodedCalls {
     address[] public decoders;
@@ -23,7 +23,7 @@ abstract contract EncodedCalls is IEncodedCalls {
         // ensure such byte exists.
 
         // Get the decoded decoder ID, and the new calldata ptr.
-        (uint256 decoderId, uint256 ptr) = LEB128.rawDecodeUint({ptr: 1});
+        (uint256 decoderId, uint256 ptr) = LEB128Lib.rawDecodeUint({ptr: 1});
 
         // Get the decoder.
         address decoder = decoders[decoderId];

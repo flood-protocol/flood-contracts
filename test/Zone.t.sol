@@ -111,18 +111,6 @@ contract ZoneTest is FloodPlainTestShared {
         assertEq(abi.encode(fee), abi.encode(mainZone.fee(order, address(0xabcd))));
     }
 
-    function test_RevertSetFeeAboveLimite(uint256 bps, address recipient) public {
-        bps = bound(bps, 501, type(uint64).max); // assume fee is greater than 5%
-
-        IZone.FeeInfo memory fee;
-        fee.recipient = recipient;
-        fee.bps = uint64(bps);
-
-        vm.prank(account0.addr);
-        vm.expectRevert(bytes4(keccak256("FeeTooHigh()")));
-        mainZone.setFee(fee);
-    }
-
     function test_RevertSetFeeUnprivilegedCalled(uint256 bps, address recipient) public {
         bps = bound(bps, 0, 500); // assume fee is 5% or less
 

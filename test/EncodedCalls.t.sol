@@ -6,8 +6,7 @@ import "./utils/FloodPlainTestShared.sol";
 import {EncodedCalls} from "src/EncodedCalls.sol";
 import {IEncodedCalls} from "src/interfaces/IEncodedCalls.sol";
 
-import {LEB128} from "src/libraries/LEB128.sol";
-import {LEB128Encode} from "./utils/LEB128Encode.sol";
+import {LEB128Lib} from "leb128/LEB128Lib.sol";
 
 contract EncodedCallsContract is EncodedCalls {
     uint256 public val;
@@ -24,13 +23,13 @@ contract MockDecoder {
         assembly {
             ptr := data.offset
         }
-        (uint256 a, uint256 newPtr) = LEB128.rawDecodeUint(ptr);
+        (uint256 a, uint256 newPtr) = LEB128Lib.rawDecodeUint(ptr);
         require(data.length >= newPtr - ptr, "DECODING_ERROR");
         return abi.encodeWithSelector(EncodedCallsContract.changeVal.selector, a);
     }
 }
 
-contract EncodedCallsTest is LEB128Encode, FloodPlainTestShared {
+contract EncodedCallsTest is FloodPlainTestShared {
     EncodedCallsContract encodedCalls;
     MockDecoder decoder;
 
@@ -66,7 +65,7 @@ contract EncodedCallsTest is LEB128Encode, FloodPlainTestShared {
             encodedCalls.addDecoder(address(0x69));
         }
         uint256 decoderId = encodedCalls.addDecoder(address(decoder));
-        bytes memory callData = abi.encodePacked(hex"00", _encode(decoderId), _encode(a));
+        bytes memory callData = abi.encodePacked(hex"00", LEB128Lib.encode(decoderId), LEB128Lib.encode(a));
         (bool success, bytes memory data) = address(encodedCalls).call(callData);
 
         assertTrue(success);
@@ -77,7 +76,8 @@ contract EncodedCallsTest is LEB128Encode, FloodPlainTestShared {
 
     function test_invalidDecoderId() public {
         encodedCalls.addDecoder(address(decoder));
-        bytes memory callData = abi.encodePacked(hex"00", _encode(69), _encode(69));
+        uint256 val = 69;
+        bytes memory callData = abi.encodePacked(hex"00", LEB128Lib.encode(val), LEB128Lib.encode(val));
         (bool success, bytes memory data) = address(encodedCalls).call(callData);
         assertFalse(success);
         assertEq(data, abi.encodeWithSignature("Panic(uint256)", 0x32));
@@ -92,7 +92,7 @@ contract EncodedCallsTest is LEB128Encode, FloodPlainTestShared {
 
     function test_decoderError() public {
         uint256 decoderId = encodedCalls.addDecoder(address(decoder));
-        bytes memory callData = abi.encodePacked(hex"00", _encode(decoderId));
+        bytes memory callData = abi.encodePacked(hex"00", LEB128Lib.encode(decoderId));
         (bool success, bytes memory data) = address(encodedCalls).call(callData);
         assertFalse(success);
         assertEq(data, abi.encodeWithSignature("Error(string)", "DECODING_ERROR"));
@@ -100,7 +100,7 @@ contract EncodedCallsTest is LEB128Encode, FloodPlainTestShared {
 
     function test_methodError() public {
         uint256 decoderId = encodedCalls.addDecoder(address(decoder));
-        bytes memory callData = abi.encodePacked(hex"00", _encode(decoderId));
+        bytes memory callData = abi.encodePacked(hex"00", LEB128Lib.encode(decoderId));
         (bool success, bytes memory data) = address(encodedCalls).call(callData);
         assertFalse(success);
         assertEq(data, abi.encodeWithSignature("Error(string)", "DECODING_ERROR"));
