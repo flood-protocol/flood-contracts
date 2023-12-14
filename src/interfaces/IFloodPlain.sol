@@ -14,7 +14,7 @@ interface IFloodPlain {
 
     error ArrayLengthMismatch();
 
-    event OrderFulfilled(IFloodPlain.Order order, address indexed fulfiller, uint256 amountOut);
+    event OrderFulfilled(bytes32 indexed orderHash, address indexed zone, address indexed fulfiller, uint256 amountOut);
 
     struct SignedOrder {
         Order order;

@@ -74,7 +74,7 @@ contract FloodPlain is IFloodPlain, EncodedCalls, OnChainOrders, ReentrancyGuard
         order.postHooks.execute();
 
         // Emit an event signifying that the order has been fulfilled.
-        emit OrderFulfilled(order, msg.sender, amount);
+        emit OrderFulfilled(orderHash, order.zone, msg.sender, amount);
     }
 
     function fulfillOrder(SignedOrder calldata package, address fulfiller, bytes calldata swapData)
@@ -110,7 +110,7 @@ contract FloodPlain is IFloodPlain, EncodedCalls, OnChainOrders, ReentrancyGuard
         order.postHooks.execute();
 
         // Emit an event signifying that the order has been fulfilled.
-        emit OrderFulfilled(order, fulfiller, amount);
+        emit OrderFulfilled(orderHash, order.zone, fulfiller, amount);
     }
 
     function fulfillOrders(SignedOrder[] calldata packages, address fulfiller, bytes calldata swapData)
@@ -154,7 +154,7 @@ contract FloodPlain is IFloodPlain, EncodedCalls, OnChainOrders, ReentrancyGuard
             order.postHooks.execute();
 
             // Emit an event signifying that the order has been fulfilled.
-            emit OrderFulfilled(order, fulfiller, amount);
+            emit OrderFulfilled(order.hash(), order.zone, fulfiller, amount);
         }
     }
 
