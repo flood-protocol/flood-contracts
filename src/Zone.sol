@@ -29,7 +29,6 @@ contract Zone is IAuthZone, AccessControlDefaultAdminRules, Pausable {
     }
 
     function setFee(FeeInfo calldata newFee) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        if (newFee.bps > 500) revert FeeTooHigh();
         _fee.bps = newFee.bps;
         _fee.recipient = newFee.recipient;
         emit FeeUpdated(newFee);

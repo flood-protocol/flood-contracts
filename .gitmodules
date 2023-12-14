@@ -10,3 +10,6 @@
 [submodule "lib/solady"]
 	path = lib/solady
 	url = https://github.com/Vectorized/solady
+[submodule "lib/leb128-nooffset"]
+	path = lib/leb128-nooffset
+	url = https://github.com/Shungy/leb128-nooffset

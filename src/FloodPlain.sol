@@ -11,7 +11,6 @@ import {ReentrancyGuard} from "@openzeppelin/utils/ReentrancyGuard.sol";
 import {OrderHash} from "./libraries/OrderHash.sol";
 import {Hooks, SELECTOR_EXTENSION} from "./libraries/Hooks.sol";
 import {Duplicates} from "./libraries/Duplicates.sol";
-import {Address} from "@openzeppelin/utils/Address.sol";
 import {SafeERC20} from "@openzeppelin/token/ERC20/utils/SafeERC20.sol";
 
 // Interfaces
@@ -22,7 +21,6 @@ import {ISignatureTransfer} from "permit2/src/interfaces/ISignatureTransfer.sol"
 
 contract FloodPlain is IFloodPlain, EncodedCalls, OnChainOrders, ReentrancyGuard {
     using SafeERC20 for IERC20;
-    using Address for address payable;
     using OrderHash for Order;
     using Duplicates for Item[];
     using Hooks for Hook[];
@@ -69,10 +67,8 @@ contract FloodPlain is IFloodPlain, EncodedCalls, OnChainOrders, ReentrancyGuard
         _permitTransferOffer(order, package.signature, orderHash, msg.sender);
 
         // Transfer consideration item from msg.sender to offerer.
-        address token = order.consideration.token;
         uint256 amount = order.consideration.amount;
-        if (token == address(0)) payable(order.recipient).sendValue(amount);
-        else IERC20(token).safeTransferFrom(msg.sender, order.recipient, amount);
+        IERC20(order.consideration.token).safeTransferFrom(msg.sender, order.recipient, amount);
 
         // Execute post hooks.
         order.postHooks.execute();
@@ -108,9 +104,7 @@ contract FloodPlain is IFloodPlain, EncodedCalls, OnChainOrders, ReentrancyGuard
         if (amount < order.consideration.amount) revert InsufficientAmountReceived();
 
         // Transfer declared consideration amount from the fulfiller to the offerer.
-        address token = order.consideration.token;
-        if (token == address(0)) payable(order.recipient).sendValue(amount);
-        else IERC20(token).safeTransferFrom(fulfiller, order.recipient, amount);
+        IERC20(order.consideration.token).safeTransferFrom(fulfiller, order.recipient, amount);
 
         // Execute post hooks.
         order.postHooks.execute();
@@ -154,9 +148,7 @@ contract FloodPlain is IFloodPlain, EncodedCalls, OnChainOrders, ReentrancyGuard
             if (amount < order.consideration.amount) revert InsufficientAmountReceived();
 
             // Transfer declared consideration amount from the fulfiller to the offerer.
-            address token = order.consideration.token;
-            if (token == address(0)) payable(order.recipient).sendValue(amount);
-            else IERC20(token).safeTransferFrom(fulfiller, order.recipient, amount);
+            IERC20(order.consideration.token).safeTransferFrom(fulfiller, order.recipient, amount);
 
             // Execute post hooks.
             order.postHooks.execute();
