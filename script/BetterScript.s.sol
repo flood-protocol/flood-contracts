@@ -3,12 +3,14 @@ pragma solidity ^0.8.23;
 
 import {Script, console2 as console} from "forge-std/Script.sol";
 
-interface Create2Factory {
-    function safeCreate2(bytes32 salt, bytes memory initializationCode) external returns (address deploymentAddress);
+interface ICREATE3Factory {
+    function deploy(bytes32 salt, bytes memory creationCode) external payable returns (address deployed);
+
+    function getDeployed(address deployer, bytes32 salt) external view returns (address deployed);
 }
 
 contract BetterScript is Script {
-    Create2Factory internal factory = Create2Factory(0x0000000000FFe8B47B3e2130213B802212439497);
+    ICREATE3Factory internal factory = ICREATE3Factory(0x2Dfcc7415D89af828cbef005F0d072D8b3F23183);
 
     modifier broadcast(uint256 key) {
         vm.startBroadcast(key);
@@ -22,15 +24,11 @@ contract BetterScript is Script {
         vm.stopBroadcast();
     }
 
-    function deploy2(bytes memory creationCode, bytes32 salt, bytes memory abiEncodedArgs) internal returns (address) {
+    function deploy3(bytes memory creationCode, bytes32 salt, bytes memory abiEncodedArgs) internal returns (address) {
         require(
             keccak256(abi.encodePacked(vm.envString("FOUNDRY_PROFILE"))) == keccak256(abi.encodePacked("deploy")),
             "Deploy profile not used"
         );
-        return factory.safeCreate2(salt, bytes.concat(creationCode, abiEncodedArgs));
-    }
-
-    function initCodeHash(bytes memory initCode, bytes memory abiEncodedArgs) internal pure returns (bytes32) {
-        return keccak256(bytes.concat(initCode, abiEncodedArgs));
+        return factory.deploy(salt, bytes.concat(creationCode, abiEncodedArgs));
     }
 }

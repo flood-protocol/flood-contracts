@@ -13,7 +13,7 @@ contract FloodPlainScript is BetterScript {
 
         bytes32 SALT = 0x45bddd7a4404868c5a41cb716e01a4006b38bab014f6753945f900003be7b160;
         vm.broadcast();
-        console.log("FloodPlain deployed at ", deploy2(creationCode, SALT, abi.encode(PERMIT2)));
+        console.log("FloodPlain deployed at ", deploy3(creationCode, SALT, abi.encode(PERMIT2)));
     }
 
     function addDecoder(FloodPlain flood, address decoder) public {
