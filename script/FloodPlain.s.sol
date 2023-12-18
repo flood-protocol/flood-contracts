@@ -11,7 +11,7 @@ contract FloodPlainScript is BetterScript {
         bytes memory creationCode = type(FloodPlain).creationCode;
         console.logBytes32(keccak256(bytes.concat(creationCode, abi.encode(PERMIT2))));
 
-        bytes32 SALT = 0x45bddd7a4404868c5a41cb716e01a4006b38bab014f6753945f900003be7b160;
+        bytes32 SALT = 0x50000000000000000000000d20393b019310711ac6aee2753c64ee1736f76432;
         vm.broadcast();
         console.log("FloodPlain deployed at ", deploy3(creationCode, SALT, abi.encode(PERMIT2)));
     }

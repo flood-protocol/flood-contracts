@@ -1,26 +1,32 @@
 [profile.default]
-  ffi = true
-  remappings = [
+  evm_version="paris"
+  ffi=true
+  remappings=[
     "@openzeppelin/=lib/openzeppelin-contracts/contracts/",
+    "leb128=lib/leb128-nooffset/src/",
     "permit2/=lib/permit2/",
     "solady/=lib/solady/src/",
-    "leb128=lib/leb128-nooffset/src/"
   ]
-  solc_version = "0.8.23"
-  evm_version = "paris"
+  solc_version="0.8.23"
 
 [profile.ci]
-  fuzz_runs = 5000
-  libs = ["lib"]
-  optimizer = false
-  out = "out"
+  fuzz_runs=5000
+  libs     =["lib"]
+  optimizer=false
+  out      ="out"
 
 [profile.deploy]
-  fs_permissions = [{ access = "read", path = "./out" }]
-  optimizer = true
-  optimizer_runs = 10_000_000
-  via_ir = true
+  fs_permissions=[{access="read", path="./out"}]
+  optimizer     =true
+  optimizer_runs=10_000_000
+  via_ir        =true
 
 [etherscan]
-  arbitrum = { key = "${ETHERSCAN_ARBITRUM}" }
-  mainnet = { key = "${ETHERSCAN_MAINNET}" }
+  arbitrum ={key="${ETHERSCAN_ARBITRUM}"}
+  avalanche={key="${ETHERSCAN_AVALANCHE}"}
+  base     ={key="${ETHERSCAN_BASE}"}
+  linea    ={key="${ETHERSCAN_LINEA}"}
+  mainnet  ={key="${ETHERSCAN_MAINNET}"}
+  optimism ={key="${ETHERSCAN_OPTIMISM}"}
+  polygon  ={key="${ETHERSCAN_POLYGON}"}
+  scroll   ={key="${ETHERSCAN_SCROLL}"}
