@@ -40,4 +40,26 @@ contract ZoneScript is BetterScript {
         );
         vm.stopBroadcast();
     }
+
+    function authorize(Zone zone, address reader) public {
+        address zoneAdmin = vm.envAddress("ZONE_ADMIN_ADDRESS");
+        vm.startBroadcast(zoneAdmin);
+        IAuthZone.AddressFilter memory emptyAddressFilter = IAuthZone.AddressFilter({value: address(0), exclude: false});
+        IAuthZone.RangeFilter memory emptyRangeFilter = IAuthZone.RangeFilter({gte: 0, lte: 0});
+        IAuthZone.ItemFilter memory emptyItemFilter =
+            IAuthZone.ItemFilter({token: emptyAddressFilter, amount: emptyRangeFilter});
+        IAuthZone.ItemFilter[] memory emptyItemFilters;
+        zone.setAuthorizationFilter(
+            reader,
+            IAuthZone.AuthFilter({
+                initialized: true,
+                offerer: emptyAddressFilter,
+                offer: emptyItemFilters,
+                consideration: emptyItemFilter,
+                deadline: emptyRangeFilter,
+                nonce: emptyRangeFilter
+            })
+        );
+        vm.stopBroadcast();
+    }
 }

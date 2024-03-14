@@ -17,7 +17,8 @@ contract FloodPlainScript is BetterScript {
     }
 
     function addDecoder(FloodPlain flood, address decoder) public {
-        vm.broadcast();
+        uint256 key = vm.envUint("ALT_ADMIN_KEY");
+        vm.broadcast(key);
         uint256 id = flood.addDecoder(decoder);
         console.log("Decoder", decoder, "added with id", id);
     }
