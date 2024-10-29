@@ -29,4 +29,3 @@ contract MaliciousFulfiller2 {
         return item.amount - 1;
     }
 }
-
