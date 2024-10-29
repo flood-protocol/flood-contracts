@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.23;
+pragma solidity ^0.8.23;
 
 import {IZone, IFloodPlain} from "src/interfaces/IZone.sol";
 import {Ownable, Ownable2Step} from "@openzeppelin/access/Ownable2Step.sol";

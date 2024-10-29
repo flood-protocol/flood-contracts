@@ -7,7 +7,7 @@
     "permit2/=lib/permit2/",
     "solady/=lib/solady/src/",
   ]
-  solc_version="0.8.23"
+  solc_version="0.8.25"
 
 [profile.ci]
   fuzz_runs=5000
