@@ -94,7 +94,9 @@ contract FloodPlainTest is FloodPlainTestShared {
         deal(address(token1), address(maliciousFulfiller), 500);
 
         // Filling order fails.
-        vm.expectRevert(abi.encodeWithSignature("ERC20InsufficientAllowance(address,uint256,uint256)", address(book), 499, 500));
+        vm.expectRevert(
+            abi.encodeWithSignature("ERC20InsufficientAllowance(address,uint256,uint256)", address(book), 499, 500)
+        );
         book.fulfillOrder(signedOrder, address(maliciousFulfiller), "");
     }
 
@@ -341,10 +343,13 @@ contract FloodPlainTest is FloodPlainTestShared {
         assertEq(permitHash, 0x8aea3ef4ab58e3cfd67a39b948421def10f4424ee4be0b8c1be0bb6c05bb022a);
     }
 
-    /*****************/
+    /**
+     *
+     */
     /* DIRECT ORDERS */
-    /*****************/
-
+    /**
+     *
+     */
     function test_fulfillBasicDirectOrder() public {
         IFloodPlain.SignedOrder memory signedOrder = setup_mostBasicOrder();
 
@@ -388,7 +393,9 @@ contract FloodPlainTest is FloodPlainTestShared {
         token1.approve(address(book), 499);
 
         // Filling order fails.
-        vm.expectRevert(abi.encodeWithSignature("ERC20InsufficientAllowance(address,uint256,uint256)", address(book), 499, 500));
+        vm.expectRevert(
+            abi.encodeWithSignature("ERC20InsufficientAllowance(address,uint256,uint256)", address(book), 499, 500)
+        );
         book.fulfillOrder(signedOrder);
     }
 
@@ -399,7 +406,9 @@ contract FloodPlainTest is FloodPlainTestShared {
         token1.approve(address(book), 500);
 
         // Filling order fails.
-        vm.expectRevert(abi.encodeWithSignature("ERC20InsufficientBalance(address,uint256,uint256)", address(this), 499, 500));
+        vm.expectRevert(
+            abi.encodeWithSignature("ERC20InsufficientBalance(address,uint256,uint256)", address(this), 499, 500)
+        );
         book.fulfillOrder(signedOrder);
     }
 
@@ -451,10 +460,13 @@ contract FloodPlainTest is FloodPlainTestShared {
         book.fulfillOrder(signedOrder);
     }
 
-    /******************/
+    /**
+     *
+     */
     /* BATCHED ORDERS */
-    /******************/
-
+    /**
+     *
+     */
     function test_fulfillBasicBatchOrder() public {
         IFloodPlain.SignedOrder[] memory signedOrders = new IFloodPlain.SignedOrder[](2);
         signedOrders[0] = setup_mostBasicOrder();

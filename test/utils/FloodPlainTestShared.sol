@@ -78,7 +78,8 @@ abstract contract FloodPlainTestShared is Test, DeployPermit2 {
         view
         returns (bytes memory sig)
     {
-        sig = orderSignature.getSignature(order, signer.key, IEIP712(address(permit2)).DOMAIN_SEPARATOR(), address(book));
+        sig =
+            orderSignature.getSignature(order, signer.key, IEIP712(address(permit2)).DOMAIN_SEPARATOR(), address(book));
     }
 
     function setup_mostBasicOrder() internal returns (IFloodPlain.SignedOrder memory) {
@@ -118,7 +119,7 @@ abstract contract FloodPlainTestShared is Test, DeployPermit2 {
         // Sign the order.
         bytes memory sig = getSignature(order, account0);
 
-        return IFloodPlain.SignedOrder({ order: order, signature: sig });
+        return IFloodPlain.SignedOrder({order: order, signature: sig});
     }
 
     function setup_multiItemOrder() internal returns (IFloodPlain.SignedOrder memory) {
@@ -166,6 +167,6 @@ abstract contract FloodPlainTestShared is Test, DeployPermit2 {
         // Sign the order.
         bytes memory sig = getSignature(order, account0);
 
-        return IFloodPlain.SignedOrder({ order: order, signature: sig });
+        return IFloodPlain.SignedOrder({order: order, signature: sig});
     }
 }

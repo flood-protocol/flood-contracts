@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.23;
+pragma solidity ^0.8.23;
 
 // Inheritances
 import {IFloodPlain} from "./interfaces/IFloodPlain.sol";
@@ -61,7 +61,7 @@ contract FloodPlain is IFloodPlain, EncodedCalls, OnChainOrders, ReentrancyGuard
         if (order.zone != address(0)) if (!(IZone(order.zone).validate(order, msg.sender))) revert ZoneDenied();
 
         // Execute pre hooks.
-        order.preHooks.execute();
+        order.preHooks.execute(orderHash, address(PERMIT2));
 
         // Transfer each offer item to msg.sender using Permit2.
         _permitTransferOffer(order, package.signature, orderHash, msg.sender);
@@ -71,7 +71,7 @@ contract FloodPlain is IFloodPlain, EncodedCalls, OnChainOrders, ReentrancyGuard
         IERC20(order.consideration.token).safeTransferFrom(msg.sender, order.recipient, amount);
 
         // Execute post hooks.
-        order.postHooks.execute();
+        order.postHooks.execute(orderHash, address(PERMIT2));
 
         // Emit an event signifying that the order has been fulfilled.
         emit OrderFulfilled(orderHash, order.zone, msg.sender, amount);
@@ -91,7 +91,7 @@ contract FloodPlain is IFloodPlain, EncodedCalls, OnChainOrders, ReentrancyGuard
         if (order.zone != address(0)) if (!(IZone(order.zone).validate(order, fulfiller))) revert ZoneDenied();
 
         // Execute pre hooks.
-        order.preHooks.execute();
+        order.preHooks.execute(orderHash, address(PERMIT2));
 
         // Transfer each offer item to fulfiller using Permit2.
         _permitTransferOffer(order, package.signature, orderHash, fulfiller);
@@ -107,7 +107,7 @@ contract FloodPlain is IFloodPlain, EncodedCalls, OnChainOrders, ReentrancyGuard
         IERC20(order.consideration.token).safeTransferFrom(fulfiller, order.recipient, amount);
 
         // Execute post hooks.
-        order.postHooks.execute();
+        order.postHooks.execute(orderHash, address(PERMIT2));
 
         // Emit an event signifying that the order has been fulfilled.
         emit OrderFulfilled(orderHash, order.zone, fulfiller, amount);
@@ -126,7 +126,7 @@ contract FloodPlain is IFloodPlain, EncodedCalls, OnChainOrders, ReentrancyGuard
             if (order.zone != address(0)) if (!(IZone(order.zone).validate(order, fulfiller))) revert ZoneDenied();
 
             // Execute pre hooks.
-            order.preHooks.execute();
+            order.preHooks.execute(order.hash(), address(PERMIT2));
 
             // Transfer each offer item to fulfiller using Permit2.
             _permitTransferOffer(order, packages[i].signature, order.hash(), fulfiller);
@@ -151,7 +151,7 @@ contract FloodPlain is IFloodPlain, EncodedCalls, OnChainOrders, ReentrancyGuard
             IERC20(order.consideration.token).safeTransferFrom(fulfiller, order.recipient, amount);
 
             // Execute post hooks.
-            order.postHooks.execute();
+            order.postHooks.execute(order.hash(), address(PERMIT2));
 
             // Emit an event signifying that the order has been fulfilled.
             emit OrderFulfilled(order.hash(), order.zone, fulfiller, amount);

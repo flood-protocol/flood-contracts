@@ -118,7 +118,9 @@ contract ZoneTest is FloodPlainTestShared {
         fee.recipient = recipient;
         fee.bps = uint64(bps);
 
-        vm.expectRevert(abi.encodeWithSignature("AccessControlUnauthorizedAccount(address,bytes32)", address(this), bytes32(0)));
+        vm.expectRevert(
+            abi.encodeWithSignature("AccessControlUnauthorizedAccount(address,bytes32)", address(this), bytes32(0))
+        );
         mainZone.setFee(fee);
     }
 
