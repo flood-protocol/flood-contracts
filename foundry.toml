@@ -1,5 +1,5 @@
 [profile.default]
-  evm_version="paris"
+  evm_version="cancun"
   ffi=true
   remappings=[
     "@openzeppelin/=lib/openzeppelin-contracts/contracts/",
@@ -16,10 +16,17 @@
   out      ="out"
 
 [profile.deploy]
-  fs_permissions=[{access="read", path="./out"}]
+  evm_version   ="paris"
   optimizer     =true
-  optimizer_runs=10_000_000
+  optimizer_runs=4_294_967_295 			      #2**32-1
   via_ir        =true
+
+ [profile.deploy-mainnet]
+   #   Overwrite to use cancun if deploying to Ethereum Mainnet
+  evm_version = "cancun"
+  optimizer = true
+  optmizer-runs = 4_294_967_295                       #2**32-1
+  via_ir = true
 
 [etherscan]
   arbitrum ={key="${ETHERSCAN_ARBITRUM}"}

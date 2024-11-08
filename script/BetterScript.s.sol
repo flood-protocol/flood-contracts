@@ -25,10 +25,17 @@ contract BetterScript is Script {
     }
 
     function deploy3(bytes memory creationCode, bytes32 salt, bytes memory abiEncodedArgs) internal returns (address) {
-        require(
-            keccak256(abi.encodePacked(vm.envString("FOUNDRY_PROFILE"))) == keccak256(abi.encodePacked("deploy")),
-            "Deploy profile not used"
-        );
+        if (block.chainid == 1) {
+            require(
+                keccak256(abi.encodePacked(vm.envString("FOUNDRY_PROFILE"))) == keccak256(abi.encodePacked("deploy-mainnet")),
+                "Deploy profile not used"
+            );
+        } else {
+            require(
+                keccak256(abi.encodePacked(vm.envString("FOUNDRY_PROFILE"))) == keccak256(abi.encodePacked("deploy")),
+                "Deploy profile not used"
+            );
+        }
         return factory.deploy(salt, bytes.concat(creationCode, abiEncodedArgs));
     }
 }
